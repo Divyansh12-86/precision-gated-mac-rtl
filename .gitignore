@@ -1,0 +1,49 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# ── Data (large binaries, re-downloadable via wfdb) ───────────────────────────
+data/mitbih/
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Vivado / Quartus synthesis artifacts ─────────────────────────────────────
+*.runs/
+*.cache/
+*.hw/
+*.ip_user_files/
+*.sim/
+*.srcs/
+*.gen/
+*.xpr
+*.bit
+*.ltx
+*.log
+*.jou
+*.str
+*.mcs
+*.prm
+db/
+incremental_db/
+output_files/
+simulation/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editor ────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
