@@ -7,7 +7,7 @@ venv/
 *.egg-info/
 dist/
 build/
-
+slides/
 # ── Data (large binaries, re-downloadable via wfdb) ───────────────────────────
 data/mitbih/
 
