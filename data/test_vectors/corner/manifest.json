@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "set_name": "corner",
+    "record_id": "synthetic",
+    "description": "Impulses, alternating extrema, ramps, and random toggling"
+  },
+  "n_samples": 1618,
+  "files": {
+    "tv_inputs.hex": "9e730e619b22d2892960c85a799661cef6bae7cdd14ddeb38c772672813857aa",
+    "tv_gate_flags.hex": "3497959a3e5040bcf6fee00f677eceafb653efe4e44974d5ad99cf2644ca416e",
+    "tv_outputs_full.hex": "86f0d34ca01cf58fd568b907b84719c8248aa27f9e65ff88c3645658ad144234",
+    "tv_outputs_gated.hex": "76958cd9de3b3ffaff3e4ad6cbc5e273a1a0cfce2b602561ef5cd3b0982818f5",
+    "tv_outputs_allapprox.hex": "80390524e6f135875af31c728dbe6f95b022c21c544bf03efa50b9bc5e3b677a",
+    "tv_peaks.hex": "383556636456513fc95fe67794aad93d291d35c30961d0cbec0d6dba3e2fc526",
+    "tv_mwi.hex": "5e4bdfa41a73dbb487e5bd0c7ee3f9e3e738de2e9a221b64da70ee486bdd6de4",
+    "coeffs.mem": "8f7b3833183f56343b955306889c34d0f908b148b8893fa9b9456a798cb67639"
+  }
+}

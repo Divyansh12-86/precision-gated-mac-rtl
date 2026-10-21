@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "set_name": "std_minmax_100",
+    "record_id": "100",
+    "policy": "minmax",
+    "sq_shift": 15,
+    "n_samples": 60000
+  },
+  "n_samples": 60000,
+  "files": {
+    "tv_inputs.hex": "bc2f7930f00ae52515472efaa84977ce6372c7638f60d860cea9fe4a6de98e90",
+    "tv_gate_flags.hex": "fe1ed096026df9aef339e2984ad7e365d2b8782b0708e9e205117c62cd8d301b",
+    "tv_outputs_full.hex": "bc6506d86d87eeabe231dd3225b19cc05ea337fff00fc93bd1233c17c718cf24",
+    "tv_outputs_gated.hex": "1fb1a8d8a4032b3ff0e9461759667407dc9d5b5f0f31913a50a42bb15f55c01d",
+    "tv_outputs_allapprox.hex": "375b0029aae8e1064f3256a01ee36f5b7b3da4152874028170cad79f83fc33fd",
+    "tv_peaks.hex": "c7b779d521cf91edd1bc629e72e3a0ac96f7ae61cf2eadb173cf08f26b7d0d1b",
+    "tv_mwi.hex": "32c10eb7a431dcc966e001bc6f69e2fe67d5fb58585d55aa106f20338b897a45",
+    "coeffs.mem": "8f7b3833183f56343b955306889c34d0f908b148b8893fa9b9456a798cb67639"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "set_name": "smoke",
+    "record_id": "100",
+    "policy": "fixed",
+    "sq_shift": 11
+  },
+  "n_samples": 1000,
+  "files": {
+    "tv_inputs.hex": "f4f89f624346990adc9535cf20305dc166e767ad0d3b3d19aa99a8d7e7fba335",
+    "tv_gate_flags.hex": "c6070233772440408e85bd6797f47ec01d31e1d8ff40ab47011e81d3a41bb560",
+    "tv_outputs_full.hex": "8a36b3acf33a7c37b65875ce49641d5d1b1e774dfa4cf88ee4e2f7f383d6a0f7",
+    "tv_outputs_gated.hex": "f119b00355222b162d172ec9e6e85d2325a7258308d718d6ce0cf1c552912ea3",
+    "tv_outputs_allapprox.hex": "9a5c01e0e3595c4c35a074ef407ed015bc353fe96d57d6bc119083c962c0b4f9",
+    "tv_peaks.hex": "5312fc75d9f2feb0f02b719d973fd466d5ca9aad3258d10ca0093a110f9c3460",
+    "tv_mwi.hex": "5dfb2e167e22f91f7d4e8a51732621b87654008c5a75d981484eac97a24f24cb",
+    "coeffs.mem": "8f7b3833183f56343b955306889c34d0f908b148b8893fa9b9456a798cb67639"
+  }
+}

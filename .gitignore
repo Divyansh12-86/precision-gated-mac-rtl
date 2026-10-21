@@ -10,6 +10,15 @@ build/
 slides/
 # ── Data (large binaries, re-downloadable via wfdb) ───────────────────────────
 data/mitbih/
+data/mitbih_full/
+data/nstdb/
+
+# ── Simulation & Build Artifacts ──────────────────────────────────────────────
+*.vvp
+*.vcd
+obj_dir/
+build*/
+coeffs.mem
 
 # ── Jupyter ───────────────────────────────────────────────────────────────────
 .ipynb_checkpoints/

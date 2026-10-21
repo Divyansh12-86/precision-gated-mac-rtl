@@ -1,0 +1,58 @@
+# =============================================================================
+# Yosys Multi-Target Multi-Mode Synthesis Characterization Script
+# Fulfills Criterion G7:
+#   - Core contains 0 vendor-specific hard primitives.
+#   - Multi-target synthesis: Xilinx 7-Series (xc7), UltraScale (xcu), Spartan-6 (xc6s).
+#   - Mode characterization:
+#       * LUT mode (-nodsp): strictly 0 DSP48 blocks inferred.
+#       * DSP mode (default): DSP48 blocks inferred.
+#   - Generates resource utilization stats for baseline vs pg_top.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Artix-7 (xc7) — LUT Mode (-nodsp, Out-Of-Context)
+# -----------------------------------------------------------------------------
+design -reset
+read_verilog -sv rtl/baseline_fir_exact.v rtl/fir_coeff_rom.v rtl/sample_delay_line.v
+hierarchy -check -top baseline_fir_exact
+synth_xilinx -top baseline_fir_exact -family xc7 -nodsp -noiopad
+stat -tech xilinx
+
+design -reset
+read_verilog -sv rtl/pg_top.v rtl/pg_fir.v rtl/pg_mac.v rtl/mult_split.v rtl/sample_delay_line.v rtl/fir_coeff_rom.v rtl/qrs_detector.v
+hierarchy -check -top pg_top
+synth_xilinx -top pg_top -family xc7 -nodsp -noiopad
+stat -tech xilinx
+
+# -----------------------------------------------------------------------------
+# 2. Artix-7 (xc7) — DSP Mode (Out-Of-Context)
+# -----------------------------------------------------------------------------
+design -reset
+read_verilog -sv rtl/baseline_fir_exact.v rtl/fir_coeff_rom.v rtl/sample_delay_line.v
+hierarchy -check -top baseline_fir_exact
+synth_xilinx -top baseline_fir_exact -family xc7 -noiopad
+stat -tech xilinx
+
+design -reset
+read_verilog -sv rtl/pg_top.v rtl/pg_fir.v rtl/pg_mac.v rtl/mult_split.v rtl/sample_delay_line.v rtl/fir_coeff_rom.v rtl/qrs_detector.v
+hierarchy -check -top pg_top
+synth_xilinx -top pg_top -family xc7 -noiopad
+stat -tech xilinx
+
+# -----------------------------------------------------------------------------
+# 3. UltraScale (xcu) — G7 Multi-Target Check
+# -----------------------------------------------------------------------------
+design -reset
+read_verilog -sv rtl/pg_top.v rtl/pg_fir.v rtl/pg_mac.v rtl/mult_split.v rtl/sample_delay_line.v rtl/fir_coeff_rom.v rtl/qrs_detector.v
+hierarchy -check -top pg_top
+synth_xilinx -top pg_top -family xcu -noiopad
+stat -tech xilinx
+
+# -----------------------------------------------------------------------------
+# 4. Spartan-6 (xc6s) — G7 Multi-Target Check
+# -----------------------------------------------------------------------------
+design -reset
+read_verilog -sv rtl/pg_top.v rtl/pg_fir.v rtl/pg_mac.v rtl/mult_split.v rtl/sample_delay_line.v rtl/fir_coeff_rom.v rtl/qrs_detector.v
+hierarchy -check -top pg_top
+synth_xilinx -top pg_top -family xc6s -noiopad
+stat -tech xilinx

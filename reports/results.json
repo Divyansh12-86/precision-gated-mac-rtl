@@ -1,0 +1,274 @@
+{
+  "meta": {
+    "commit": "b045caccc1ff8177a6dbe8e71ec7b684becc8738",
+    "tools": {
+      "simulator": "verilator 5.020",
+      "yosys": "0.33",
+      "vivado": null
+    },
+    "date": "2026-10-21T10:22:46.185156"
+  },
+  "records": [
+    {
+      "id": "100",
+      "policy": "fixed",
+      "n": 60000,
+      "sq_shift": 11,
+      "se": 100.0,
+      "ppv": 100.0,
+      "first_peak_idx": 87,
+      "duty_full_pct": 14.84,
+      "approx_duty_pct": 85.16,
+      "global": {
+        "snr_db": 26.62,
+        "prd_pct": 4.666,
+        "snr_allapprox_db": 25.92,
+        "prd_allapprox_pct": 5.058
+      },
+      "qrs_region": {
+        "prd_gated_pct": 0.0,
+        "prd_allapprox_pct": 5.5978,
+        "gate_coverage_pct": 100.0,
+        "rpeak_err_pct_max": 0.0,
+        "rpeak_err_pct_mean": 0.0
+      },
+      "rtl": {
+        "top_mismatches": 0,
+        "detector_mismatches": 0
+      }
+    },
+    {
+      "id": "101",
+      "policy": "fixed",
+      "n": 60000,
+      "sq_shift": 11,
+      "se": 100.0,
+      "ppv": 94.71,
+      "first_peak_idx": 91,
+      "duty_full_pct": 14.91,
+      "approx_duty_pct": 85.09,
+      "global": {
+        "snr_db": 28.04,
+        "prd_pct": 3.962,
+        "snr_allapprox_db": 27.34,
+        "prd_allapprox_pct": 4.297
+      },
+      "qrs_region": {
+        "prd_gated_pct": 0.4017,
+        "prd_allapprox_pct": 4.0711,
+        "gate_coverage_pct": 91.37,
+        "rpeak_err_pct_max": 2.891,
+        "rpeak_err_pct_mean": 0.0619
+      },
+      "rtl": {
+        "top_mismatches": 0,
+        "detector_mismatches": 0
+      }
+    },
+    {
+      "id": "103",
+      "policy": "fixed",
+      "n": 60000,
+      "sq_shift": 11,
+      "se": 100.0,
+      "ppv": 100.0,
+      "first_peak_idx": 265,
+      "duty_full_pct": 14.06,
+      "approx_duty_pct": 85.94,
+      "global": {
+        "snr_db": 26.69,
+        "prd_pct": 4.627,
+        "snr_allapprox_db": 26.04,
+        "prd_allapprox_pct": 4.986
+      },
+      "qrs_region": {
+        "prd_gated_pct": 0.0,
+        "prd_allapprox_pct": 2.4835,
+        "gate_coverage_pct": 100.0,
+        "rpeak_err_pct_max": 0.0,
+        "rpeak_err_pct_mean": 0.0
+      },
+      "rtl": {
+        "top_mismatches": 0,
+        "detector_mismatches": 0
+      }
+    },
+    {
+      "id": "105",
+      "policy": "fixed",
+      "n": 60000,
+      "sq_shift": 11,
+      "se": 100.0,
+      "ppv": 100.0,
+      "first_peak_idx": 216,
+      "duty_full_pct": 16.55,
+      "approx_duty_pct": 83.44,
+      "global": {
+        "snr_db": 27.24,
+        "prd_pct": 4.343,
+        "snr_allapprox_db": 26.46,
+        "prd_allapprox_pct": 4.756
+      },
+      "qrs_region": {
+        "prd_gated_pct": 0.7303,
+        "prd_allapprox_pct": 2.468,
+        "gate_coverage_pct": 62.34,
+        "rpeak_err_pct_max": 0.0,
+        "rpeak_err_pct_mean": 0.0
+      },
+      "rtl": {
+        "top_mismatches": 0,
+        "detector_mismatches": 0
+      }
+    },
+    {
+      "id": "100",
+      "policy": "minmax",
+      "n": 60000,
+      "sq_shift": 15,
+      "se": 100.0,
+      "ppv": 100.0,
+      "first_peak_idx": 77,
+      "duty_full_pct": 14.84,
+      "approx_duty_pct": 85.16,
+      "global": {
+        "snr_db": 44.58,
+        "prd_pct": 0.59,
+        "snr_allapprox_db": 43.87,
+        "prd_allapprox_pct": 0.64
+      },
+      "qrs_region": {
+        "prd_gated_pct": 0.0122,
+        "prd_allapprox_pct": 0.9244,
+        "gate_coverage_pct": 99.52,
+        "rpeak_err_pct_max": 0.0,
+        "rpeak_err_pct_mean": 0.0
+      },
+      "rtl": {
+        "top_mismatches": 0,
+        "detector_mismatches": 0
+      }
+    },
+    {
+      "id": "101",
+      "policy": "minmax",
+      "n": 60000,
+      "sq_shift": 15,
+      "se": 100.0,
+      "ppv": 94.74,
+      "first_peak_idx": 91,
+      "duty_full_pct": 14.98,
+      "approx_duty_pct": 85.02,
+      "global": {
+        "snr_db": 42.59,
+        "prd_pct": 0.742,
+        "snr_allapprox_db": 41.91,
+        "prd_allapprox_pct": 0.802
+      },
+      "qrs_region": {
+        "prd_gated_pct": 0.0923,
+        "prd_allapprox_pct": 1.2924,
+        "gate_coverage_pct": 94.92,
+        "rpeak_err_pct_max": 1.138,
+        "rpeak_err_pct_mean": 0.0368
+      },
+      "rtl": {
+        "top_mismatches": 0,
+        "detector_mismatches": 0
+      }
+    },
+    {
+      "id": "103",
+      "policy": "minmax",
+      "n": 60000,
+      "sq_shift": 15,
+      "se": 100.0,
+      "ppv": 99.49,
+      "first_peak_idx": 1,
+      "duty_full_pct": 14.13,
+      "approx_duty_pct": 85.86,
+      "global": {
+        "snr_db": 45.02,
+        "prd_pct": 0.561,
+        "snr_allapprox_db": 44.35,
+        "prd_allapprox_pct": 0.606
+      },
+      "qrs_region": {
+        "prd_gated_pct": 0.0,
+        "prd_allapprox_pct": 0.9143,
+        "gate_coverage_pct": 100.0,
+        "rpeak_err_pct_max": 0.0,
+        "rpeak_err_pct_mean": 0.0
+      },
+      "rtl": {
+        "top_mismatches": 0,
+        "detector_mismatches": 0
+      }
+    },
+    {
+      "id": "105",
+      "policy": "minmax",
+      "n": 60000,
+      "sq_shift": 15,
+      "se": 100.0,
+      "ppv": 99.57,
+      "first_peak_idx": 1,
+      "duty_full_pct": 16.63,
+      "approx_duty_pct": 83.37,
+      "global": {
+        "snr_db": 44.58,
+        "prd_pct": 0.59,
+        "snr_allapprox_db": 43.81,
+        "prd_allapprox_pct": 0.645
+      },
+      "qrs_region": {
+        "prd_gated_pct": 0.4484,
+        "prd_allapprox_pct": 1.4638,
+        "gate_coverage_pct": 62.34,
+        "rpeak_err_pct_max": 1.262,
+        "rpeak_err_pct_mean": 0.1982
+      },
+      "rtl": {
+        "top_mismatches": 0,
+        "detector_mismatches": 0
+      }
+    }
+  ],
+  "activity": {
+    "baseline": {
+      "op_high": 32901,
+      "op_low": 69597,
+      "mult": 350330,
+      "acc": 358099,
+      "total": 810927
+    },
+    "gated_auto": {
+      "op_high": 32901,
+      "op_low": 12478,
+      "mult": 293250,
+      "acc": 301847,
+      "total": 640476
+    },
+    "gated_full": {
+      "op_high": 32901,
+      "op_low": 69597,
+      "mult": 350330,
+      "acc": 358099,
+      "total": 810927
+    },
+    "gated_approx": {
+      "op_high": 32901,
+      "op_low": 0,
+      "mult": 281474,
+      "acc": 290839,
+      "total": 605214
+    },
+    "savings_pct": {
+      "op_low_reduction_pct": 82.07,
+      "mult_reduction_pct": 16.29,
+      "acc_reduction_pct": 15.71,
+      "total_datapath_reduction_pct": 21.02
+    }
+  },
+  "synth": {}
+}

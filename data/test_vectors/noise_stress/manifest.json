@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "set_name": "noise_stress",
+    "record_id": "100_noisy",
+    "description": "MIT-BIH 100 with baseline wander (0.3Hz), powerline (50Hz), and EMG noise"
+  },
+  "n_samples": 5000,
+  "files": {
+    "tv_inputs.hex": "f6b162789efd802fb8855085b7c0cd215186a04857f133bcb15419791d0273b9",
+    "tv_gate_flags.hex": "37fbec6e2dfe32d8c5b011b63219e4fd56dee00d2333cbce50e64bad493767cd",
+    "tv_outputs_full.hex": "76f50ad2f623c74f30d039631dc2bb520d1f24cfc4b747d63399427951ca9c1c",
+    "tv_outputs_gated.hex": "cca1ae841eba15d9e11e7fdcda2e74d90199c59909e8b8ddec87babc4b89f323",
+    "tv_outputs_allapprox.hex": "7a6f61713eed7b26ebfe6fc62828d52ba8f172b35a7cdb82ff2090c052f59587",
+    "tv_peaks.hex": "31d568819990b8e402a14e29ab2d28f9c94749da056e5755d2a039a88db0838c",
+    "tv_mwi.hex": "1c1b0143b0d84d11c71154ff4ef128958b4ed7d9eb790c29ae2cd648dc8a3be6",
+    "coeffs.mem": "8f7b3833183f56343b955306889c34d0f908b148b8893fa9b9456a798cb67639"
+  }
+}
