@@ -79,16 +79,19 @@ precision-gated-mac-ecg/
 ## 4. Quick Start & Execution
 
 ### 4.1 Prerequisites
-- Linux x86_64
-- Python 3.10+ (with `numpy`, `scipy`, `matplotlib`, `wfdb`)
-- Verilator 5.0+
-- Yosys 0.33+
+- Verilator (verilator ≥ 5.0)
+- Yosys (yosys ≥ 0.33)
+- Python 3.10+
+- Dependencies: `pip install -r requirements.txt`
 
-### 4.2 One-Command Verification
-To regenerate all test vectors, run the 30-suite regression, measure activity, synthesize all targets, run noise sweeps, and compile `reports/RESULTS.md`:
+### 4.2 Reproduction Flow
+Execute from repo root:
 ```bash
-make all
+make data      # Fetch MIT-BIH records into data/mitbih
+make all       # Run vectors, sim, quality, activity, synth, noise, report
+make mutation  # Run strict 21-mutant fault injection harness
 ```
+All verification summaries and hardware tables land in `reports/` (see `reports/RESULTS.md`).
 
 ### 4.3 Running Individual Phases
 - **RTL Regression:** `python3 sim/run_regression.py`
