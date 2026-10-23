@@ -1,0 +1,135 @@
+{
+  "date": "2026-10-24 03:32:03",
+  "total_mutants": 21,
+  "caught": 21,
+  "survived": 0,
+  "build_errors": 0,
+  "results": [
+    {
+      "id": "MUT01_tap_coeff",
+      "status": "CAUGHT",
+      "desc": "Tap coefficient incremented by +1",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT02_mwi_shift",
+      "status": "CAUGHT",
+      "desc": "MWI output right-shift changed from >>6 to >>5",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT03_gate_len",
+      "status": "CAUGHT",
+      "desc": "GATE_LEN reduced from 43 to 42",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT04_refract_len",
+      "status": "CAUGHT",
+      "desc": "REFRACT_LEN reduced from 72 to 70",
+      "suite": "std_fixed_101"
+    },
+    {
+      "id": "MUT05_init_thresh",
+      "status": "CAUGHT",
+      "desc": "INIT_THRESH modified from 412 to 600",
+      "suite": "startup_105_off200"
+    },
+    {
+      "id": "MUT06_init_spki",
+      "status": "CAUGHT",
+      "desc": "INIT_SPKI modified from 1500 to 1800",
+      "suite": "startup_105_off211"
+    },
+    {
+      "id": "MUT07_init_npki",
+      "status": "CAUGHT",
+      "desc": "INIT_NPKI modified from 50 to 100",
+      "suite": "std_fixed_105"
+    },
+    {
+      "id": "MUT08_decay_after",
+      "status": "CAUGHT",
+      "desc": "DECAY_AFTER reduced from 288 to 250",
+      "suite": "std_fixed_101"
+    },
+    {
+      "id": "MUT09_truncation_width",
+      "status": "CAUGHT",
+      "desc": "Approximate mode mask corrupted with non-zero offset",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT10_squarer_sat",
+      "status": "CAUGHT",
+      "desc": "Squarer 17-bit saturation removed",
+      "suite": "sat_test"
+    },
+    {
+      "id": "MUT11_acc_width",
+      "status": "CAUGHT",
+      "desc": "Accumulator corrupted to 31-bit signed dynamic range",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT12_gate_latch",
+      "status": "CAUGHT",
+      "desc": "Gate latching corrupted to stuck full",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT13_delay_line_off",
+      "status": "CAUGHT",
+      "desc": "Delay line tap indexing off by one (-2 bias)",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT14_prod_low_sign",
+      "status": "CAUGHT",
+      "desc": "Sign extension replaced by zero extension on low product",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT15_delay_valid_cnt",
+      "status": "CAUGHT",
+      "desc": "valid_cnt saturates at 47 instead of 51 taps (truncating effective taps)",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT16_delay_rd_addr_nobias",
+      "status": "CAUGHT",
+      "desc": "Delay line tap indexing offset by +1 (no -1 bias)",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT17_delay_wrptr_step",
+      "status": "CAUGHT",
+      "desc": "Sample delay line write pointer steps by 2 instead of 1",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT18_mwi_ptr_wrap",
+      "status": "CAUGHT",
+      "desc": "MWI circular buffer pointer wraps at 63 instead of 53",
+      "suite": "std_fixed_101"
+    },
+    {
+      "id": "MUT19_serial_sq_early",
+      "status": "CAUGHT",
+      "desc": "Serial squarer finishes 1 cycle early (16 cycles instead of 17)",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT20_det_valid_early",
+      "status": "CAUGHT",
+      "desc": "Detector valid_out asserted 1 cycle before serial squarer completes",
+      "suite": "smoke"
+    },
+    {
+      "id": "MUT21_detector_reset_thresh",
+      "status": "CAUGHT",
+      "desc": "Reset clears detector adaptive threshold to 0 instead of INIT_THRESH",
+      "suite": "smoke"
+    }
+  ]
+}

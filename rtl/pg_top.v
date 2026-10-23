@@ -14,11 +14,11 @@
 `timescale 1ns / 1ps
 
 module pg_top #(
-    parameter N_TAPS     = 51,
-    parameter PIPE       = 2,
-    parameter MULT_IMPL  = "LUT",
-    parameter COEFF_FILE = "coeffs.mem",
-    parameter SQ_SHIFT   = 11
+    parameter N_TAPS      = 51,
+    parameter PIPE        = 2,
+    parameter MULT_IMPL   = "LUT",
+    parameter COEFF_FILE  = "coeffs.mem",
+    parameter SQ_SHIFT    = 11
 )(
     input  wire                   clk,
     input  wire                   rst_n,
@@ -44,16 +44,9 @@ module pg_top #(
     wire [17:0] det_mwi;
     wire        det_valid;
 
-    // Instantiate QRS Detector
+    // Instantiate QRS Detector (inherits parameter defaults from qrs_detector)
     qrs_detector #(
-        .SQ_SHIFT(SQ_SHIFT),
-        .MWI_LEN(54),
-        .GATE_LEN(43),
-        .REFRACT_LEN(72),
-        .DECAY_AFTER(288),
-        .INIT_SPKI(1500),
-        .INIT_NPKI(50),
-        .INIT_THRESH(412)
+        .SQ_SHIFT(SQ_SHIFT)
     ) u_detector (
         .clk(clk),
         .rst_n(rst_n),

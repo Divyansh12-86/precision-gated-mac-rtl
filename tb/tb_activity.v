@@ -149,7 +149,11 @@ module tb_activity;
     reg [63:0] full_toggles_oph, full_toggles_opl, full_toggles_mult, full_toggles_acc;
     reg [63:0] appx_toggles_oph, appx_toggles_opl, appx_toggles_mult, appx_toggles_acc;
 
-    // Previous cycle states
+    // Whole-core tracking registers & counters
+    reg [63:0] base_toggles_dline, base_toggles_ctrl;
+    reg [63:0] auto_toggles_dline, auto_toggles_ctrl, auto_toggles_det;
+
+    // Previous cycle states - Datapath
     reg [7:0]  b_oph_q, b_opl_q;
     reg [31:0] b_mul_q, b_acc_q;
 
@@ -162,6 +166,33 @@ module tb_activity;
     reg [7:0]  p_oph_q, p_opl_q;
     reg [31:0] p_mul_q, p_acc_q;
 
+    // Previous cycle states - Whole Core (Baseline)
+    reg [5:0]  b_tidx_q;
+    reg [15:0] b_stap_q;
+    reg        b_shft_q;
+    reg [1:0]  b_st_q;
+    reg [5:0]  b_tcnt_q;
+    reg [1:0]  b_dcnt_q;
+
+    // Previous cycle states - Whole Core (Auto Gated)
+    reg [5:0]  a_tidx_q;
+    reg [15:0] a_stap_q;
+    reg        a_shft_q;
+    reg [1:0]  a_st_q;
+    reg [5:0]  a_tcnt_q;
+    reg [1:0]  a_dcnt_q;
+
+    reg [15:0] a_xd1_q, a_xd2_q;
+    reg [5:0]  a_ptr_q;
+    reg [23:0] a_mwi_acc_q;
+    reg [23:0] a_spki_q, a_npki_q, a_thresh_q;
+    reg [33:0] a_sqacc_q;
+    reg [16:0] a_sqcand_q;
+    reg [6:0]  a_refcnt_q;
+    reg [15:0] a_tsync_q;
+    reg [6:0]  a_gtcnt_q;
+    reg        a_gout_q;
+
     always @(posedge clk) begin
         if (!rst_n) begin
             base_toggles_oph <= 0; base_toggles_opl <= 0; base_toggles_mult <= 0; base_toggles_acc <= 0;
@@ -169,12 +200,26 @@ module tb_activity;
             full_toggles_oph <= 0; full_toggles_opl <= 0; full_toggles_mult <= 0; full_toggles_acc <= 0;
             appx_toggles_oph <= 0; appx_toggles_opl <= 0; appx_toggles_mult <= 0; appx_toggles_acc <= 0;
 
+            base_toggles_dline <= 0; base_toggles_ctrl <= 0;
+            auto_toggles_dline <= 0; auto_toggles_ctrl <= 0; auto_toggles_det <= 0;
+
             b_oph_q <= 0; b_opl_q <= 0; b_mul_q <= 0; b_acc_q <= 0;
             a_oph_q <= 0; a_opl_q <= 0; a_mul_q <= 0; a_acc_q <= 0;
             f_oph_q <= 0; f_opl_q <= 0; f_mul_q <= 0; f_acc_q <= 0;
             p_oph_q <= 0; p_opl_q <= 0; p_mul_q <= 0; p_acc_q <= 0;
+
+            b_tidx_q <= 0; b_stap_q <= 0; b_shft_q <= 0;
+            b_st_q <= 0; b_tcnt_q <= 0; b_dcnt_q <= 0;
+
+            a_tidx_q <= 0; a_stap_q <= 0; a_shft_q <= 0;
+            a_st_q <= 0; a_tcnt_q <= 0; a_dcnt_q <= 0;
+
+            a_xd1_q <= 0; a_xd2_q <= 0; a_ptr_q <= 0; a_mwi_acc_q <= 0;
+            a_spki_q <= 0; a_npki_q <= 0; a_thresh_q <= 0;
+            a_sqacc_q <= 0; a_sqcand_q <= 0; a_refcnt_q <= 0; a_tsync_q <= 0;
+            a_gtcnt_q <= 0; a_gout_q <= 0;
         end else begin
-            // 1. Baseline
+            // 1. Baseline Datapath
             if (base_busy) begin
                 base_toggles_oph  <= base_toggles_oph  + popcount8(u_baseline.sample_tap[15:8] ^ b_oph_q);
                 base_toggles_opl  <= base_toggles_opl  + popcount8(u_baseline.sample_tap[7:0]  ^ b_opl_q);
@@ -186,7 +231,23 @@ module tb_activity;
             b_mul_q <= u_baseline.prod_comb;
             b_acc_q <= u_baseline.y_acc;
 
-            // 2. Auto
+            // Baseline Whole Core (Dline & Ctrl)
+            base_toggles_dline <= base_toggles_dline +
+                                  popcount8({2'b0, u_baseline.tap_idx ^ b_tidx_q}) +
+                                  popcount32({16'b0, u_baseline.sample_tap ^ b_stap_q}) +
+                                  (u_baseline.shift_en ^ b_shft_q);
+            base_toggles_ctrl  <= base_toggles_ctrl +
+                                  popcount8({6'b0, u_baseline.state ^ b_st_q}) +
+                                  popcount8({2'b0, u_baseline.tap_cnt ^ b_tcnt_q}) +
+                                  popcount8({6'b0, u_baseline.drain_cnt ^ b_dcnt_q});
+            b_tidx_q <= u_baseline.tap_idx;
+            b_stap_q <= u_baseline.sample_tap;
+            b_shft_q <= u_baseline.shift_en;
+            b_st_q   <= u_baseline.state;
+            b_tcnt_q <= u_baseline.tap_cnt;
+            b_dcnt_q <= u_baseline.drain_cnt;
+
+            // 2. Auto Datapath
             if (auto_busy) begin
                 auto_toggles_oph  <= auto_toggles_oph  + popcount8(u_pg_auto.u_fir.u_mult.xh     ^ a_oph_q);
                 auto_toggles_opl  <= auto_toggles_opl  + popcount8(u_pg_auto.u_fir.u_mult.xl_eff ^ a_opl_q);
@@ -198,7 +259,53 @@ module tb_activity;
             a_mul_q <= u_pg_auto.u_fir.u_mult.prod_out;
             a_acc_q <= u_pg_auto.u_fir.u_mac.acc_out;
 
-            // 3. Full
+            // Auto Whole Core (Dline, Ctrl, Det)
+            auto_toggles_dline <= auto_toggles_dline +
+                                  popcount8({2'b0, u_pg_auto.u_fir.tap_idx ^ a_tidx_q}) +
+                                  popcount32({16'b0, u_pg_auto.u_fir.sample_tap ^ a_stap_q}) +
+                                  (u_pg_auto.u_fir.shift_en ^ a_shft_q);
+            auto_toggles_ctrl  <= auto_toggles_ctrl +
+                                  popcount8({6'b0, u_pg_auto.u_fir.state ^ a_st_q}) +
+                                  popcount8({2'b0, u_pg_auto.u_fir.tap_cnt ^ a_tcnt_q}) +
+                                  popcount8({6'b0, u_pg_auto.u_fir.drain_cnt ^ a_dcnt_q});
+            auto_toggles_det   <= auto_toggles_det +
+                                  popcount32({16'b0, u_pg_auto.u_detector.x_d1 ^ a_xd1_q}) +
+                                  popcount32({16'b0, u_pg_auto.u_detector.x_d2 ^ a_xd2_q}) +
+                                  popcount8({2'b0, u_pg_auto.u_detector.ptr ^ a_ptr_q}) +
+                                  popcount32({8'b0, u_pg_auto.u_detector.mwi_acc ^ a_mwi_acc_q}) +
+                                  popcount32({8'b0, u_pg_auto.u_detector.spki ^ a_spki_q}) +
+                                  popcount32({8'b0, u_pg_auto.u_detector.npki ^ a_npki_q}) +
+                                  popcount32({8'b0, u_pg_auto.u_detector.threshold ^ a_thresh_q}) +
+                                  popcount32(u_pg_auto.u_detector.sq_accum[31:0] ^ a_sqacc_q[31:0]) +
+                                  popcount8({6'b0, u_pg_auto.u_detector.sq_accum[33:32] ^ a_sqacc_q[33:32]}) +
+                                  popcount32({15'b0, u_pg_auto.u_detector.sq_cand ^ a_sqcand_q}) +
+                                  popcount8({1'b0, u_pg_auto.u_detector.refractory_cnt ^ a_refcnt_q}) +
+                                  popcount32({16'b0, u_pg_auto.u_detector.time_since_peak ^ a_tsync_q}) +
+                                  popcount8({1'b0, u_pg_auto.u_detector.gate_cnt ^ a_gtcnt_q}) +
+                                  (u_pg_auto.u_detector.gate_out ^ a_gout_q);
+
+            a_tidx_q <= u_pg_auto.u_fir.tap_idx;
+            a_stap_q <= u_pg_auto.u_fir.sample_tap;
+            a_shft_q <= u_pg_auto.u_fir.shift_en;
+            a_st_q   <= u_pg_auto.u_fir.state;
+            a_tcnt_q <= u_pg_auto.u_fir.tap_cnt;
+            a_dcnt_q <= u_pg_auto.u_fir.drain_cnt;
+
+            a_xd1_q     <= u_pg_auto.u_detector.x_d1;
+            a_xd2_q     <= u_pg_auto.u_detector.x_d2;
+            a_ptr_q     <= u_pg_auto.u_detector.ptr;
+            a_mwi_acc_q <= u_pg_auto.u_detector.mwi_acc;
+            a_spki_q    <= u_pg_auto.u_detector.spki;
+            a_npki_q    <= u_pg_auto.u_detector.npki;
+            a_thresh_q  <= u_pg_auto.u_detector.threshold;
+            a_sqacc_q   <= u_pg_auto.u_detector.sq_accum;
+            a_sqcand_q  <= u_pg_auto.u_detector.sq_cand;
+            a_refcnt_q  <= u_pg_auto.u_detector.refractory_cnt;
+            a_tsync_q   <= u_pg_auto.u_detector.time_since_peak;
+            a_gtcnt_q   <= u_pg_auto.u_detector.gate_cnt;
+            a_gout_q    <= u_pg_auto.u_detector.gate_out;
+
+            // 3. Full Datapath
             if (full_busy) begin
                 full_toggles_oph  <= full_toggles_oph  + popcount8(u_pg_full.u_fir.u_mult.xh     ^ f_oph_q);
                 full_toggles_opl  <= full_toggles_opl  + popcount8(u_pg_full.u_fir.u_mult.xl_eff ^ f_opl_q);
@@ -210,7 +317,7 @@ module tb_activity;
             f_mul_q <= u_pg_full.u_fir.u_mult.prod_out;
             f_acc_q <= u_pg_full.u_fir.u_mac.acc_out;
 
-            // 4. Approx
+            // 4. Approx Datapath
             if (approx_busy) begin
                 appx_toggles_oph  <= appx_toggles_oph  + popcount8(u_pg_approx.u_fir.u_mult.xh     ^ p_oph_q);
                 appx_toggles_opl  <= appx_toggles_opl  + popcount8(u_pg_approx.u_fir.u_mult.xl_eff ^ p_opl_q);
@@ -295,6 +402,16 @@ module tb_activity;
         $display("GATED_APPROX:   oph=%0d opl=%0d mult=%0d acc=%0d total=%0d",
                  appx_toggles_oph, appx_toggles_opl, appx_toggles_mult, appx_toggles_acc,
                  appx_toggles_oph + appx_toggles_opl + appx_toggles_mult + appx_toggles_acc);
+        $display("------------------------------------------------------------------");
+        $display("WHOLE-CORE ACTIVITY (Datapath + DelayLine + Control + Detector):");
+        $display("CORE_BASELINE:  dp=%0d dline=%0d ctrl=%0d det=0 core_total=%0d",
+                 (base_toggles_oph + base_toggles_opl + base_toggles_mult + base_toggles_acc),
+                 base_toggles_dline, base_toggles_ctrl,
+                 (base_toggles_oph + base_toggles_opl + base_toggles_mult + base_toggles_acc) + base_toggles_dline + base_toggles_ctrl);
+        $display("CORE_GATED_AUTO: dp=%0d dline=%0d ctrl=%0d det=%0d core_total=%0d",
+                 (auto_toggles_oph + auto_toggles_opl + auto_toggles_mult + auto_toggles_acc),
+                 auto_toggles_dline, auto_toggles_ctrl, auto_toggles_det,
+                 (auto_toggles_oph + auto_toggles_opl + auto_toggles_mult + auto_toggles_acc) + auto_toggles_dline + auto_toggles_ctrl + auto_toggles_det);
         $display("==================================================================");
 
         $display("TB_RESULT: PASS name=tb_activity samples=%0d mismatches=0", num_samples);

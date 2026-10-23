@@ -1,0 +1,417 @@
+=== tb_top smoke (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/smoke (RAND_GAP=0)
+==================================================================
+Loaded 1000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/smoke:
+  Samples tested:    1000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=1000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top smoke (rand gap) (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/smoke (RAND_GAP=1)
+==================================================================
+Loaded 1000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/smoke:
+  Samples tested:    1000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=1000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top noise_stress (T10) (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/noise_stress (RAND_GAP=0)
+==================================================================
+Loaded 5000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/noise_stress:
+  Samples tested:    5000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=5000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top std_fixed_100 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/std_fixed_100 (RAND_GAP=0)
+==================================================================
+Loaded 60000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/std_fixed_100:
+  Samples tested:    60000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=60000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top std_fixed_101 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/std_fixed_101 (RAND_GAP=0)
+==================================================================
+Loaded 60000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/std_fixed_101:
+  Samples tested:    60000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=60000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top std_fixed_103 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/std_fixed_103 (RAND_GAP=0)
+==================================================================
+Loaded 60000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/std_fixed_103:
+  Samples tested:    60000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=60000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top std_fixed_105 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/std_fixed_105 (RAND_GAP=0)
+==================================================================
+Loaded 60000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/std_fixed_105:
+  Samples tested:    60000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=60000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top std_minmax_100 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/std_minmax_100 (RAND_GAP=0)
+==================================================================
+Loaded 60000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/std_minmax_100:
+  Samples tested:    60000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=60000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top std_minmax_101 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/std_minmax_101 (RAND_GAP=0)
+==================================================================
+Loaded 60000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/std_minmax_101:
+  Samples tested:    60000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=60000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top std_minmax_103 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/std_minmax_103 (RAND_GAP=0)
+==================================================================
+Loaded 60000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/std_minmax_103:
+  Samples tested:    60000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=60000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top std_minmax_105 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/std_minmax_105 (RAND_GAP=0)
+==================================================================
+Loaded 60000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/std_minmax_105:
+  Samples tested:    60000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=60000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top_realrate smoke (277.8M cycles) (exit: 0) ===
+==================================================================
+tb_top_realrate starting on 1000 samples at 360 Hz (100 MHz clock)...
+==================================================================
+==================================================================
+tb_top_realrate summary:
+  Samples processed: 1000
+  Overflow collisions: 0
+  Mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_top_realrate samples=1000 mismatches=0
+- tb/tb_top_realrate.v:169: Verilog $finish
+
+=== tb_top_reset mid-stream reset robustness (exit: 0) ===
+Starting tb_top_reset...
+Completed 300 pre-reset samples. Asserting MID-STREAM RESET!
+Deasserted reset. Now feeding 700 post-reset samples and verifying bit-exact restart...
+Post-reset samples checked: 700, mismatches: 0
+TB_RESULT: PASS name=tb_top_reset samples=700 mismatches=0
+- tb/tb_top_reset.v:136: Verilog $finish
+
+=== tb_top startup_100_off0 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/startup_100_off0 (RAND_GAP=0)
+==================================================================
+Loaded 500 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/startup_100_off0:
+  Samples tested:    500
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=500 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top startup_103_off0 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/startup_103_off0 (RAND_GAP=0)
+==================================================================
+Loaded 500 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/startup_103_off0:
+  Samples tested:    500
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=500 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top startup_105_off200 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/startup_105_off200 (RAND_GAP=0)
+==================================================================
+Loaded 500 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/startup_105_off200:
+  Samples tested:    500
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=500 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top full_fixed_100 ( exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/full_fixed_100 (RAND_GAP=0)
+==================================================================
+Loaded 650000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/full_fixed_100:
+  Samples tested:    650000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top full_minmax_100 ( exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/full_minmax_100 (RAND_GAP=0)
+==================================================================
+Loaded 650000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/full_minmax_100:
+  Samples tested:    650000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top full_fixed_101 ( exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/full_fixed_101 (RAND_GAP=0)
+==================================================================
+Loaded 650000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/full_fixed_101:
+  Samples tested:    650000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top full_minmax_101 ( exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/full_minmax_101 (RAND_GAP=0)
+==================================================================
+Loaded 650000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/full_minmax_101:
+  Samples tested:    650000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top full_fixed_103 ( exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/full_fixed_103 (RAND_GAP=0)
+==================================================================
+Loaded 650000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/full_fixed_103:
+  Samples tested:    650000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top full_minmax_103 ( exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/full_minmax_103 (RAND_GAP=0)
+==================================================================
+Loaded 650000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/full_minmax_103:
+  Samples tested:    650000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top full_fixed_105 ( exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/full_fixed_105 (RAND_GAP=0)
+==================================================================
+Loaded 650000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/full_fixed_105:
+  Samples tested:    650000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
+=== tb_top full_minmax_105 ( exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/full_minmax_105 (RAND_GAP=0)
+==================================================================
+Loaded 650000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/full_minmax_105:
+  Samples tested:    650000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+

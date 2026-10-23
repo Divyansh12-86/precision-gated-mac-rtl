@@ -12,7 +12,7 @@ module tb_detector #(
     parameter SQ_SHIFT = 11
 );
 
-    parameter MAX_SAMPLES = 70000;
+    parameter MAX_SAMPLES = 700000;
     parameter CLK_PERIOD = 10; // 100 MHz
 
     reg clk;
@@ -39,14 +39,7 @@ module tb_detector #(
 
     // DUT
     qrs_detector #(
-        .SQ_SHIFT(SQ_SHIFT),
-        .MWI_LEN(54),
-        .GATE_LEN(43),
-        .REFRACT_LEN(72),
-        .DECAY_AFTER(288),
-        .INIT_SPKI(1500),
-        .INIT_NPKI(50),
-        .INIT_THRESH(412)
+        .SQ_SHIFT(SQ_SHIFT)
     ) dut (
         .clk(clk),
         .rst_n(rst_n),
@@ -170,9 +163,11 @@ module tb_detector #(
             @(posedge clk);
             sample_valid <= 1'b0;
 
-            // Wait 1 cycle for valid_out check
+            // Wait until detector produces valid_out
+            while (!valid_out) begin
+                @(posedge clk);
+            end
             @(posedge clk);
-            #(CLK_PERIOD * 1);
         end
 
         // Wait for final check

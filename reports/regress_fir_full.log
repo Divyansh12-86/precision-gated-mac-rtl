@@ -1,0 +1,18 @@
+=== tb_fir_full smoke (exit: 0) ===
+Loading vectors from: data/test_vectors/smoke
+Loaded 1000 samples. Starting simulation...
+TB_RESULT: PASS name=tb_fir_full samples=1000 mismatches=0
+- tb/tb_fir_full.v:171: Verilog $finish
+
+=== tb_fir_full corner (exit: 0) ===
+Loading vectors from: data/test_vectors/corner
+Loaded 1618 samples. Starting simulation...
+TB_RESULT: PASS name=tb_fir_full samples=1618 mismatches=0
+- tb/tb_fir_full.v:171: Verilog $finish
+
+=== tb_fir_full std_fixed_100 (exit: 0) ===
+Loading vectors from: data/test_vectors/std_fixed_100
+Loaded 60000 samples. Starting simulation...
+TB_RESULT: PASS name=tb_fir_full samples=60000 mismatches=0
+- tb/tb_fir_full.v:171: Verilog $finish
+

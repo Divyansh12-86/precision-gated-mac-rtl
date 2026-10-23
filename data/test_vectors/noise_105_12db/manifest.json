@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "set_name": "noise_105_12db",
+    "record_id": "105",
+    "snr_db": 12,
+    "n_samples": 5000
+  },
+  "n_samples": 5000,
+  "files": {
+    "tv_inputs.hex": "2dde3d3cf7ae43114ef463df7010e86e1ec64951175ba7fba5dae8ca0499c530",
+    "tv_gate_flags.hex": "5e2fd3e925754a7e0e5a5ae3666cd08747be0bff41360d6d854afb0ba8d21508",
+    "tv_outputs_full.hex": "2a756e2db9912e53d92c7413a5505b5c8804aa383210c5a58b08662f91149a63",
+    "tv_outputs_gated.hex": "2f769f67788f5e09f88c06f6b147aade9a8ec77e881d65bce151957e61f0c13f",
+    "tv_outputs_allapprox.hex": "7f85420c46a6494763058c15b33cc237b0e1d2caa04549d07556d8cb219a27d9",
+    "tv_peaks.hex": "a5959215d7e881f84c04651a7249a205619ab8cbfdade81ca2ab217f11987981",
+    "tv_mwi.hex": "9779f70f5f0aa97e6aecdc66c3b340cc78b111d9555220e7262c6359748b5546",
+    "coeffs.mem": "8f7b3833183f56343b955306889c34d0f908b148b8893fa9b9456a798cb67639"
+  }
+}

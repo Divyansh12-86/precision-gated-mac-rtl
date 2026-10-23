@@ -1,10 +1,13 @@
-PYTHON = .venv/bin/python3
+PYTHON ?= $(shell test -x .venv/bin/python3 && echo .venv/bin/python3 || echo python3)
 VERILATOR = verilator
 YOSYS = yosys
 
-.PHONY: all vectors sim quality activity synth report clean
+.PHONY: all data vectors sim quality activity synth noise mutation report nightly clean
 
-all: vectors sim quality activity synth report
+all: data vectors sim quality activity synth noise report
+
+data:
+	$(PYTHON) scripts/fetch_data.py
 
 vectors:
 	$(PYTHON) sim/gen_vectors.py --all
@@ -20,10 +23,19 @@ activity:
 
 synth:
 	mkdir -p reports
-	$(YOSYS) -s scripts/synth_yosys.ys | tee reports/synth_yosys.rpt
+	$(PYTHON) scripts/synth_runner.py
+
+noise:
+	$(PYTHON) sim/noise_sweep.py
+
+mutation:
+	$(PYTHON) scripts/mutation_check.py
 
 report:
 	$(PYTHON) scripts/generate_report.py
 
+nightly:
+	$(PYTHON) sim/run_regression.py --nightly
+
 clean:
-	rm -rf build/ obj_dir/ *.vvp *.vcd /tmp/tb_*
+	rm -rf build* obj_dir/ *.vvp *.vcd /tmp/tb_*

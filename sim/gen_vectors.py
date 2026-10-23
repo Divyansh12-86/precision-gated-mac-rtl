@@ -211,6 +211,25 @@ def generate_corner():
     }
     export_vector_dir(out_dir, x16, taps, gate_flags, pks, mwi, y_full, y_gated, y_allapprox, meta)
 
+def generate_sat_test():
+    out_dir = os.path.join(TV_BASE_DIR, "sat_test")
+    N = 500
+    x16_clean, _, _, _, _ = load_record_data("100", policy="fixed", max_samples=N)
+    x = np.copy(x16_clean)
+    x[200] = int(x[198]) + 16400
+
+    taps = design_fir_filter()
+    det = HardwareQRSDetectorV2(sq_shift=11)
+    gf, pks, mwi = det.detect_stream(x)
+    yf, yg, ya = run_fir_filter_vectorized(x, taps, gf)
+
+    meta = {
+        "set_name": "sat_test",
+        "record_id": "100_sat_step",
+        "description": "ECG 100 with step causing squarer 17-bit saturation"
+    }
+    export_vector_dir(out_dir, x, taps, gf, pks, mwi, yf, yg, ya, meta)
+
 def generate_noise_stress():
     out_dir = os.path.join(TV_BASE_DIR, "noise_stress")
     N = 5000
@@ -242,6 +261,19 @@ def generate_noise_stress():
     }
     export_vector_dir(out_dir, x16_noisy, taps, gf, pks, mwi, yf, yg, ya, meta)
 
+def generate_coeffs_only():
+    taps = design_fir_filter()
+    root_cm = os.path.join(BASE_DIR, "coeffs.mem")
+    with open(root_cm, "w") as f:
+        for val in taps:
+            f.write(f"{int(val) & 0xFFFF:04X}\n")
+    tv_cm = os.path.join(TV_BASE_DIR, "coeffs.mem")
+    os.makedirs(TV_BASE_DIR, exist_ok=True)
+    with open(tv_cm, "w") as f:
+        for val in taps:
+            f.write(f"{int(val) & 0xFFFF:04X}\n")
+    print(f"Generated coeffs.mem in {root_cm} and {tv_cm}")
+
 def generate_all():
     print("=== Generating smoke set ===")
     generate_smoke()
@@ -252,6 +284,9 @@ def generate_all():
     print("\n=== Generating noise stress set (T10) ===")
     generate_noise_stress()
 
+    print("\n=== Generating squarer saturation set ===")
+    generate_sat_test()
+
     print("\n=== Generating standard regression sets (60,000 samples) ===")
     for rec in ["100", "101", "103", "105"]:
         for pol in ["fixed", "minmax"]:
@@ -259,9 +294,18 @@ def generate_all():
 
     print("\nAll test vector sets generated successfully!")
 
+def generate_full():
+    print("=== Generating full-length nightly regression sets (650,000 samples) ===")
+    for rec in ["100", "101", "103", "105"]:
+        for pol in ["fixed", "minmax"]:
+            generate_record_set(rec, policy=pol, n_samples=650000, set_name=f"full_{pol}_{rec}")
+    print("\nAll full-length nightly vector sets generated successfully!")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate RTL verification test vectors")
     parser.add_argument("--all", action="store_true", help="Generate all standard vector sets")
+    parser.add_argument("--full", action="store_true", help="Generate 650,000-sample full record vector sets")
+    parser.add_argument("--coeffs-only", action="store_true", help="Generate only coeffs.mem")
     parser.add_argument("--smoke", action="store_true", help="Generate smoke test set")
     parser.add_argument("--corner", action="store_true", help="Generate corner test set")
     parser.add_argument("--record", type=str, help="Record ID (e.g. 100)")
@@ -271,7 +315,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.all:
+    if args.coeffs_only:
+        generate_coeffs_only()
+    elif args.full:
+        generate_full()
+    elif args.all:
         generate_all()
     elif args.smoke:
         generate_smoke()

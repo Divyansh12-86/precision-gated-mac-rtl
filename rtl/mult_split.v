@@ -1,13 +1,15 @@
 // =============================================================================
 // Module: mult_split
-// Description: Precision-scalable approximable multiplier with operand isolation.
+// Description: Precision-scalable approximable multiplier with operand isolation
+//              and clock-enable gating.
 //              Splits 16-bit operand x into:
 //                xh = x[15:8] (signed 8-bit)
 //                xl = x[7:0]  (unsigned 8-bit)
 //              Identity: x * h = ((xh * h) << 8) + (xl * h).
 //              In Approximate Mode (mode_approx = 1):
 //                xl is forced to 0 (operand isolation).
-//                The low-part multiplier logic is clock-enable gated.
+//                The low-part multiplier register is clock-enable gated (holds value).
+//                Stage 2 adder masks held low product with 0.
 //                Product equals ((x >> 8) << 8) * h bit-exactly.
 //              Parameters:
 //                MULT_IMPL: "LUT" (uses (* use_dsp = "no" *)) or "DSP"
@@ -38,13 +40,25 @@ module mult_split #(
     wire [7:0] xl_eff = mode_approx ? 8'h00 : xl_raw;
     wire signed [8:0] xl_signed = {1'b0, xl_eff}; // zero-extended 9-bit signed
 
-    // Full 24-bit products
-    // xh (8s) * h (16s) -> 24s
-    // xl (8u) * h (16s) -> 24s
-    wire signed [23:0] prod_high_comb = xh * h_in;
-    wire signed [24:0] prod_low_comb  = xl_signed * h_in; // 9s * 16s -> 25s
+    // Full products with literal (* use_dsp *) attributes inside generate branches
+    wire signed [23:0] prod_high_comb;
+    wire signed [24:0] prod_low_comb;
 
-    // Combined 32-bit product
+    generate
+        if (MULT_IMPL == "DSP") begin : g_mult_dsp
+            (* use_dsp = "yes" *) wire signed [23:0] ph = xh * h_in;
+            (* use_dsp = "yes" *) wire signed [24:0] pl = xl_signed * h_in;
+            assign prod_high_comb = ph;
+            assign prod_low_comb  = pl;
+        end else begin : g_mult_lut
+            (* use_dsp = "no" *)  wire signed [23:0] ph = xh * h_in;
+            (* use_dsp = "no" *)  wire signed [24:0] pl = xl_signed * h_in;
+            assign prod_high_comb = ph;
+            assign prod_low_comb  = pl;
+        end
+    endgenerate
+
+    // Combined 32-bit product (combinational for PIPE=1)
     wire signed [31:0] prod_comb = ({{8{prod_high_comb[23]}}, prod_high_comb} <<< 8) +
                                    (mode_approx ? 32'sd0 : {{7{prod_low_comb[24]}}, prod_low_comb});
 
@@ -77,11 +91,9 @@ module mult_split #(
                     val_r1    <= 1'b0;
                 end else if (enable) begin
                     p_high_r1 <= prod_high_comb;
-                    // Clock-enable gating: low multiplier registers only update when in full mode
+                    // Clock-enable gating: low multiplier register only updates in full mode (holds in approx)
                     if (!mode_approx) begin
                         p_low_r1  <= prod_low_comb;
-                    end else begin
-                        p_low_r1  <= 25'sd0;
                     end
                     approx_r1 <= mode_approx;
                     val_r1    <= valid_in;
@@ -120,7 +132,9 @@ module mult_split #(
                     val_r1    <= 1'b0;
                 end else if (enable) begin
                     xh_r1     <= xh;
-                    xl_r1     <= mode_approx ? 9'sd0 : xl_signed;
+                    if (!mode_approx) begin
+                        xl_r1 <= xl_signed;
+                    end
                     h_r1      <= h_in;
                     approx_r1 <= mode_approx;
                     val_r1    <= valid_in;
@@ -145,8 +159,6 @@ module mult_split #(
                     p_high_r2 <= xh_r1 * h_r1;
                     if (!approx_r1) begin
                         p_low_r2  <= xl_r1 * h_r1;
-                    end else begin
-                        p_low_r2  <= 25'sd0;
                     end
                     approx_r2 <= approx_r1;
                     val_r2    <= val_r1;
@@ -155,7 +167,7 @@ module mult_split #(
                 end
             end
 
-            // Stage 3: accumulation / summation
+            // Stage 3: addition and final product register
             always @(posedge clk) begin
                 if (!rst_n) begin
                     prod_out  <= 32'sd0;

@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "set_name": "sat_test",
+    "record_id": "100_sat_step",
+    "description": "ECG 100 with step causing squarer 17-bit saturation"
+  },
+  "n_samples": 500,
+  "files": {
+    "tv_inputs.hex": "f5ca7e7ad323275a45cac1b57ea710037e7d99b693a7332e1cf723f206125fc4",
+    "tv_gate_flags.hex": "c82080196bd3073d183ade20bb11938050066fe8047da96687de2daf6e4e975c",
+    "tv_outputs_full.hex": "c66e61c9b8cd776dc600c62e404bd064cbce8d73a7d5ea62c5fcb8887577a1f6",
+    "tv_outputs_gated.hex": "19b8b81b57ee7b47b7a651af88b5e5267e7121e0fa1b29440a4bbe4bc0044591",
+    "tv_outputs_allapprox.hex": "addac7a5f9f3377741156f51f7a92c45f71871d4a1879e1909c29c06af176bf6",
+    "tv_peaks.hex": "cd654bdd6840889c673cb218aac3c850af4c564309d93642f9c4db7829d2aeb5",
+    "tv_mwi.hex": "fead94726d94a8a0fc3fe933eefda4c9972c4caaab14fe3989e931880f9798c1",
+    "coeffs.mem": "8f7b3833183f56343b955306889c34d0f908b148b8893fa9b9456a798cb67639"
+  }
+}

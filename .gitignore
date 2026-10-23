@@ -2,8 +2,8 @@
 __pycache__/
 *.py[cod]
 *.pyo
-.venv/
-venv/
+.venv
+venv
 *.egg-info/
 dist/
 build/
@@ -12,13 +12,14 @@ slides/
 data/mitbih/
 data/mitbih_full/
 data/nstdb/
+data/test_vectors/full_*/
+data/test_vectors/ext_*/
 
 # ── Simulation & Build Artifacts ──────────────────────────────────────────────
 *.vvp
 *.vcd
 obj_dir/
 build*/
-coeffs.mem
 
 # ── Jupyter ───────────────────────────────────────────────────────────────────
 .ipynb_checkpoints/
@@ -36,6 +37,7 @@ coeffs.mem
 *.bit
 *.ltx
 *.log
+!reports/*.log
 *.jou
 *.str
 *.mcs

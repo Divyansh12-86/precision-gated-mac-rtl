@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "set_name": "noise_100_6db",
+    "record_id": "100",
+    "snr_db": 6,
+    "n_samples": 5000
+  },
+  "n_samples": 5000,
+  "files": {
+    "tv_inputs.hex": "444ae7be1d5b0062fe55ac39b2f06580889d4b558092eaa64feae348f5dd7830",
+    "tv_gate_flags.hex": "c3459bdf66551659f3a61f23b26c24714bd413a007f8566de80e1b01beef3c65",
+    "tv_outputs_full.hex": "251da72fcc945e3f8bdf9bc7c81517ad2daf5eeb0315f4c7a0c5b0ad65e0ee7e",
+    "tv_outputs_gated.hex": "7a873db2a0dbd1f7cea688274eb1e09dc8305447a1a8a637b80e1fdf33348d8b",
+    "tv_outputs_allapprox.hex": "4b350d1d3a938005db5b9223c3bda91082b41d089bb153395034acf0fd4c1bbb",
+    "tv_peaks.hex": "40307c282fa5a96e8b3903affd19b7ad19d0b8008ae7c5edb0acfe2cdbb75f76",
+    "tv_mwi.hex": "960180d429f6e0fc7ada63961a24970cff26d6327811f58a9d89361089f0bfad",
+    "coeffs.mem": "8f7b3833183f56343b955306889c34d0f908b148b8893fa9b9456a798cb67639"
+  }
+}

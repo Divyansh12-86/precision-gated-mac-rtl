@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "set_name": "startup_100_off1000",
+    "record_id": "100",
+    "offset": 1000,
+    "n_samples": 500,
+    "purpose": "Start-up transient and reset threshold verification"
+  },
+  "n_samples": 500,
+  "files": {
+    "tv_inputs.hex": "f42ad31a63d4bd47732b92b9ec64d56138616a1188752a4350fb92ba7d7a6507",
+    "tv_gate_flags.hex": "f581f6303bf0095f3fea4f17bb8ad1d0b2a86c0aa6ec8bae665509a99906d5a2",
+    "tv_outputs_full.hex": "c7d560ec19d1eaaf6a48c6092ec6d29807698ddf83770a2d134955c17fe060c3",
+    "tv_outputs_gated.hex": "5cd398c2862a08deb33bba10334e78a48b919a89e900a7fcc9eebdc7a8f5a03a",
+    "tv_outputs_allapprox.hex": "e9959bd0e801ce7ee202b72957de5475da7ad091a87414a86f6a482ed229397c",
+    "tv_peaks.hex": "9a4584c1c33b442880000a14e7294eedd17a0a5405398967de586ba7cc477d91",
+    "tv_mwi.hex": "174c651a1a860e6c61c1b99926e3d6ad4bc69a58769a56311bf8df9c532dcf88",
+    "coeffs.mem": "8f7b3833183f56343b955306889c34d0f908b148b8893fa9b9456a798cb67639"
+  }
+}

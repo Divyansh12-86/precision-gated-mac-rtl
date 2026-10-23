@@ -98,6 +98,14 @@ module tb_mult;
                     $display("FAIL P3 at %0t: act=%d exp=%d", $time, prod_p3, exp_pipe[3]);
                 end
             end
+
+            // Phase 3 Step 4 Assertion: in approximate mode, low operand bus xl_eff must be strictly 8'h00
+            if (mode_approx && valid_in) begin
+                if (dut_p1.xl_eff !== 8'h00 || dut_p2.xl_eff !== 8'h00 || dut_p3.xl_eff !== 8'h00) begin
+                    $display("FAIL: Low-part multiplier input bus xl_eff not clamped to 0 in approximate mode!");
+                    mismatches = mismatches + 1;
+                end
+            end
         end
     end
 

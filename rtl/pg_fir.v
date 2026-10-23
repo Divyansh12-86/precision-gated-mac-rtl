@@ -109,8 +109,8 @@ module pg_fir #(
     always @(posedge clk) begin
         if (!rst_n) begin
             state           <= STATE_IDLE;
-            tap_cnt         <= '0;
-            drain_cnt       <= '0;
+            tap_cnt         <= 0;
+            drain_cnt       <= 0;
             mode_approx_q   <= 1'b0;
             shift_en        <= 1'b0;
             mult_valid_in   <= 1'b0;
@@ -129,7 +129,7 @@ module pg_fir #(
                     if (sample_valid) begin
                         shift_en      <= 1'b1; // Shift in new sample x_in
                         mode_approx_q <= ~eff_gate; // Latch mode for all 51 taps
-                        tap_cnt       <= '0;
+                        tap_cnt       <= 0;
                         mult_valid_in <= 1'b1;
                         state         <= STATE_COMPUTE;
                     end
@@ -139,7 +139,7 @@ module pg_fir #(
                     // Feeding taps 0 to N_TAPS-1 into multiplier
                     if (tap_cnt == N_TAPS - 1) begin
                         mult_valid_in <= 1'b0; // All 51 taps fed
-                        drain_cnt     <= '0;
+                        drain_cnt     <= 0;
                         state         <= STATE_DRAIN;
                     end else begin
                         tap_cnt <= tap_cnt + 1'b1;

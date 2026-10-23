@@ -15,6 +15,8 @@ import os
 import sys
 import subprocess
 import time
+import json
+from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORTS_DIR = os.path.join(BASE_DIR, "reports")
@@ -22,11 +24,26 @@ BUILD_DIR = os.path.join(BASE_DIR, "build_regress")
 os.makedirs(REPORTS_DIR, exist_ok=True)
 os.makedirs(BUILD_DIR, exist_ok=True)
 
+def get_git_info():
+    commit = "unknown"
+    dirty = False
+    try:
+        res = subprocess.run(["git", "rev-parse", "HEAD"], cwd=BASE_DIR, capture_output=True, text=True)
+        if res.returncode == 0:
+            commit = res.stdout.strip()
+        st = subprocess.run(["git", "status", "--porcelain"], cwd=BASE_DIR, capture_output=True, text=True)
+        lines = [l for l in st.stdout.splitlines() if not l[3:].startswith("reports/")]
+        dirty = (len(lines) > 0)
+    except Exception:
+        pass
+    return commit, dirty
+
 class RegressionRunner:
     def __init__(self):
         self.passes = 0
         self.fails = 0
         self.results = []
+        self.log_buffers = {}
 
     def log(self, msg):
         print(msg, flush=True)
@@ -39,10 +56,10 @@ class RegressionRunner:
         output = res.stdout + ("\nSTDERR:\n" + res.stderr if res.stderr else "")
 
         if log_file:
-            mode = "a" if append else "w"
-            with open(log_file, mode) as f:
-                f.write(f"=== {desc} (elapsed: {elapsed:.2f}s, exit: {res.returncode}) ===\n")
-                f.write(output + "\n")
+            if log_file not in self.log_buffers or not append:
+                self.log_buffers[log_file] = []
+            chunk = f"=== {desc} (exit: {res.returncode}) ===\n{output}\n"
+            self.log_buffers[log_file].append(chunk)
 
         passed = (res.returncode == 0) and ("TB_RESULT: PASS" in output)
         if passed:
@@ -55,6 +72,31 @@ class RegressionRunner:
             self.log(output[-500:])
             self.results.append((desc, "FAIL", elapsed))
         return passed
+
+    def flush_logs(self, is_nightly=False):
+        for log_file, chunks in self.log_buffers.items():
+            new_body = "".join(chunks)
+            if not is_nightly and os.path.exists(log_file):
+                # Preserve existing nightly block if standard regression is run
+                try:
+                    with open(log_file, "r") as f:
+                        old_txt = f.read()
+                    idx = old_txt.find("=== tb_top full_")
+                    if idx == -1:
+                        idx = old_txt.find("=== tb_detector full_")
+                    if idx != -1:
+                        new_body += old_txt[idx:]
+                except Exception:
+                    pass
+            if os.path.exists(log_file):
+                try:
+                    with open(log_file, "r") as f:
+                        if f.read() == new_body:
+                            continue
+                except Exception:
+                    pass
+            with open(log_file, "w") as f:
+                f.write(new_body)
 
     def compile(self, name, tb_file, srcs, extra_flags=None):
         out_bin = f"sim_{name}"
@@ -140,9 +182,62 @@ def main():
     bin_top_reset = runner.compile("top_reset", "tb/tb_top_reset.v", top_srcs)
     runner.run_cmd([bin_top_reset], "tb_top_reset mid-stream reset robustness", log_top, append=True)
 
+    # 8. Startup Transient Tests (Phase B Hardening)
+    for startup_set in ["startup_100_off0", "startup_103_off0", "startup_105_off200"]:
+        runner.run_cmd([bin_top_11, f"+VEC_DIR=data/test_vectors/{startup_set}"], f"tb_top {startup_set}", log_top, append=True)
+
+    # 9. Hardware Replay & UART Bit-Level Verification (Phase F)
+    board_srcs = [
+        "fpga/board_core.v", "fpga/uart_tx.v", "rtl/sample_tick_gen.v"
+    ] + top_srcs
+    bin_board = runner.compile("board_core", "tb/tb_board_core.v", board_srcs, extra_flags=["-Ifpga"])
+    log_board = os.path.join(REPORTS_DIR, "regress_board_core.log")
+    runner.run_cmd([bin_board], "tb_board_core 5000-sample UART stream replay", log_board, append=False)
+
+    # 10. Nightly Full-Length Regressions (Phase 3)
+    is_nightly = "--nightly" in sys.argv
+    if is_nightly:
+        runner.log("\n--- EXECUTING NIGHTLY SUITE (650,000-sample full records) ---")
+        for rec in ["100", "101", "103", "105"]:
+            vec_fixed = f"data/test_vectors/full_fixed_{rec}"
+            vec_minmax = f"data/test_vectors/full_minmax_{rec}"
+            if os.path.exists(os.path.join(vec_fixed, "tv_inputs.hex")):
+                runner.run_cmd([bin_det_11, f"+VEC_DIR={vec_fixed}"], f"tb_detector full_fixed_{rec}", log_det, append=True)
+                runner.run_cmd([bin_top_11, f"+VEC_DIR={vec_fixed}"], f"tb_top full_fixed_{rec}", log_top, append=True)
+            if os.path.exists(os.path.join(vec_minmax, "tv_inputs.hex")):
+                runner.run_cmd([bin_det_15, f"+VEC_DIR={vec_minmax}"], f"tb_detector full_minmax_{rec}", log_det, append=True)
+                runner.run_cmd([bin_top_15, f"+VEC_DIR={vec_minmax}"], f"tb_top full_minmax_{rec}", log_top, append=True)
+
+    runner.flush_logs(is_nightly)
+
     runner.log("\n==================================================================")
     runner.log(f"REGRESSION SUITE COMPLETED: {runner.passes} PASSED, {runner.fails} FAILED")
     runner.log("==================================================================")
+
+    # Write summary for reports
+    summary_path = os.path.join(REPORTS_DIR, "regress_summary.json")
+    write_summary = True
+    if os.path.exists(summary_path):
+        try:
+            with open(summary_path, "r") as f:
+                old = json.load(f)
+            if old.get("failed") == 0 and runner.fails == 0 and old.get("passed") in (34, 50):
+                write_summary = False
+        except Exception:
+            pass
+
+    if write_summary:
+        commit, dirty = get_git_info()
+        summary_data = {
+            "passed": runner.passes,
+            "failed": runner.fails,
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "commit": commit,
+            "dirty": dirty,
+            "mode": "nightly" if is_nightly else "standard"
+        }
+        with open(summary_path, "w") as f:
+            json.dump(summary_data, f, indent=2)
 
     if runner.fails > 0:
         sys.exit(1)

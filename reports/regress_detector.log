@@ -1,0 +1,324 @@
+=== tb_detector smoke (exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/smoke
+==================================================================
+Loaded 1000 samples. Starting simulation...
+First QRS peak confirmed at sample 88 (time 0.24 s)
+==================================================================
+tb_detector summary for data/test_vectors/smoke:
+  Samples tested: 1000
+  First peak index: 88
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=1000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector noise_stress (T10) (exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/noise_stress
+==================================================================
+Loaded 5000 samples. Starting simulation...
+First QRS peak confirmed at sample 20 (time 0.06 s)
+==================================================================
+tb_detector summary for data/test_vectors/noise_stress:
+  Samples tested: 5000
+  First peak index: 20
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=5000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector std_fixed_100 (exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/std_fixed_100
+==================================================================
+Loaded 60000 samples. Starting simulation...
+First QRS peak confirmed at sample 88 (time 0.24 s)
+==================================================================
+tb_detector summary for data/test_vectors/std_fixed_100:
+  Samples tested: 60000
+  First peak index: 88
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=60000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector std_fixed_101 (exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/std_fixed_101
+==================================================================
+Loaded 60000 samples. Starting simulation...
+First QRS peak confirmed at sample 92 (time 0.26 s)
+==================================================================
+tb_detector summary for data/test_vectors/std_fixed_101:
+  Samples tested: 60000
+  First peak index: 92
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=60000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector std_fixed_103 (exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/std_fixed_103
+==================================================================
+Loaded 60000 samples. Starting simulation...
+First QRS peak confirmed at sample 266 (time 0.74 s)
+==================================================================
+tb_detector summary for data/test_vectors/std_fixed_103:
+  Samples tested: 60000
+  First peak index: 266
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=60000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector std_fixed_105 (exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/std_fixed_105
+==================================================================
+Loaded 60000 samples. Starting simulation...
+First QRS peak confirmed at sample 217 (time 0.60 s)
+==================================================================
+tb_detector summary for data/test_vectors/std_fixed_105:
+  Samples tested: 60000
+  First peak index: 217
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=60000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector std_minmax_100 (exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/std_minmax_100
+==================================================================
+Loaded 60000 samples. Starting simulation...
+First QRS peak confirmed at sample 78 (time 0.22 s)
+==================================================================
+tb_detector summary for data/test_vectors/std_minmax_100:
+  Samples tested: 60000
+  First peak index: 78
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=60000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector std_minmax_101 (exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/std_minmax_101
+==================================================================
+Loaded 60000 samples. Starting simulation...
+First QRS peak confirmed at sample 92 (time 0.26 s)
+==================================================================
+tb_detector summary for data/test_vectors/std_minmax_101:
+  Samples tested: 60000
+  First peak index: 92
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=60000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector std_minmax_103 (exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/std_minmax_103
+==================================================================
+Loaded 60000 samples. Starting simulation...
+First QRS peak confirmed at sample 2 (time 0.01 s)
+==================================================================
+tb_detector summary for data/test_vectors/std_minmax_103:
+  Samples tested: 60000
+  First peak index: 2
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=60000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector std_minmax_105 (exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/std_minmax_105
+==================================================================
+Loaded 60000 samples. Starting simulation...
+First QRS peak confirmed at sample 2 (time 0.01 s)
+==================================================================
+tb_detector summary for data/test_vectors/std_minmax_105:
+  Samples tested: 60000
+  First peak index: 2
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=60000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector full_fixed_100 ( exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/full_fixed_100
+==================================================================
+Loaded 650000 samples. Starting simulation...
+First QRS peak confirmed at sample 88 (time 0.24 s)
+==================================================================
+tb_detector summary for data/test_vectors/full_fixed_100:
+  Samples tested: 650000
+  First peak index: 88
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector full_minmax_100 ( exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/full_minmax_100
+==================================================================
+Loaded 650000 samples. Starting simulation...
+First QRS peak confirmed at sample 33701 (time 93.61 s)
+==================================================================
+tb_detector summary for data/test_vectors/full_minmax_100:
+  Samples tested: 650000
+  First peak index: 33701
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector full_fixed_101 ( exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/full_fixed_101
+==================================================================
+Loaded 650000 samples. Starting simulation...
+First QRS peak confirmed at sample 92 (time 0.26 s)
+==================================================================
+tb_detector summary for data/test_vectors/full_fixed_101:
+  Samples tested: 650000
+  First peak index: 92
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector full_minmax_101 ( exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/full_minmax_101
+==================================================================
+Loaded 650000 samples. Starting simulation...
+First QRS peak confirmed at sample 73010 (time 202.81 s)
+==================================================================
+tb_detector summary for data/test_vectors/full_minmax_101:
+  Samples tested: 650000
+  First peak index: 73010
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector full_fixed_103 ( exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/full_fixed_103
+==================================================================
+Loaded 650000 samples. Starting simulation...
+First QRS peak confirmed at sample 266 (time 0.74 s)
+==================================================================
+tb_detector summary for data/test_vectors/full_fixed_103:
+  Samples tested: 650000
+  First peak index: 266
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector full_minmax_103 ( exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/full_minmax_103
+==================================================================
+Loaded 650000 samples. Starting simulation...
+First QRS peak confirmed at sample 584 (time 1.62 s)
+==================================================================
+tb_detector summary for data/test_vectors/full_minmax_103:
+  Samples tested: 650000
+  First peak index: 584
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector full_fixed_105 ( exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/full_fixed_105
+==================================================================
+Loaded 650000 samples. Starting simulation...
+First QRS peak confirmed at sample 217 (time 0.60 s)
+==================================================================
+tb_detector summary for data/test_vectors/full_fixed_105:
+  Samples tested: 650000
+  First peak index: 217
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
+=== tb_detector full_minmax_105 ( exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/full_minmax_105
+==================================================================
+Loaded 650000 samples. Starting simulation...
+First QRS peak confirmed at sample 434890 (time 1208.03 s)
+==================================================================
+tb_detector summary for data/test_vectors/full_minmax_105:
+  Samples tested: 650000
+  First peak index: 434890
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+

@@ -17,7 +17,7 @@ module tb_top #(
     parameter SQ_SHIFT = 11
 );
 
-    parameter MAX_SAMPLES = 70000;
+    parameter MAX_SAMPLES = 700000;
     parameter CLK_PERIOD = 10; // 100 MHz
 
     reg clk;
@@ -91,6 +91,11 @@ module tb_top #(
                 if (expected_latency == -1) begin
                     expected_latency = cycles_since_valid;
                     $display("Measured constant pipeline latency: %0d cycles", expected_latency);
+                    if (expected_latency !== 73) begin
+                        $display("SPEC VIOLATION: Pipeline latency %0d != 73 cycles", expected_latency);
+                        latency_errors = latency_errors + 1;
+                        total_mismatches = total_mismatches + 1;
+                    end
                 end else if (cycles_since_valid !== expected_latency) begin
                     latency_errors = latency_errors + 1;
                     $display("LATENCY ERROR at out_idx %0d: was %0d, expected %0d",
@@ -128,7 +133,7 @@ module tb_top #(
 
     // Watchdog timer (prevents runaway if simulation ever hangs)
     initial begin
-        #(CLK_PERIOD * 50000000); // 500 ms limit
+        #(CLK_PERIOD * 200000000); // 200M cycles limit (~2s sim)
         $display("FATAL: Testbench watchdog timeout reached!");
         $finish(1);
     end

@@ -1,0 +1,20 @@
+=== tb_board_core 5000-sample UART stream replay (exit: 0) ===
+==================================================================
+STARTING tb_board_core (Bit-Level UART ECG Replay Verification)
+==================================================================
+  Verified 1000 / 5000 frames over UART stream...
+  Verified 2000 / 5000 frames over UART stream...
+  Verified 3000 / 5000 frames over UART stream...
+  Verified 4000 / 5000 frames over UART stream...
+  Verified 5000 / 5000 frames over UART stream...
+==================================================================
+tb_board_core Summary:
+  Frames decoded:    5000
+  Preamble errors:   0
+  Checksum errors:   0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+==================================================================
+TB_RESULT: PASS name=tb_board_core samples=5000 mismatches=0
+- tb/tb_board_core.v:197: Verilog $finish
+

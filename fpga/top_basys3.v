@@ -1,98 +1,61 @@
 // =============================================================================
 // Module: top_basys3
-// Description: FPGA Board Top-Level for Digilent Basys3 (Artix-7 xc7a35tcpg236-1).
-//              Connects pg_top to board peripherals:
-//                - clk: 100 MHz onboard oscillator
-//                - btnC: System reset (active high button -> active low rst_n)
-//                - sw[1:0]: Mode select (00: Auto Gating, 01: Force Full, 10: Force Approx)
-//                - led[0]: gate_out (Full precision active window indicator)
-//                - led[1]: peak_pulse (QRS peak pulse indicator)
-//                - led[2]: busy flag
-//                - led[15:8]: filtered output high byte monitor
+// Description: Clean Verilog-2001 wrapper for Digilent Basys 3 (Artix-7 xc7a35tcpg236-1).
+//              Instantiates unified board_core without extraneous internal logic.
+//              Pins:
+//                - clk: 100 MHz onboard oscillator (W5)
+//                - btnC: Pushbutton reset (U18, active high -> active low rst_n)
+//                - sw[1:0]: Mode select (00=Auto, 01=Force Full, 10=Force Approx)
+//                - sw[2]: Playback pause switch
+//                - RsTx: UART serial stream out to PC (A18, 115200 8N1)
+//                - led[0]: Gate active indicator
+//                - led[1]: QRS peak pulse indicator
+//                - led[2]: Filter busy indicator
+//                - led[3]: System heartbeat (0.74 Hz)
+//                - led[15:8]: Filtered ECG MSB monitor
 // =============================================================================
 `timescale 1ns / 1ps
 
 module top_basys3 (
     input  wire        clk,
-    input  wire        btnC,        // Center button: reset
-    input  wire [1:0]  sw,          // Switches: mode_force
-    output wire [15:0] led          // LEDs
+    input  wire        btnC,   // Active-high reset button
+    input  wire [2:0]  sw,     // sw[1:0]=mode_force, sw[2]=pause
+    output wire        RsTx,   // UART TX output (pin A18)
+    output wire [15:0] led     // Diagnostic LEDs
 );
 
     wire rst_n = ~btnC;
-    wire sample_tick;
-    reg signed [15:0] test_sample;
+    wire led_gate;
+    wire led_peak;
+    wire led_busy;
+    wire led_heartbeat;
+    wire [7:0] led_y_msb;
 
-    // 360 Hz sample tick generator from 100 MHz clock
-    sample_tick_gen #(
+    board_core #(
         .CLK_HZ(100_000_000),
-        .FS(360)
-    ) u_tick (
+        .FS(360),
+        .BAUD(115_200),
+        .ROM_FILE("ecg_rom.mem"),
+        .ROM_DEPTH(60_000),
+        .FAST_TICK(0)
+    ) u_core (
         .clk(clk),
         .rst_n(rst_n),
-        .enable(1'b1),
-        .tick(sample_tick)
+        .sw_mode_force(sw[1:0]),
+        .sw_pause(sw[2]),
+        .uart_txd(RsTx),
+        .led_gate(led_gate),
+        .led_peak(led_peak),
+        .led_busy(led_busy),
+        .led_heartbeat(led_heartbeat),
+        .led_y_msb(led_y_msb)
     );
 
-    // Simple test stimulus counter when running standalone
-    always @(posedge clk) begin
-        if (!rst_n) begin
-            test_sample <= 16'sd0;
-        end else if (sample_tick) begin
-            test_sample <= test_sample + 16'sd17;
-        end
-    end
-
-    wire y_valid;
-    wire signed [31:0] y_acc;
-    wire gate_out;
-    wire peak_pulse;
-    wire [17:0] mwi_dbg;
-    wire busy;
-
-    // Instantiate Precision-Gated Core
-    pg_top #(
-        .N_TAPS(51),
-        .PIPE(2),
-        .MULT_IMPL("LUT"),
-        .COEFF_FILE("coeffs.mem"),
-        .SQ_SHIFT(11)
-    ) u_pg_top (
-        .clk(clk),
-        .rst_n(rst_n),
-        .sample_valid(sample_tick),
-        .x_in(test_sample),
-        .mode_force(sw[1:0]),
-        .y_valid(y_valid),
-        .y_acc(y_acc),
-        .gate_out(gate_out),
-        .peak_pulse(peak_pulse),
-        .mwi_dbg(mwi_dbg),
-        .busy(busy)
-    );
-
-    // Stretch pulses for human eye visibility (~50 ms)
-    reg [22:0] peak_stretch_cnt;
-    reg [22:0] gate_stretch_cnt;
-
-    always @(posedge clk) begin
-        if (!rst_n) begin
-            peak_stretch_cnt <= '0;
-            gate_stretch_cnt <= '0;
-        end else begin
-            if (peak_pulse) peak_stretch_cnt <= 23'd5_000_000;
-            else if (peak_stretch_cnt > 0) peak_stretch_cnt <= peak_stretch_cnt - 1'b1;
-
-            if (gate_out) gate_stretch_cnt <= 23'd5_000_000;
-            else if (gate_stretch_cnt > 0) gate_stretch_cnt <= gate_stretch_cnt - 1'b1;
-        end
-    end
-
-    assign led[0]    = (gate_stretch_cnt > 0);
-    assign led[1]    = (peak_stretch_cnt > 0);
-    assign led[2]    = busy;
-    assign led[3]    = y_valid;
+    assign led[0]    = led_gate;
+    assign led[1]    = led_peak;
+    assign led[2]    = led_busy;
+    assign led[3]    = led_heartbeat;
     assign led[7:4]  = 4'b0000;
-    assign led[15:8] = y_acc[23:16]; // Monitored bits
+    assign led[15:8] = led_y_msb;
 
 endmodule

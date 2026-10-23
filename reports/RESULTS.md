@@ -1,120 +1,130 @@
-# Verification & Characterization Report: Precision-Gated Approximate-MAC ECG FIR Filter (`pg_top`)
+# Characterization & Verification Report: Precision-Gated Approximate-MAC ECG Filter
 
-**Date:** 2026-10-21 10:23:00  
-**Git Commit:** `b045caccc1ff8177a6dbe8e71ec7b684becc8738`  
+**Date:** 2026-10-24 03:48:58  
+**Source Commit:** `7dbeed32ea5bd55fd108c95bdf0a3529469bf41d` (code tree clean: no)  
 **Environment:** Linux x86_64, Python 3.12, Verilator 5.020, Yosys 0.33  
+**Regression Status:** 50 tests executed, 0 failed across all suites  
+**Mutation Harness:** 21/21 mandatory mutants caught, 0 survived  
 
 ---
 
-## 1. Executive Summary & Exit Criteria Checklist (G1–G9)
+## 1. Acceptance & Exit Criteria Checklist (H1–H10)
 
-All 9 primary deliverables and exit criteria defined in `RTL_SIM_AGENT_GUIDE.md` Section 1.1 have been achieved and verified with zero discrepancies against the bit-exact Python golden model v2.
-
-| ID | Criterion | Evidence File | Pass Condition | Status |
+| ID | Criterion | Evidence File | Status | Notes |
 |---|---|---|---|---|
-| **G1** | Exact FIR bit-exact | `reports/regress_fir_full.log` | `mismatches=0` on smoke, corner, std | **PASS** |
-| **G2** | Gated FIR bit-exact (gate supplied from file) | `reports/regress_fir_gated.log` | `mismatches=0` on dynamic and forced modes | **PASS** |
-| **G3** | RTL detector bit-exact to detector-v2 model | `reports/regress_detector.log` | Bit-exact flags, peaks, MWI across 8 suites (4 rec × 2 policies) | **PASS** |
-| **G4** | End-to-end `pg_top` bit-exact to golden v2 | `reports/regress_top.log` | `mismatches=0` on 8 suites (480k samples) + real-rate & reset | **PASS** |
-| **G5** | Functional quality of precision gating | `reports/results.json`, `reports/RESULTS.md` | QRS PRD ≤ 0.6%, ≥2× below all-approx; SNR > 26 dB | **PASS** |
-| **G6** | Switching activity reduction on RTL | `reports/activity.json` | Gated < exact; low-multiplier toggle reduction ≥ 70% (achieved 82.07%) | **PASS** |
-| **G7** | Board-independent synthesis | `reports/synth_yosys.rpt` | 0 vendor primitives; synth on 3 parts (xc7, xcu, xc6s); 0 DSP in LUT mode | **PASS** |
-| **G8** | One-command reproducibility | `Makefile` (`make all`) | Runs vector generation, regression, quality, activity, synth, report | **PASS** |
-| **G9** | Honest write-up & clinical caveats | `reports/RESULTS.md` | Explicit disclosure of replay data, power proxy vs silicon | **PASS** |
+| **H1** | Clean clone -> `make all` | `Makefile`, `reports/` | **PASS** | Complete pipeline reproducible |
+| **H2** | 0 failures across all TBs | `reports/regress_*.log` | **PASS** | 0 mismatches against Golden Model v2 |
+| **H3** | Mutation coverage | `reports/mutation.json` | **PASS** | 21/21 mandatory mutants caught |
+| **H4** | Same-mode area target | `reports/synth.json` | **PASS** | pg_top LUTs <= 1500, FFs <= 800 met |
+| **H5** | Whole-core & datapath activity | `reports/activity.json` | **PASS** | Evaluated on 6 sets unweighted |
+| **H6** | Timing & power | `reports/synth.json` | **NOT RUN** | Vivado absent; OOC script provided in scripts/ |
+| **H7** | Board wrappers & UART replay | `tb_board_core.v`, `top_*.v` | **PASS** | 5000 frames bit-exact, both tops synthesize |
+| **H8** | Noise sweep | `reports/noise_sweep.json` | **PASS (with documented degradation at <= 6 dB)** | 15 sweeps (SNRs 24..0 dB), plot emitted |
+| **H9** | Honest reporting & caveats | `reports/RESULTS.md` | **PASS** | Limitations and scope disclosed |
+| **H10** | Documentation consistency | `README.md`, `AGENTS.md` | **PASS** | Numbers and specs synchronized |
 
 ---
 
-## 2. Quantitative Quality & Clinical Preservation Metrics
+## 2. Quantitative Quality (Approximation Error and QRS-Region Fidelity)
 
-Evaluated across **60,000 samples (~2.78 minutes of continuous ECG)** per record on MIT-BIH Arrhythmia Database records **100, 101, 103, and 105** under both **FIXED_SCALE** (primary hardware policy) and **LEGACY_MINMAX** normalization.
+Evaluated across **60,000 samples (~2.78 minutes)** per record on MIT-BIH Arrhythmia records 100, 101, 103, and 105 under fixed-scale and minmax normalization.
 
-### 2.1 Summary Table
-
-| Record | Policy | Se (%) | +P (%) | Approx Duty (%) | Global Approx SNR (dB) | Global PRD (%) | QRS PRD Gated (%) | QRS PRD All-Approx (%) | R-Peak Max Err (%) |
-|---|---|---|---|---|---|---|---|---|---|
-| **100** | fixed | 100.00% | 100.00% | 85.16% | 26.62 dB | 4.666% | **0.0000%** | 5.5978% | 0.000% |
-| **101** | fixed | 100.00% | 94.71% | 85.09% | 28.04 dB | 3.962% | **0.4017%** | 4.0711% | 2.891% |
-| **103** | fixed | 100.00% | 100.00% | 85.94% | 26.69 dB | 4.627% | **0.0000%** | 2.4835% | 0.000% |
-| **105** | fixed | 100.00% | 100.00% | 83.44% | 27.24 dB | 4.343% | **0.7303%** | 2.4680% | 0.000% |
-| **100** | minmax | 100.00% | 100.00% | 85.16% | 44.58 dB | 0.590% | **0.0122%** | 0.9244% | 0.000% |
-| **101** | minmax | 100.00% | 94.74% | 85.02% | 42.59 dB | 0.742% | **0.0923%** | 1.2924% | 1.138% |
-| **103** | minmax | 100.00% | 99.49% | 85.86% | 45.02 dB | 0.561% | **0.0000%** | 0.9143% | 0.000% |
-| **105** | minmax | 100.00% | 99.57% | 83.37% | 44.58 dB | 0.590% | **0.4484%** | 1.4638% | 1.262% |
-
-### 2.2 Key Clinical Findings
-1. **Preservation of Critical Morphology:** In the diagnostically vital QRS region ($R+15 \dots R+36$), the gated PRD is **0.0000% to 0.4484%**, representing up to a **100× error reduction** compared to running approximate precision unconditionally (all-approx PRD 0.91% to 5.60%).
-2. **Autonomous Detector Fidelity:** The integer Pan-Tompkins detector achieves **100.00% Sensitivity (Se)** and **≥94.7% Positive Predictivity (+P)** without external calibration or floating-point division.
-3. **Low-Power Operating Share:** The core spends **83.37% to 85.94%** of normal sinus rhythm in approximate low-power mode.
+| Record | Policy | Se (%) | +P (%) | Approx Duty (%) | Global Approx SNR (dB) | Global PRD (%) | QRS PRD Gated (%) | QRS PRD All-Approx (%) |
+|---|---|---|---|---|---|---|---|---|
+| **100** | fixed | 100.00% | 100.00% | 85.16% | 26.62 dB | 4.666% | **0.0000%** | 5.5978% |
+| **101** | fixed | 100.00% | 94.71% | 85.09% | 28.04 dB | 3.962% | **0.4017%** | 4.0711% |
+| **103** | fixed | 100.00% | 100.00% | 85.94% | 26.69 dB | 4.627% | **0.0000%** | 2.4835% |
+| **105** | fixed | 100.00% | 100.00% | 83.44% | 27.24 dB | 4.343% | **0.7303%** | 2.4680% |
+| **100** | minmax | 100.00% | 100.00% | 85.16% | 44.58 dB | 0.590% | **0.0122%** | 0.9244% |
+| **101** | minmax | 100.00% | 94.74% | 85.02% | 42.59 dB | 0.742% | **0.0923%** | 1.2924% |
+| **103** | minmax | 100.00% | 99.49% | 85.86% | 45.02 dB | 0.561% | **0.0000%** | 0.9143% |
+| **105** | minmax | 100.00% | 99.57% | 83.37% | 44.58 dB | 0.590% | **0.4484%** | 1.4638% |
 
 ---
 
-## 3. RTL Switching Activity & Dynamic Power Proxy
+## 3. RTL Switching Activity & Toggle Reductions (Phase D)
 
-Switching activity measured directly on cycle-by-cycle register transitions across the complete datapath during processing:
+Measurements gathered on Verilator by tracking bit transitions cycle-by-cycle across the 6 standard and noise sets.
 
-| Signal Group | Baseline Exact Toggles | Precision-Gated Toggles | Toggle Reduction (%) |
-|---|---|---|---|
-| **Low Operand Bus (`xl[7:0]`)** | 69,597 | 12,478 | **82.07% reduction** |
-| **Multiplier Internal Datapath** | 350,330 | 293,250 | **16.29% reduction** |
-| **Accumulator Datapath (32-bit)** | 358,099 | 301,847 | **15.71% reduction** |
-| **Total Filter Datapath** | 810,927 | 640,476 | **21.02% reduction** |
-
-*In forced approximate mode (`mode_force = 2'b10`), the low operand bus transitions drop to exactly **0 toggles (100% idle)**, verifying perfect operand isolation.*
-
----
-
-## 4. Hardware Synthesis & Resource Utilization
-
-Synthesized using Yosys 0.33 with zero vendor hard macros in the RTL source:
-
-| Architecture / Part | Mode | Logic Cells / LUTs | Registers (FFs) | DSP48 Slices | Notes |
+| Vector Set | Baseline Datapath | Gated Datapath | Datapath Saving (%) | Low-Operand Saving (%) | Whole-Core Saving (%) |
 |---|---|---|---|---|---|
-| **Artix-7 (xc7a35t)** | Pure LUT (`-nodsp`) | 2,212 LCs | 2,222 FFs | **0** | G7 requirement strictly satisfied |
-| **Artix-7 (xc7a35t)** | DSP mode | 1,234 LCs | 2,222 FFs | 3 (DSP48E1) | 2 mult_split + 1 detector squarer |
-| **UltraScale (xcu)** | DSP mode | 1,609 LCs | 2,222 FFs | 3 (DSP48E2) | Multi-target portability verified |
-| **Spartan-6 (xc6s)** | DSP mode | 1,234 LCs | 2,222 FFs | 3 (DSP48A1) | Legacy architecture verified |
-| **Baseline FIR (xc7)** | DSP mode | 420 LCs | 864 FFs | 1 (DSP48E1) | Conventional reference |
+| `std_fixed_100` | 49,382,516 | 38,640,139 | **21.75%** | 84.77% | 14.29% |
+| `std_fixed_101` | 49,905,209 | 39,247,854 | **21.36%** | 84.78% | 13.71% |
+| `std_fixed_103` | 49,236,230 | 38,402,576 | **22.00%** | 85.83% | 14.21% |
+| `std_fixed_105` | 49,337,000 | 38,989,046 | **20.97%** | 83.19% | 13.37% |
+| `std_minmax_100` | 78,600,411 | 52,740,288 | **32.90%** | 83.75% | 21.67% |
+| `noise_stress` | 6,776,354 | 5,585,993 | **17.57%** | 42.34% | 8.56% |
 
 ---
 
-## 5. Architectural Implementation Highlights
+## 4. Like-for-Like Synthesis & Resource Utilization (Phase E)
 
-```
-                 +------------------- pg_top ---------------------+
-x_in[15:0] ----->|  qrs_detector  --det_gate-> gate latch         |
-sample_valid --->|   (Pan-Tompkins)              |                |
-mode_force[1:0]->|        |                      v                |
-                 |        +--> peak_pulse   sample_delay_line     |
-                 |                          fir_coeff_rom         |
-                 |                          mult_split (16x16)    |
-                 |                          pg_mac (32-bit acc)   |
-                 |                               |                |
-                 +-------------------------------+----------------+
-                                                 v
-                                        y_acc[31:0], y_valid
-```
+Target technology: `Xilinx 7-Series xc7 family generic (no part-specific data)`  
+Timing & Power Status: `NOT RUN (no Vivado installed on host; Vivado OOC script provided in scripts/synth_vivado_ooc.tcl)`  
+Phase C Area Check: `1394 LUTs, 417 FFs` vs target `<= 1500 LUTs, <= 800 FFs` (Target Met: **True**)  
 
-1. **Precision-Gated Split Multiplier (`mult_split.v`):**
-   - Splits 16-bit input $x$ into signed high byte $x_h[15:8]$ and unsigned low byte $x_l[7:0]$.
-   - Identity: $x \times h = ((x_h \times h) \ll 8) + (x_l \times h)$.
-   - In approximate mode, $x_l$ is clamped to 0 (operand isolation) and low multiplier registers are clock-enable gated.
-2. **Autonomous Integer QRS Detector (`qrs_detector.v`):**
-   - First-order derivative: $d = x[n] - x[n-2]$
-   - Saturated squaring: $s = \min(131071, (d \times d) \gg \text{SQ_SHIFT})$
-   - 54-sample circular Moving Window Integrator (MWI) with division-free right-shift (`>> 6`).
-   - Dual-threshold adaptive decay and refractory logic updating EMA thresholds.
-3. **Deterministic Timing & Latency:**
-   - Detector completes in exactly 1 clock cycle upon `sample_valid`.
-   - FIR completes 51-tap multiply-accumulate in 54 clock cycles ($51 + \text{PIPE} + 1$).
-   - Total constant pipeline latency: **56 clock cycles** from `sample_valid` to `y_valid`.
+| Module / Target | Synthesis Mode | LUTs | FFs | DSPs | CARRY4 | MUXF | Basys 3 LUT Util (%) |
+|---|---|---|---|---|---|---|---|
+| `baseline_fir_exact` | LUT | 843 | 123 | 0 | 24 | 203 | 4.05% |
+| `pg_top` | LUT | 1394 | 417 | 0 | 120 | 204 | 6.70% |
+| `qrs_detector` | LUT | 624 | 254 | 0 | 85 | 6 | 3.00% |
+| `baseline_fir_exact` | DSP | 123 | 59 | 1 | 16 | 52 | 0.59% |
+| `pg_top` | DSP | 817 | 368 | 2 | 107 | 84 | 3.93% |
+| `top_basys3` | DSP | 1142 | 582 | 2 | 155 | 62 | 5.49% |
+| `top_nexys_a7` | DSP | 1145 | 582 | 2 | 155 | 62 | 5.50% |
+| `top_basys3` | LUT | 1813 | 631 | 0 | 168 | 372 | 8.72% |
+| `top_nexys_a7` | LUT | 1624 | 631 | 0 | 168 | 135 | 7.81% |
+| **Overhead (LUT mode)** | `pg_top - baseline` | **+551** | **+294** | 0 | - | - | - |
+| **Overhead (DSP mode)** | `pg_top - baseline` | **+694** | **+309** | **1** | - | - | - |
 
 ---
 
-## 6. Honest Engineering Caveats & Limitations (Section 12)
+## 5. Noise Robustness & Sweep Characterization (Phase G)
 
-1. **Replay of Recorded Data:** All verification is conducted via bit-exact RTL simulation on digitized PhysioNet MIT-BIH recordings (360 Hz, 11-bit ADC). Live patient electrode telemetry requires an external ADC front-end (e.g. AD8232 + ADS1115).
-2. **Switching Activity as Dynamic Power Proxy:** Energy savings are substantiated via gate-level transition counting (toggle rate $lpha$) and operand bus gating. Actual silicon milliwatt reduction depends on the specific FPGA/ASIC cell library and routing capacitance.
-3. **Causal Filter Group Delay:** The 51-tap linear-phase FIR filter has an intrinsic group delay of $	au = (N-1)/2 = 25$ samples (~69.4 ms). The QRS detector's gate window ($R+15 \dots R+36$) is aligned to fully encompass this group delay.
+Evaluated across records 100, 103, 105 under composite synthetic noise (0.3 Hz baseline wander + 50 Hz powerline hum + EMG Gaussian noise) at SNRs 24, 18, 12, 6, and 0 dB.
+
+| Record | Input SNR (dB) | Sensitivity (%) | +P (%) | Gate Full Duty (%) | Approx Duty (%) | QRS PRD Gated (%) | QRS PRD All-Approx (%) | Datapath Saving (%) | Whole-Core Saving (%) | RTL Match |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **100** | 24 dB | 100.0% | 100.0% | 14.6% | 85.4% | 0.000% | 6.651% | 39.90% | 25.88% | PASS (0 mismatches) |
+| **100** | 18 dB | 100.0% | 100.0% | 14.6% | 85.4% | 0.000% | 6.595% | 39.21% | 24.93% | PASS (0 mismatches) |
+| **100** | 12 dB | 100.0% | 94.4% | 15.5% | 84.5% | 0.000% | 6.488% | 38.24% | 23.70% | PASS (0 mismatches) |
+| **100** | 6 dB | 100.0% | 37.3% | 57.6% | 42.4% | 4.117% | 6.100% | 18.56% | 9.29% | PASS (0 mismatches) |
+| **100** | 0 dB | 100.0% | 33.8% | 58.3% | 41.7% | 3.704% | 5.304% | 16.76% | 7.98% | PASS (0 mismatches) |
+| **103** | 24 dB | 100.0% | 100.0% | 13.8% | 86.2% | 0.190% | 2.900% | 40.34% | 26.00% | PASS (0 mismatches) |
+| **103** | 18 dB | 100.0% | 100.0% | 13.8% | 86.2% | 0.000% | 2.819% | 39.45% | 24.99% | PASS (0 mismatches) |
+| **103** | 12 dB | 100.0% | 100.0% | 13.8% | 86.2% | 0.000% | 2.949% | 38.57% | 23.86% | PASS (0 mismatches) |
+| **103** | 6 dB | 100.0% | 30.9% | 57.7% | 42.3% | 1.899% | 3.004% | 18.18% | 9.06% | PASS (0 mismatches) |
+| **103** | 0 dB | 100.0% | 33.8% | 58.5% | 41.5% | 1.845% | 2.721% | 16.37% | 7.71% | PASS (0 mismatches) |
+| **105** | 24 dB | 100.0% | 100.0% | 16.3% | 83.7% | 0.670% | 3.035% | 38.70% | 24.78% | PASS (0 mismatches) |
+| **105** | 18 dB | 100.0% | 100.0% | 16.3% | 83.7% | 0.199% | 3.090% | 38.19% | 24.03% | PASS (0 mismatches) |
+| **105** | 12 dB | 100.0% | 95.0% | 17.2% | 82.8% | 0.000% | 3.058% | 37.23% | 22.94% | PASS (0 mismatches) |
+| **105** | 6 dB | 100.0% | 36.8% | 57.8% | 42.2% | 1.854% | 2.987% | 18.05% | 8.98% | PASS (0 mismatches) |
+| **105** | 0 dB | 100.0% | 38.2% | 58.1% | 41.9% | 1.794% | 2.767% | 16.46% | 7.80% | PASS (0 mismatches) |
 
 ---
-*Generated automatically by scripts/generate_report.py.*
+
+## 6. Hardware Demonstration & Board Wrappers (Phase F)
+
+- **Unified Demonstration Core:** `fpga/board_core.v` contains ROM replay (`$readmemh` of `ecg_rom.mem`), real-time 360 Hz sample pacer, `pg_top` filter, and 115,200 baud UART transmitter.
+- **Board Support:**
+  * Digilent Basys 3 (`fpga/top_basys3.v`, constraints `fpga/boards/basys3.xdc`)
+  * Digilent Nexys A7 (`fpga/top_nexys_a7.v`, constraints `fpga/boards/nexys_a7.xdc`)
+- **Simulated Hardware Replay:** `tb/tb_board_core.v` simulated 5,000 ECG replay samples over the UART serial link: **0 preamble errors, 0 checksum errors, 0 sample mismatches** (`reports/regress_board_core.log`).
+- **Deployment Status Disclosure:**
+  * RTL simulation: **VERIFIED**
+  * FPGA synthesis: **VERIFIED**
+  * Silicon hardware programming: **NOT RUN** (requires physical board connection).
+
+---
+
+## 7. Explicit Technical Disclosures & Limitations
+
+1. **Switching Activity as Power Proxy:** The toggle counts reported are architectural switching activity measurements ($\alpha$), not physical silicon milliwatt figures. On FPGA devices, dynamic power savings scale with switching activity, but overall device power includes significant static/quiescent power.
+2. **Noise Degradation at Low SNR:** Under synthetic noise at <= 6 dB SNR, the detector positive predictivity collapses to ~31–38% and full-precision gate duty increases to ~58%, causing switching savings to shrink to 17.57% datapath and 8.56% whole-core on `noise_stress`.
+3. **Synthetic Noise Model:** Noise injected in characterization sweeps is a synthetic combination of 0.3 Hz baseline wander, 50 Hz powerline hum, and pseudo-random Gaussian EMG noise (fixed seed=42+SNR), rather than in-vivo recorded electrode artifact databases.
+4. **Bandpass Filtering Scope:** The FIR filter operates in the 5–15 Hz band, optimized for QRS detection and R-peak extraction; it is an algorithmic pre-processing filter rather than an unrestricted diagnostic filter.
+5. **Approximation SNR Interpretation:** SNR figures reported evaluate approximation fidelity relative to 16-bit full precision ($y_{gated}$ vs $y_{full}$); they characterize truncation error rather than noise cancellation ratio.
+6. **Dataset Breadth:** Primary evaluations are derived from 4 MIT-BIH Arrhythmia Database recordings (100, 101, 103, 105) replayed at 360 Hz, not direct in-vivo patient electrode acquisition.
+7. **Timing and Power Characterization:** Post-implementation timing and vectorless power reports from Vivado are NOT RUN due to absence of Vivado in the build environment; complete out-of-context synthesis scripts are provided in `scripts/synth_vivado_ooc.tcl`.
+
+<!-- GOAL_COMPLETE -->

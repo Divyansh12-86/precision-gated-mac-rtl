@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "set_name": "noise_100_12db",
+    "record_id": "100",
+    "snr_db": 12,
+    "n_samples": 5000
+  },
+  "n_samples": 5000,
+  "files": {
+    "tv_inputs.hex": "f97c7cd2ebcae5727e95bf4498adfc2199e212628cbbfa79b3266e6a57e27be3",
+    "tv_gate_flags.hex": "d4d81942e02bba75078eeba5282955d2ad0c4beeaa22d034acc24d5b21bad29b",
+    "tv_outputs_full.hex": "5a57e89a8476f4598a29bf222167533245fdc44e53a313f0fed5a77d49f02066",
+    "tv_outputs_gated.hex": "8a2d17f28a5e92a829885f43e5df8f20f689a2eeda153369b702973a86774e3a",
+    "tv_outputs_allapprox.hex": "b001a5d910fcc17d037593aca7bbec31120011612bca4bdf40ba097dde56c26c",
+    "tv_peaks.hex": "014ee5e22c8c62a77e107035f31cddb2a1a50a1c19414952a9cc19b34aee1324",
+    "tv_mwi.hex": "e449db88ab4271efa0af8516ad19b61010fbbd133286f3ca7273fe66709fd36a",
+    "coeffs.mem": "8f7b3833183f56343b955306889c34d0f908b148b8893fa9b9456a798cb67639"
+  }
+}

@@ -1,0 +1,48 @@
+=== tb_fir_gated smoke (exit: 0) ===
+==================================================================
+tb_fir_gated starting on vectors: data/test_vectors/smoke
+==================================================================
+Loaded 1000 samples.
+--- Pass 1: Dynamic Precision Gating ---
+--- Pass 2: Forced Full Precision ---
+--- Pass 3: Forced Approximate Precision ---
+==================================================================
+Simulation completed.
+Total mismatches: 0
+Total isolation errors: 0
+Approx cycles verified with xl_eff==0: 98712
+TB_RESULT: PASS name=tb_fir_gated samples=1000 mismatches=0
+- tb/tb_fir_gated.v:246: Verilog $finish
+
+=== tb_fir_gated corner (exit: 0) ===
+==================================================================
+tb_fir_gated starting on vectors: data/test_vectors/corner
+==================================================================
+Loaded 1618 samples.
+--- Pass 1: Dynamic Precision Gating ---
+--- Pass 2: Forced Full Precision ---
+--- Pass 3: Forced Approximate Precision ---
+==================================================================
+Simulation completed.
+Total mismatches: 0
+Total isolation errors: 0
+Approx cycles verified with xl_eff==0: 135162
+TB_RESULT: PASS name=tb_fir_gated samples=1618 mismatches=0
+- tb/tb_fir_gated.v:246: Verilog $finish
+
+=== tb_fir_gated std_fixed_100 (exit: 0) ===
+==================================================================
+tb_fir_gated starting on vectors: data/test_vectors/std_fixed_100
+==================================================================
+Loaded 60000 samples.
+--- Pass 1: Dynamic Precision Gating ---
+--- Pass 2: Forced Full Precision ---
+--- Pass 3: Forced Approximate Precision ---
+==================================================================
+Simulation completed.
+Total mismatches: 0
+Total isolation errors: 0
+Approx cycles verified with xl_eff==0: 5999346
+TB_RESULT: PASS name=tb_fir_gated samples=60000 mismatches=0
+- tb/tb_fir_gated.v:246: Verilog $finish
+

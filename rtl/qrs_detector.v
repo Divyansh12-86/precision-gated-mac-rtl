@@ -1,13 +1,13 @@
 // =============================================================================
 // Module: qrs_detector
-// Description: Synthesizable integer Pan-Tompkins QRS detector conforming
-//              to HardwareQRSDetectorV2 (sim/qrs_detector_v2.py).
-//              - Division-free: MWI output uses right shift (>> 6).
-//              - Deterministic start-up without calibration pass.
-//              - Evaluates per-sample: produces gate_out, peak_pulse, mwi_dbg
-//                with valid_out 1 cycle after sample_valid.
-//              - Squarer implemented using a single 17x17 multiplier with 17-bit saturation.
-//              - All threshold updates use bit shifts and adds.
+// Description: Synthesizable integer Pan-Tompkins QRS detector (v2).
+//              Conforms strictly to Section 2.2 and Section 4.5.
+//              - Pure integer arithmetic, division-free (MWI >> 6).
+//              - 17-bit saturation on squared derivative.
+//              - Zero external calibration, deterministic reset start-up.
+//              - Circular buffer inferred as 64x17 distributed RAM (LUTRAM).
+//              - Standard Verilog-2001 (no SystemVerilog literals).
+//              - Serial 17-cycle squarer eliminating wide combinational multiplier.
 // =============================================================================
 `timescale 1ns / 1ps
 
@@ -19,7 +19,8 @@ module qrs_detector #(
     parameter DECAY_AFTER  = 288,
     parameter INIT_SPKI    = 1500,
     parameter INIT_NPKI    = 50,
-    parameter INIT_THRESH  = 412
+    parameter INIT_THRESH  = 412,
+    parameter SERIAL_SQ    = 1
 )(
     input  wire                   clk,
     input  wire                   rst_n,
@@ -27,50 +28,65 @@ module qrs_detector #(
     input  wire signed [15:0]     x_in,
     output reg                    gate_out,
     output reg                    peak_pulse,
-    output reg         [17:0]     mwi_dbg,
+    output reg  [17:0]            mwi_dbg,
     output reg                    valid_out
 );
 
-    // 16-bit input delay registers
+    // Delay registers for derivative computation
     reg signed [15:0] x_d1;
     reg signed [15:0] x_d2;
 
-    // MWI circular buffer & accumulator
-    reg [16:0] mwi_buf [0:MWI_LEN-1];
-    reg [$clog2(MWI_LEN)-1:0] ptr;
+    // Distributed RAM for MWI circular buffer
+    (* ram_style = "distributed" *)
+    reg [16:0] mwi_ram [0:63];
+    reg [5:0]  ptr;
+    reg [5:0]  valid_mwi_cnt;
     reg [23:0] mwi_acc;
 
-    // Counters & timing
+    // Moving-window peak search registers
+    reg [17:0] prev_mwi;
+    reg [17:0] prev_mwi_2;
+
+    // Adaptive thresholds and timing registers
     reg [6:0]  refractory_cnt;
     reg [15:0] time_since_peak;
     reg [6:0]  gate_cnt;
 
-    // Adaptive thresholds
     reg [23:0] spki;
     reg [23:0] npki;
     reg [23:0] threshold;
 
-    // Peak history registers
-    reg [17:0] prev_mwi;
-    reg [17:0] prev_mwi_2;
+    // Serial squarer registers
+    reg [33:0] sq_accum;
+    reg [16:0] sq_cand;
+    reg [4:0]  sq_step;
+    reg        sq_busy;
 
     // -------------------------------------------------------------------------
-    // Combinational Step Logic
+    // Combinational Signal Processing Datapath
     // -------------------------------------------------------------------------
 
     // 1. Derivative: d = x - x_d2
-    wire signed [16:0] x_ext  = {x_in[15], x_in};
+    wire signed [16:0] x_ext    = {x_in[15], x_in};
     wire signed [16:0] x_d2_ext = {x_d2[15], x_d2};
-    wire signed [16:0] d = x_ext - x_d2_ext;
+    wire signed [16:0] d        = x_ext - x_d2_ext;
+    wire [16:0] d_abs = (d < 17'sd0) ? (-d) : d;
 
     // 2. Squaring and shift with 17-bit saturation
-    wire signed [33:0] prod_signed = d * d;
-    wire [33:0] prod = prod_signed[33:0];
-    wire [33:0] s_shifted = prod >> SQ_SHIFT;
+    wire signed [33:0] comb_prod_signed = d * d;
+    wire [33:0] comb_prod = comb_prod_signed[33:0];
+
+    // Iterative shift-add step for serial squarer
+    wire [33:0] sq_term = sq_cand[sq_step] ? ({17'd0, sq_cand} << sq_step) : 34'd0;
+    wire [33:0] next_sq_accum = sq_accum + sq_term;
+
+    wire [33:0] final_prod = SERIAL_SQ ? next_sq_accum : comb_prod;
+    wire [33:0] s_shifted = final_prod >> SQ_SHIFT;
     wire [16:0] s = (s_shifted > 34'd131071) ? 17'd131071 : s_shifted[16:0];
 
-    // 3. MWI circular buffer update
-    wire [16:0] old_s = mwi_buf[ptr];
+    // 3. MWI circular buffer update using distributed RAM
+    wire is_mwi_valid = (valid_mwi_cnt >= MWI_LEN[5:0]);
+    wire [16:0] old_s = is_mwi_valid ? mwi_ram[ptr] : 17'd0;
     wire [24:0] mwi_sum = {1'b0, mwi_acc} + {8'b0, s};
     wire [24:0] mwi_diff = mwi_sum - {8'b0, old_s};
     wire [23:0] next_mwi_acc = mwi_diff[23:0];
@@ -93,25 +109,18 @@ module qrs_detector #(
     wire is_qrs_cand   = is_local_max && (refract_dec == 7'd0) && (pk > thresh_curr);
     wire is_noise_cand = is_local_max && (refract_dec == 7'd0) && (pk < thresh_curr);
 
-    // QRS EMA update
+    // Threshold adaptation: compute chosen SPKI and NPKI first, then adapt
     wire [23:0] spki_cand_a = spki - (spki >> 3) + (pk >> 3);
-    wire signed [24:0] spki_diff_a = $signed({1'b0, spki_cand_a}) - $signed({1'b0, npki});
-    wire signed [24:0] spki_diff_a_shift = spki_diff_a >>> 2;
-    wire signed [24:0] thresh_cand_a_s = $signed({1'b0, npki}) + spki_diff_a_shift;
-    wire [23:0] thresh_cand_a = thresh_cand_a_s[23:0];
-
-    // Noise EMA update
     wire [23:0] npki_cand_b = npki - (npki >> 4) + (pk >> 4);
-    wire signed [24:0] spki_diff_b = $signed({1'b0, spki}) - $signed({1'b0, npki_cand_b});
-    wire signed [24:0] spki_diff_b_shift = spki_diff_b >>> 2;
-    wire signed [24:0] thresh_cand_b_s = $signed({1'b0, npki_cand_b}) + spki_diff_b_shift;
-    wire [23:0] thresh_cand_b = thresh_cand_b_s[23:0];
 
-    // Threshold state multiplexers
-    wire [23:0] next_spki = is_qrs_cand   ? spki_cand_a   : spki;
-    wire [23:0] next_npki = is_noise_cand ? npki_cand_b   : npki;
-    wire [23:0] next_threshold = is_qrs_cand   ? thresh_cand_a :
-                                 is_noise_cand ? thresh_cand_b : thresh_curr;
+    wire [23:0] next_spki = is_qrs_cand   ? spki_cand_a : spki;
+    wire [23:0] next_npki = is_noise_cand ? npki_cand_b : npki;
+
+    wire signed [24:0] spki_npki_diff = $signed({1'b0, next_spki}) - $signed({1'b0, next_npki});
+    wire signed [24:0] thresh_adapted_s = $signed({1'b0, next_npki}) + (spki_npki_diff >>> 2);
+    wire [23:0] thresh_adapted = thresh_adapted_s[23:0];
+
+    wire [23:0] next_threshold = (is_qrs_cand || is_noise_cand) ? thresh_adapted : thresh_curr;
 
     wire [6:0]  next_refractory_cnt  = is_qrs_cand ? REFRACT_LEN[6:0] : refract_dec;
     wire [15:0] next_time_since_peak = is_qrs_cand ? 16'd0 : time_inc;
@@ -124,13 +133,12 @@ module qrs_detector #(
     // -------------------------------------------------------------------------
     // Sequential State Registers
     // -------------------------------------------------------------------------
-    integer idx;
-
     always @(posedge clk) begin
         if (!rst_n) begin
             x_d1            <= 16'sd0;
             x_d2            <= 16'sd0;
-            ptr             <= '0;
+            ptr             <= 6'd0;
+            valid_mwi_cnt   <= 6'd0;
             mwi_acc         <= 24'd0;
             refractory_cnt  <= 7'd0;
             time_since_peak <= 16'd0;
@@ -141,42 +149,83 @@ module qrs_detector #(
             prev_mwi        <= 18'd0;
             prev_mwi_2      <= 18'd0;
 
-            for (idx = 0; idx < MWI_LEN; idx = idx + 1) begin
-                mwi_buf[idx] <= 17'd0;
-            end
+            sq_accum        <= 34'd0;
+            sq_cand         <= 17'd0;
+            sq_step         <= 5'd0;
+            sq_busy         <= 1'b0;
 
             gate_out        <= 1'b0;
             peak_pulse      <= 1'b0;
             mwi_dbg         <= 18'd0;
             valid_out       <= 1'b0;
-        end else if (sample_valid) begin
+        end else if (sample_valid && !sq_busy) begin
             // 1. Shift input delay registers
             x_d1 <= x_in;
             x_d2 <= x_d1;
 
-            // 2 & 3. MWI update
-            mwi_buf[ptr] <= s;
-            ptr <= (ptr == MWI_LEN - 1) ? '0 : ptr + 1'b1;
-            mwi_acc <= next_mwi_acc;
+            if (SERIAL_SQ) begin
+                sq_accum  <= 34'd0;
+                sq_cand   <= d_abs;
+                sq_step   <= 5'd0;
+                sq_busy   <= 1'b1;
+                valid_out <= 1'b0;
+                peak_pulse<= 1'b0;
+            end else begin
+                // Parallel single-cycle mode
+                mwi_ram[ptr] <= s;
+                ptr <= (ptr == MWI_LEN[5:0] - 6'd1) ? 6'd0 : (ptr + 6'd1);
+                if (valid_mwi_cnt < MWI_LEN[5:0]) begin
+                    valid_mwi_cnt <= valid_mwi_cnt + 6'd1;
+                end
+                mwi_acc <= next_mwi_acc;
 
-            // 4 & 5. Thresholds and timing
-            refractory_cnt  <= next_refractory_cnt;
-            time_since_peak <= next_time_since_peak;
-            spki            <= next_spki;
-            npki            <= next_npki;
-            threshold       <= next_threshold;
+                refractory_cnt  <= next_refractory_cnt;
+                time_since_peak <= next_time_since_peak;
+                spki            <= next_spki;
+                npki            <= next_npki;
+                threshold       <= next_threshold;
 
-            prev_mwi_2      <= prev_mwi;
-            prev_mwi        <= next_mwi_out;
+                prev_mwi_2      <= prev_mwi;
+                prev_mwi        <= next_mwi_out;
+                gate_cnt        <= next_gate_cnt;
 
-            // 6. Gate count
-            gate_cnt        <= next_gate_cnt;
+                gate_out        <= next_gate_flag;
+                peak_pulse      <= is_qrs_cand;
+                mwi_dbg         <= next_mwi_out;
+                valid_out       <= 1'b1;
+            end
+        end else if (sq_busy) begin
+            if (sq_step == 5'd16) begin
+                // Serial square calculation complete: update MWI and detector state
+                sq_busy <= 1'b0;
 
-            // Output registers (ready at cycle 1)
-            gate_out        <= next_gate_flag;
-            peak_pulse      <= is_qrs_cand;
-            mwi_dbg         <= next_mwi_out;
-            valid_out       <= 1'b1;
+                mwi_ram[ptr] <= s;
+                ptr <= (ptr == MWI_LEN[5:0] - 6'd1) ? 6'd0 : (ptr + 6'd1);
+                if (valid_mwi_cnt < MWI_LEN[5:0]) begin
+                    valid_mwi_cnt <= valid_mwi_cnt + 6'd1;
+                end
+                mwi_acc <= next_mwi_acc;
+
+                refractory_cnt  <= next_refractory_cnt;
+                time_since_peak <= next_time_since_peak;
+                spki            <= next_spki;
+                npki            <= next_npki;
+                threshold       <= next_threshold;
+
+                prev_mwi_2      <= prev_mwi;
+                prev_mwi        <= next_mwi_out;
+                gate_cnt        <= next_gate_cnt;
+
+                gate_out        <= next_gate_flag;
+                peak_pulse      <= is_qrs_cand;
+                mwi_dbg         <= next_mwi_out;
+                valid_out       <= 1'b1;
+            end else begin
+                sq_accum <= next_sq_accum;
+                sq_step  <= sq_step + 5'd1;
+                valid_out <= 1'b0;
+                peak_pulse<= 1'b0;
+            end
         end else begin
             valid_out       <= 1'b0;
             peak_pulse      <= 1'b0;

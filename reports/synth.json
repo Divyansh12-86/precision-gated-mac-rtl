@@ -1,0 +1,170 @@
+{
+  "target_technology": "Xilinx 7-Series xc7 family generic (no part-specific data)",
+  "tool": "Yosys 0.33",
+  "timing_and_power_status": "NOT RUN (no Vivado installed on host; Vivado OOC script provided in scripts/synth_vivado_ooc.tcl)",
+  "phase_c_target_check": {
+    "pg_top_lut_actual": "1394 LUTs, 417 FFs",
+    "pg_top_lut_target": "<= 1500 LUTs, <= 800 FFs",
+    "target_met": true
+  },
+  "modules": {
+    "baseline_fir_lut": {
+      "module": "baseline_fir_exact",
+      "mode": "LUT",
+      "luts": 843,
+      "ffs": 123,
+      "dsps": 0,
+      "carry4": 24,
+      "muxf": 203,
+      "lutram": 6,
+      "bram_18k": 0,
+      "basys3_util_pct": {
+        "lut_pct": 4.05,
+        "ff_pct": 0.3,
+        "dsp_pct": 0.0
+      }
+    },
+    "pg_top_lut": {
+      "module": "pg_top",
+      "mode": "LUT",
+      "luts": 1394,
+      "ffs": 417,
+      "dsps": 0,
+      "carry4": 120,
+      "muxf": 204,
+      "lutram": 12,
+      "bram_18k": 0,
+      "basys3_util_pct": {
+        "lut_pct": 6.7,
+        "ff_pct": 1.0,
+        "dsp_pct": 0.0
+      }
+    },
+    "qrs_detector_lut": {
+      "module": "qrs_detector",
+      "mode": "LUT",
+      "luts": 624,
+      "ffs": 254,
+      "dsps": 0,
+      "carry4": 85,
+      "muxf": 6,
+      "lutram": 6,
+      "bram_18k": 0,
+      "basys3_util_pct": {
+        "lut_pct": 3.0,
+        "ff_pct": 0.61,
+        "dsp_pct": 0.0
+      }
+    },
+    "baseline_fir_dsp": {
+      "module": "baseline_fir_exact",
+      "mode": "DSP",
+      "luts": 123,
+      "ffs": 59,
+      "dsps": 1,
+      "carry4": 16,
+      "muxf": 52,
+      "lutram": 6,
+      "bram_18k": 0,
+      "basys3_util_pct": {
+        "lut_pct": 0.59,
+        "ff_pct": 0.14,
+        "dsp_pct": 1.11
+      }
+    },
+    "pg_top_dsp": {
+      "module": "pg_top",
+      "mode": "DSP",
+      "luts": 817,
+      "ffs": 368,
+      "dsps": 2,
+      "carry4": 107,
+      "muxf": 84,
+      "lutram": 12,
+      "bram_18k": 0,
+      "basys3_util_pct": {
+        "lut_pct": 3.93,
+        "ff_pct": 0.88,
+        "dsp_pct": 2.22
+      }
+    },
+    "top_basys3": {
+      "module": "top_basys3",
+      "mode": "DSP",
+      "luts": 1142,
+      "ffs": 582,
+      "dsps": 2,
+      "carry4": 155,
+      "muxf": 62,
+      "lutram": 12,
+      "bram_18k": 37,
+      "basys3_util_pct": {
+        "lut_pct": 5.49,
+        "ff_pct": 1.4,
+        "dsp_pct": 2.22
+      }
+    },
+    "top_nexys_a7": {
+      "module": "top_nexys_a7",
+      "mode": "DSP",
+      "luts": 1145,
+      "ffs": 582,
+      "dsps": 2,
+      "carry4": 155,
+      "muxf": 62,
+      "lutram": 12,
+      "bram_18k": 37,
+      "basys3_util_pct": {
+        "lut_pct": 5.5,
+        "ff_pct": 1.4,
+        "dsp_pct": 2.22
+      }
+    },
+    "top_basys3_lut": {
+      "module": "top_basys3",
+      "mode": "LUT",
+      "luts": 1813,
+      "ffs": 631,
+      "dsps": 0,
+      "carry4": 168,
+      "muxf": 372,
+      "lutram": 12,
+      "bram_18k": 37,
+      "basys3_util_pct": {
+        "lut_pct": 8.72,
+        "ff_pct": 1.52,
+        "dsp_pct": 0.0
+      }
+    },
+    "top_nexys_a7_lut": {
+      "module": "top_nexys_a7",
+      "mode": "LUT",
+      "luts": 1624,
+      "ffs": 631,
+      "dsps": 0,
+      "carry4": 168,
+      "muxf": 135,
+      "lutram": 12,
+      "bram_18k": 37,
+      "basys3_util_pct": {
+        "lut_pct": 7.81,
+        "ff_pct": 1.52,
+        "dsp_pct": 0.0
+      }
+    }
+  },
+  "gating_overhead_same_mode": {
+    "lut_mode": {
+      "comparison": "pg_top - baseline (LUT mode)",
+      "delta_luts": 551,
+      "delta_ffs": 294,
+      "delta_dsps": 0
+    },
+    "dsp_mode": {
+      "comparison": "pg_top - baseline (DSP mode)",
+      "delta_luts": 694,
+      "delta_ffs": 309,
+      "delta_dsps": 1
+    }
+  }
+}

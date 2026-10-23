@@ -72,7 +72,7 @@ module baseline_fir_exact #(
             for (p = 0; p < PIPE; p = p + 1) begin
                 prod_pipe[p] <= 32'sd0;
             end
-            val_pipe <= '0;
+            val_pipe <= {PIPE{1'b0}};
         end else begin
             prod_pipe[0] <= prod_comb;
             val_pipe[0]  <= mult_valid_in;
@@ -104,8 +104,8 @@ module baseline_fir_exact #(
     always @(posedge clk) begin
         if (!rst_n) begin
             state         <= STATE_IDLE;
-            tap_cnt       <= '0;
-            drain_cnt     <= '0;
+            tap_cnt       <= 0;
+            drain_cnt     <= 0;
             shift_en      <= 1'b0;
             mult_valid_in <= 1'b0;
             mac_clr       <= 1'b0;
@@ -120,7 +120,7 @@ module baseline_fir_exact #(
                     mult_valid_in <= 1'b0;
                     if (sample_valid) begin
                         shift_en      <= 1'b1;
-                        tap_cnt       <= '0;
+                        tap_cnt       <= 0;
                         mult_valid_in <= 1'b1;
                         mac_clr       <= 1'b1;
                         state         <= STATE_COMPUTE;
@@ -130,7 +130,7 @@ module baseline_fir_exact #(
                 STATE_COMPUTE: begin
                     if (tap_cnt == N_TAPS - 1) begin
                         mult_valid_in <= 1'b0;
-                        drain_cnt     <= '0;
+                        drain_cnt     <= 0;
                         state         <= STATE_DRAIN;
                     end else begin
                         tap_cnt <= tap_cnt + 1'b1;
