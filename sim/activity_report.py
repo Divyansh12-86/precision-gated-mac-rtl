@@ -125,7 +125,6 @@ def run_set(bin_path, set_name):
 
     return {
         "set_name": set_name,
-        "elapsed_sec": round(elapsed, 2),
         "datapath": {
             "baseline": base_dp,
             "gated_auto": auto_dp,

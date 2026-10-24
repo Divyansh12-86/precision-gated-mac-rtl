@@ -11,19 +11,19 @@ This repository contains the complete hardware design, bit-exact Python golden m
 
 The core architecture exploits the asymmetric diagnostic importance of the cardiac cycle:
 - **Full Precision (16-bit Q1.15):** Dynamically activated during the QRS detection window (~120 ms around R-peaks) to preserve critical signal morphology.
-- **Approximate Mode (8-bit Truncated Multiplier):** Operates during quiescent baseline and T-wave regions (~84–86% of the cardiac cycle), cutting dynamic switching power with negligible clinical error.
+- **Approximate Mode (8-bit Truncated Multiplier):** Operates during quiescent baseline and T-wave regions (~84–86% of the cardiac cycle), cutting dynamic switching power with negligible reconstruction error (PRD $\le 0.45\%$).
 
 ---
 
 ## 2. Quantitative Results & Verification Matrix
 
-All metrics are gathered from cycle-accurate Verilator RTL simulations across MIT-BIH Arrhythmia Database records (100, 101, 103, 105) and synthesized on Xilinx Artix-7:
+All metrics are gathered from cycle-accurate Verilator RTL simulations across MIT-BIH Arrhythmia Database records (100, 101, 103, 105) and synthesized with Yosys for Xilinx 7-Series xc7 family (generic target, no Vivado timing/power run):
 
 | Metric | Target | Measured Result | Status |
 |---|---|---|---|
 | **RTL ≡ Golden Model** | 0 bit mismatches | **0 mismatches** (over 480k+ samples) | **PASS** |
-| **Mutation Testing** | Catch all mandatory mutants | **14 / 14 caught (0 survived)** | **PASS** |
-| **Hardware Area (`pg_top`)** | $\le 1,500$ LUTs, $\le 800$ FFs | **1,376 LUTs, 417 FFs** (-50.6% LUTs) | **PASS** |
+| **Mutation Testing** | Catch all mandatory mutants | **29 / 29 caught (0 survived)** | **PASS** |
+| **Hardware Area (`pg_top`)** | $\le 1,500$ LUTs, $\le 800$ FFs | **1,394 LUTs, 417 FFs** (variability spread: 1376–1402 LUTs) | **PASS** |
 | **QRS-Region PRD** | $\le 1.0\%$ | **0.000% – 0.448%** ($\ge 10\times$ lower than all-approx) | **PASS** |
 | **Datapath Toggle Reduction** | $\ge 20\%$ | **21.0% – 32.9%** (Clean), **17.6%** (Noise Stress) | **PASS** |
 | **Low-Operand Bus Reduction**| $\ge 80\%$ | **83.2% – 85.8%** | **PASS** |

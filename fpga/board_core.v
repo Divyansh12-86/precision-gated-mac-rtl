@@ -15,12 +15,14 @@
 `timescale 1ns / 1ps
 
 module board_core #(
-    parameter CLK_HZ     = 100_000_000,
-    parameter FS         = 360,
-    parameter BAUD       = 115_200,
-    parameter ROM_FILE   = "ecg_rom.mem",
-    parameter ROM_DEPTH  = 60_000,
-    parameter FAST_TICK  = 0 // If > 0, tick period = FAST_TICK cycles (for fast TB simulation)
+    parameter CLK_HZ          = 100_000_000,
+    parameter FS              = 360,
+    parameter BAUD            = 115_200,
+    parameter ROM_FILE        = "ecg_rom.mem",
+    parameter ROM_DEPTH       = 60_000,
+    parameter FAST_TICK       = 0, // If > 0, tick period = FAST_TICK cycles (for fast TB simulation)
+    parameter POR_CYCLES      = (FAST_TICK > 0) ? 1000 : 65535,
+    parameter DEBOUNCE_CYCLES = (FAST_TICK > 0) ? 32 : 100_000
 )(
     input  wire        clk,
     input  wire        rst_n,
@@ -33,6 +35,61 @@ module board_core #(
     output wire        led_heartbeat, // 1 Hz alive heartbeat LED
     output wire [7:0]  led_y_msb      // Filtered output MSB monitor
 );
+
+    // -------------------------------------------------------------------------
+    // 0. Hardware Robustness: Power-On Reset & Input Synchronisation (Phase 3)
+    // -------------------------------------------------------------------------
+    // Power-on reset counter: holds internal reset asserted low for POR_CYCLES
+    // clocks after FPGA configuration (FPGA registers initialize to 0 from bitstream).
+    reg [15:0] por_cnt = 16'd0;
+    reg        por_done = 1'b0;
+
+    always @(posedge clk) begin
+        if (por_cnt < POR_CYCLES) begin
+            por_cnt  <= por_cnt + 16'd1;
+            por_done <= 1'b0;
+        end else begin
+            por_done <= 1'b1;
+        end
+    end
+
+    // 2-flop synchronizer for reset button
+    reg [1:0] rst_btn_sync = 2'b11;
+    always @(posedge clk) begin
+        rst_btn_sync <= {rst_btn_sync[0], rst_n};
+    end
+    wire rst_btn_n_sync = rst_btn_sync[1];
+
+    // Reset button glitch filter / debounce (1 ms in hardware, 32 cycles in fast sim)
+    reg [$clog2(DEBOUNCE_CYCLES+1)-1:0] rst_debounce_cnt = 0;
+    reg rst_btn_clean = 1'b1;
+
+    always @(posedge clk) begin
+        if (!rst_btn_n_sync) begin
+            if (rst_debounce_cnt < DEBOUNCE_CYCLES) begin
+                rst_debounce_cnt <= rst_debounce_cnt + 1;
+            end else begin
+                rst_btn_clean <= 1'b0; // Confirmed press
+            end
+        end else begin
+            rst_debounce_cnt <= 0;
+            rst_btn_clean    <= 1'b1; // Released
+        end
+    end
+
+    // Combined internal reset (active low)
+    wire rst_n_int = por_done & rst_btn_clean;
+
+    // 2-flop synchronizers for user switches
+    reg [1:0] sw_mode_sync1 = 2'b00, sw_mode_sync2 = 2'b00;
+    reg       sw_pause_sync1 = 1'b0, sw_pause_sync2 = 1'b0;
+
+    always @(posedge clk) begin
+        sw_mode_sync1  <= sw_mode_force;
+        sw_mode_sync2  <= sw_mode_sync1;
+        sw_pause_sync1 <= sw_pause;
+        sw_pause_sync2 <= sw_pause_sync1;
+    end
 
     // -------------------------------------------------------------------------
     // 1. ECG Vector ROM
@@ -57,10 +114,10 @@ module board_core #(
             reg [$clog2(FAST_TICK+1)-1:0] fast_cnt;
             reg tick_r;
             always @(posedge clk) begin
-                if (!rst_n) begin
+                if (!rst_n_int) begin
                     fast_cnt <= 0;
                     tick_r   <= 1'b0;
-                end else if (!sw_pause) begin
+                end else if (!sw_pause_sync2) begin
                     if (fast_cnt < FAST_TICK - 1) begin
                         fast_cnt <= fast_cnt + 1;
                         tick_r   <= 1'b0;
@@ -79,8 +136,8 @@ module board_core #(
                 .FS(FS)
             ) u_pacer (
                 .clk(clk),
-                .rst_n(rst_n),
-                .enable(~sw_pause),
+                .rst_n(rst_n_int),
+                .enable(~sw_pause_sync2),
                 .tick(sample_tick)
             );
         end
@@ -92,7 +149,7 @@ module board_core #(
     end
 
     always @(posedge clk) begin
-        if (!rst_n) begin
+        if (!rst_n_int) begin
             rom_addr <= 0;
         end else if (sample_tick) begin
             if (rom_addr < ROM_DEPTH - 1) begin
@@ -106,6 +163,16 @@ module board_core #(
     // -------------------------------------------------------------------------
     // 3. Precision-Gated ECG Filter Core
     // -------------------------------------------------------------------------
+    // Latch mode_force once per sample tick so switch toggle cannot change mid-sample
+    reg [1:0] mode_force_latched;
+    always @(posedge clk) begin
+        if (!rst_n_int) begin
+            mode_force_latched <= 2'b00;
+        end else if (sample_tick) begin
+            mode_force_latched <= sw_mode_sync2;
+        end
+    end
+
     wire signed [31:0] y_acc;
     wire y_valid;
     wire gate_out;
@@ -120,10 +187,10 @@ module board_core #(
         .SQ_SHIFT(11)
     ) u_pg_core (
         .clk(clk),
-        .rst_n(rst_n),
+        .rst_n(rst_n_int),
         .sample_valid(sample_tick),
         .x_in(rom_sample),
-        .mode_force(sw_mode_force),
+        .mode_force(mode_force_latched),
         .y_valid(y_valid),
         .y_acc(y_acc),
         .gate_out(gate_out),
@@ -155,7 +222,7 @@ module board_core #(
         .BAUD(BAUD)
     ) u_uart (
         .clk(clk),
-        .rst_n(rst_n),
+        .rst_n(rst_n_int),
         .tx_start(tx_start_reg),
         .tx_data(tx_data_reg),
         .tx_pin(uart_txd),
@@ -168,7 +235,7 @@ module board_core #(
     reg [7:0]         latched_chk;
 
     always @(posedge clk) begin
-        if (!rst_n) begin
+        if (!rst_n_int) begin
             f_state       <= F_IDLE;
             tx_data_reg   <= 8'd0;
             tx_start_reg  <= 1'b0;
@@ -182,9 +249,9 @@ module board_core #(
                 F_IDLE: begin
                     if (y_valid) begin
                         latched_y     <= y_acc;
-                        latched_flags <= {5'b00000, (sw_mode_force != 2'b00), peak_pulse, gate_out};
+                        latched_flags <= {5'b00000, (mode_force_latched != 2'b00), peak_pulse, gate_out};
                         latched_chk   <= 8'hA5 ^ y_acc[31:24] ^ y_acc[23:16] ^ y_acc[15:8] ^ y_acc[7:0] ^
-                                         {5'b00000, (sw_mode_force != 2'b00), peak_pulse, gate_out};
+                                         {5'b00000, (mode_force_latched != 2'b00), peak_pulse, gate_out};
                         f_state       <= F_BYTE0;
                     end
                 end
@@ -259,7 +326,7 @@ module board_core #(
     reg [26:0] heartbeat_cnt;
 
     always @(posedge clk) begin
-        if (!rst_n) begin
+        if (!rst_n_int) begin
             peak_stretch_cnt <= 23'd0;
             gate_stretch_cnt <= 23'd0;
             heartbeat_cnt    <= 27'd0;

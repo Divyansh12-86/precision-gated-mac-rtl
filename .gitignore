@@ -14,6 +14,7 @@ data/mitbih_full/
 data/nstdb/
 data/test_vectors/full_*/
 data/test_vectors/ext_*/
+data/test_vectors/clean_ref_*/
 
 # ── Simulation & Build Artifacts ──────────────────────────────────────────────
 *.vvp
@@ -58,3 +59,7 @@ desktop.ini
 *.swp
 *.swo
 *~
+
+# ── Verification Bundle ───────────────────────────────────────────────────────
+verification_bundle*.zip
+*.sha256

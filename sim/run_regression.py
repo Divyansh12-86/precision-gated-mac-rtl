@@ -24,6 +24,20 @@ BUILD_DIR = os.path.join(BASE_DIR, "build_regress")
 os.makedirs(REPORTS_DIR, exist_ok=True)
 os.makedirs(BUILD_DIR, exist_ok=True)
 
+def get_tool_versions():
+    ver_py = sys.version.split()[0]
+    ver_verilator = "unknown"
+    try:
+        r = subprocess.run(["verilator", "--version"], capture_output=True, text=True)
+        if r.returncode == 0:
+            ver_verilator = r.stdout.strip().splitlines()[0]
+    except Exception:
+        pass
+    return {
+        "python": ver_py,
+        "verilator": ver_verilator
+    }
+
 def get_git_info():
     commit = "unknown"
     dirty = False
@@ -101,7 +115,7 @@ class RegressionRunner:
     def compile(self, name, tb_file, srcs, extra_flags=None):
         out_bin = f"sim_{name}"
         cmd = [
-            "verilator", "--binary", "--timing",
+            "verilator", "--binary", "--timing", "-j", "4",
             "-Wno-WIDTHTRUNC", "-Wno-WIDTHEXPAND", "-Wno-INITIALDLY",
             "-Irtl"
         ]
@@ -192,21 +206,35 @@ def main():
     ] + top_srcs
     bin_board = runner.compile("board_core", "tb/tb_board_core.v", board_srcs, extra_flags=["-Ifpga"])
     log_board = os.path.join(REPORTS_DIR, "regress_board_core.log")
-    runner.run_cmd([bin_board], "tb_board_core 5000-sample UART stream replay", log_board, append=False)
+    runner.run_cmd([bin_board, "+SCENARIO=por_replay"], "tb_board_core por_replay", log_board, append=False)
+    runner.run_cmd([bin_board, "+SCENARIO=async_switch"], "tb_board_core async_switch", log_board, append=True)
+    runner.run_cmd([bin_board, "+SCENARIO=debounce_glitch"], "tb_board_core debounce_glitch", log_board, append=True)
 
     # 10. Nightly Full-Length Regressions (Phase 3)
     is_nightly = "--nightly" in sys.argv
     if is_nightly:
         runner.log("\n--- EXECUTING NIGHTLY SUITE (650,000-sample full records) ---")
+        required_nightly_sets = []
+        for rec in ["100", "101", "103", "105"]:
+            required_nightly_sets.append(f"full_fixed_{rec}")
+            required_nightly_sets.append(f"full_minmax_{rec}")
+
+        missing_sets = [
+            s for s in required_nightly_sets
+            if not os.path.exists(os.path.join(BASE_DIR, "data", "test_vectors", s, "tv_inputs.hex"))
+        ]
+        if missing_sets:
+            runner.log(f"ERROR: Missing required full-length nightly vector set(s): {missing_sets}")
+            runner.log("Run 'make full-vectors' (or 'python3 sim/gen_vectors.py --full') to generate them.")
+            sys.exit(1)
+
         for rec in ["100", "101", "103", "105"]:
             vec_fixed = f"data/test_vectors/full_fixed_{rec}"
             vec_minmax = f"data/test_vectors/full_minmax_{rec}"
-            if os.path.exists(os.path.join(vec_fixed, "tv_inputs.hex")):
-                runner.run_cmd([bin_det_11, f"+VEC_DIR={vec_fixed}"], f"tb_detector full_fixed_{rec}", log_det, append=True)
-                runner.run_cmd([bin_top_11, f"+VEC_DIR={vec_fixed}"], f"tb_top full_fixed_{rec}", log_top, append=True)
-            if os.path.exists(os.path.join(vec_minmax, "tv_inputs.hex")):
-                runner.run_cmd([bin_det_15, f"+VEC_DIR={vec_minmax}"], f"tb_detector full_minmax_{rec}", log_det, append=True)
-                runner.run_cmd([bin_top_15, f"+VEC_DIR={vec_minmax}"], f"tb_top full_minmax_{rec}", log_top, append=True)
+            runner.run_cmd([bin_det_11, f"+VEC_DIR={vec_fixed}"], f"tb_detector full_fixed_{rec}", log_det, append=True)
+            runner.run_cmd([bin_top_11, f"+VEC_DIR={vec_fixed}"], f"tb_top full_fixed_{rec}", log_top, append=True)
+            runner.run_cmd([bin_det_15, f"+VEC_DIR={vec_minmax}"], f"tb_detector full_minmax_{rec}", log_det, append=True)
+            runner.run_cmd([bin_top_15, f"+VEC_DIR={vec_minmax}"], f"tb_top full_minmax_{rec}", log_top, append=True)
 
     runner.flush_logs(is_nightly)
 
@@ -214,30 +242,26 @@ def main():
     runner.log(f"REGRESSION SUITE COMPLETED: {runner.passes} PASSED, {runner.fails} FAILED")
     runner.log("==================================================================")
 
-    # Write summary for reports
-    summary_path = os.path.join(REPORTS_DIR, "regress_summary.json")
-    write_summary = True
-    if os.path.exists(summary_path):
-        try:
-            with open(summary_path, "r") as f:
-                old = json.load(f)
-            if old.get("failed") == 0 and runner.fails == 0 and old.get("passed") in (34, 50):
-                write_summary = False
-        except Exception:
-            pass
+    # Always write regression summary without wall-clock date
+    commit, dirty = get_git_info()
+    tool_vers = get_tool_versions()
+    summary_data = {
+        "commit": commit,
+        "dirty": dirty,
+        "failed": runner.fails,
+        "mode": "nightly" if is_nightly else "standard",
+        "passed": runner.passes,
+        "tests": [{"name": desc, "status": status} for desc, status, _ in runner.results],
+        "tool_versions": tool_vers
+    }
 
-    if write_summary:
-        commit, dirty = get_git_info()
-        summary_data = {
-            "passed": runner.passes,
-            "failed": runner.fails,
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "commit": commit,
-            "dirty": dirty,
-            "mode": "nightly" if is_nightly else "standard"
-        }
-        with open(summary_path, "w") as f:
-            json.dump(summary_data, f, indent=2)
+    if is_nightly:
+        summary_path = os.path.join(REPORTS_DIR, "regress_summary_nightly.json")
+    else:
+        summary_path = os.path.join(REPORTS_DIR, "regress_summary.json")
+
+    with open(summary_path, "w") as f:
+        json.dump(summary_data, f, indent=2, sort_keys=True)
 
     if runner.fails > 0:
         sys.exit(1)

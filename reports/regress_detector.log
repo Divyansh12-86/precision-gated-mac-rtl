@@ -178,7 +178,7 @@ tb_detector summary for data/test_vectors/std_minmax_105:
 TB_RESULT: PASS name=tb_detector samples=60000 mismatches=0
 - tb/tb_detector.v:192: Verilog $finish
 
-=== tb_detector full_fixed_100 ( exit: 0) ===
+=== tb_detector full_fixed_100 (exit: 0) ===
 ==================================================================
 tb_detector starting on vectors: data/test_vectors/full_fixed_100
 ==================================================================
@@ -196,7 +196,7 @@ tb_detector summary for data/test_vectors/full_fixed_100:
 TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
 - tb/tb_detector.v:192: Verilog $finish
 
-=== tb_detector full_minmax_100 ( exit: 0) ===
+=== tb_detector full_minmax_100 (exit: 0) ===
 ==================================================================
 tb_detector starting on vectors: data/test_vectors/full_minmax_100
 ==================================================================
@@ -214,7 +214,7 @@ tb_detector summary for data/test_vectors/full_minmax_100:
 TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
 - tb/tb_detector.v:192: Verilog $finish
 
-=== tb_detector full_fixed_101 ( exit: 0) ===
+=== tb_detector full_fixed_101 (exit: 0) ===
 ==================================================================
 tb_detector starting on vectors: data/test_vectors/full_fixed_101
 ==================================================================
@@ -232,7 +232,7 @@ tb_detector summary for data/test_vectors/full_fixed_101:
 TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
 - tb/tb_detector.v:192: Verilog $finish
 
-=== tb_detector full_minmax_101 ( exit: 0) ===
+=== tb_detector full_minmax_101 (exit: 0) ===
 ==================================================================
 tb_detector starting on vectors: data/test_vectors/full_minmax_101
 ==================================================================
@@ -250,7 +250,7 @@ tb_detector summary for data/test_vectors/full_minmax_101:
 TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
 - tb/tb_detector.v:192: Verilog $finish
 
-=== tb_detector full_fixed_103 ( exit: 0) ===
+=== tb_detector full_fixed_103 (exit: 0) ===
 ==================================================================
 tb_detector starting on vectors: data/test_vectors/full_fixed_103
 ==================================================================
@@ -268,7 +268,7 @@ tb_detector summary for data/test_vectors/full_fixed_103:
 TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
 - tb/tb_detector.v:192: Verilog $finish
 
-=== tb_detector full_minmax_103 ( exit: 0) ===
+=== tb_detector full_minmax_103 (exit: 0) ===
 ==================================================================
 tb_detector starting on vectors: data/test_vectors/full_minmax_103
 ==================================================================
@@ -286,7 +286,7 @@ tb_detector summary for data/test_vectors/full_minmax_103:
 TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
 - tb/tb_detector.v:192: Verilog $finish
 
-=== tb_detector full_fixed_105 ( exit: 0) ===
+=== tb_detector full_fixed_105 (exit: 0) ===
 ==================================================================
 tb_detector starting on vectors: data/test_vectors/full_fixed_105
 ==================================================================
@@ -304,7 +304,7 @@ tb_detector summary for data/test_vectors/full_fixed_105:
 TB_RESULT: PASS name=tb_detector samples=650000 mismatches=0
 - tb/tb_detector.v:192: Verilog $finish
 
-=== tb_detector full_minmax_105 ( exit: 0) ===
+=== tb_detector full_minmax_105 (exit: 0) ===
 ==================================================================
 tb_detector starting on vectors: data/test_vectors/full_minmax_105
 ==================================================================

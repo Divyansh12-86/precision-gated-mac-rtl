@@ -42,7 +42,6 @@ All architectural decisions, parameter choices, and optimizations are logged her
 
 ---
 
-## 6. Multi-Target FPGA Synthesis
-- Pure Verilog-2001 core contains 0 vendor-specific blackboxes or hard IP macros.
-- In LUT mode (`synth_xilinx -nodsp -noiopad`), Yosys synthesizes all multipliers into LUT logic (strictly 0 DSP48 blocks inferred), satisfying Criterion G7.
-- Resource usage on Artix-7: `pg_top` uses 1,376 LUTs and 417 FFs (comfortably below the $\le 1500$ LUT / $\le 800$ FF target).
+## 7. Git Tag Semantics & Provenance (Round 2)
+- **Tag `finalize-r1-complete`:** Originally named `pre-finalize` during Round-1 development. Because the working tree history was amended and re-sequenced during Round-1 closure to maintain an exact parent-code to report-commit relationship, the original tag was renamed to `finalize-r1-complete` (`9ada39e`) to honestly reflect that it represents the post-refactor baseline rather than a pre-refactor state.
+- **Tag `round2-start`:** Created as an annotated tag at commit `90af974` marking the exact starting point of the Round-2 engineering campaign ("Make It Provable, Honest and Hardware-Safe"). All Round-2 commits descend from this baseline.

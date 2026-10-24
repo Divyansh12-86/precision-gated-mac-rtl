@@ -1,10 +1,9 @@
 # Characterization & Verification Report: Precision-Gated Approximate-MAC ECG Filter
 
-**Date:** 2026-10-24 04:17:39  
-**Source Commit:** `c892244c18bb2d24ba733c99bf420246ea6ca20c` (code tree clean: yes)  
+**Source Commit:** `975046f9466a3bff105d9133a5da6625c94aee4d` (code tree clean: no)  
 **Environment:** Linux x86_64, Python 3.12, Verilator 5.020, Yosys 0.33  
-**Regression Status:** 50 tests executed, 0 failed across all suites  
-**Mutation Harness:** 21/21 mandatory mutants caught, 0 survived  
+**Regression Status:** 36 tests executed, 0 failed across all suites  
+**Mutation Harness:** 29/29 mandatory mutants caught, 0 survived  
 
 ---
 
@@ -14,7 +13,7 @@
 |---|---|---|---|---|
 | **H1** | Clean clone -> `make all` | `Makefile`, `reports/` | **PASS** | Complete pipeline reproducible |
 | **H2** | 0 failures across all TBs | `reports/regress_*.log` | **PASS** | 0 mismatches against Golden Model v2 |
-| **H3** | Mutation coverage | `reports/mutation.json` | **PASS** | 21/21 mandatory mutants caught |
+| **H3** | Mutation coverage | `reports/mutation.json` | **PASS** | 29/29 mandatory mutants caught |
 | **H4** | Same-mode area target | `reports/synth.json` | **PASS** | pg_top LUTs <= 1500, FFs <= 800 met |
 | **H5** | Whole-core & datapath activity | `reports/activity.json` | **PASS** | Evaluated on 6 sets unweighted |
 | **H6** | Timing & power | `reports/synth.json` | **NOT RUN** | Vivado absent; OOC script provided in scripts/ |
@@ -61,7 +60,8 @@ Measurements gathered on Verilator by tracking bit transitions cycle-by-cycle ac
 
 Target technology: `Xilinx 7-Series xc7 family generic (no part-specific data)`  
 Timing & Power Status: `NOT RUN (no Vivado installed on host; Vivado OOC script provided in scripts/synth_vivado_ooc.tcl)`  
-Phase C Area Check: `1394 LUTs, 417 FFs` vs target `<= 1500 LUTs, <= 800 FFs` (Target Met: **True**)  
+Phase C Area Check: `1394 LUTs, 417 FFs` vs target `<= 1500 LUTs, <= 800 FFs` (Target Met: **True**, spread: 1376–1402 LUTs (1.9%))  
+*Note on Netlist Variability:* Yosys area estimates vary by about ±1.9% depending on netlist naming and hierarchy boundaries; Vivado physical implementation will differ.
 
 | Module / Target | Synthesis Mode | LUTs | FFs | DSPs | CARRY4 | MUXF | Basys 3 LUT Util (%) |
 |---|---|---|---|---|---|---|---|
@@ -70,12 +70,24 @@ Phase C Area Check: `1394 LUTs, 417 FFs` vs target `<= 1500 LUTs, <= 800 FFs` (T
 | `qrs_detector` | LUT | 624 | 254 | 0 | 85 | 6 | 3.00% |
 | `baseline_fir_exact` | DSP | 123 | 59 | 1 | 16 | 52 | 0.59% |
 | `pg_top` | DSP | 817 | 368 | 2 | 107 | 84 | 3.93% |
-| `top_basys3` | DSP | 1142 | 582 | 2 | 155 | 62 | 5.49% |
-| `top_nexys_a7` | DSP | 1145 | 582 | 2 | 155 | 62 | 5.50% |
-| `top_basys3` | LUT | 1813 | 631 | 0 | 168 | 372 | 8.72% |
-| `top_nexys_a7` | LUT | 1624 | 631 | 0 | 168 | 135 | 7.81% |
+| `top_basys3` | DSP | 1179 | 627 | 2 | 166 | 141 | 5.67% |
+| `top_nexys_a7` | DSP | 1116 | 627 | 2 | 166 | 59 | 5.37% |
+| `top_basys3` | LUT | 1828 | 676 | 0 | 179 | 357 | 8.79% |
+| `top_nexys_a7` | LUT | 1677 | 676 | 0 | 179 | 174 | 8.06% |
 | **Overhead (LUT mode)** | `pg_top - baseline` | **+551** | **+294** | 0 | - | - | - |
 | **Overhead (DSP mode)** | `pg_top - baseline` | **+694** | **+309** | **1** | - | - | - |
+
+### Demonstrator Top Wrappers Side-by-Side
+
+| Wrapper Top | Mode | LUTs | FFs | DSPs | CARRY4 | MUXF | Basys 3 LUT Util (%) |
+|---|---|---|---|---|---|---|---|
+| `top_basys3` | DSP | 1179 | 627 | 2 | 166 | 141 | 5.67% |
+| `top_nexys_a7` | DSP | 1116 | 627 | 2 | 166 | 59 | 5.37% |
+| `top_basys3_lut` | LUT | 1828 | 676 | 0 | 179 | 357 | 8.79% |
+| `top_nexys_a7_lut` | LUT | 1677 | 676 | 0 | 179 | 174 | 8.06% |
+
+> [!NOTE] Top Wrapper Equivalence
+> Basys 3 and Nexys A7 wrappers are logically identical (differing only in pin naming and reset polarity). In LUT mode, Yosys synthesizes 1828 vs 1677 LUTs (MUXF 357 vs 174) due purely to internal naming heuristics in cell clustering.
 
 ---
 
@@ -85,21 +97,21 @@ Evaluated across records 100, 103, 105 under composite synthetic noise (0.3 Hz b
 
 | Record | Input SNR (dB) | Sensitivity (%) | +P (%) | Gate Full Duty (%) | Approx Duty (%) | QRS PRD Gated (%) | QRS PRD All-Approx (%) | Datapath Saving (%) | Whole-Core Saving (%) | RTL Match |
 |---|---|---|---|---|---|---|---|---|---|---|
-| **100** | 24 dB | 100.0% | 100.0% | 14.6% | 85.4% | 0.000% | 6.651% | 39.90% | 25.88% | PASS (0 mismatches) |
-| **100** | 18 dB | 100.0% | 100.0% | 14.6% | 85.4% | 0.000% | 6.595% | 39.21% | 24.93% | PASS (0 mismatches) |
-| **100** | 12 dB | 100.0% | 94.4% | 15.5% | 84.5% | 0.000% | 6.488% | 38.24% | 23.70% | PASS (0 mismatches) |
-| **100** | 6 dB | 100.0% | 37.3% | 57.6% | 42.4% | 4.117% | 6.100% | 18.56% | 9.29% | PASS (0 mismatches) |
-| **100** | 0 dB | 100.0% | 33.8% | 58.3% | 41.7% | 3.704% | 5.304% | 16.76% | 7.98% | PASS (0 mismatches) |
-| **103** | 24 dB | 100.0% | 100.0% | 13.8% | 86.2% | 0.190% | 2.900% | 40.34% | 26.00% | PASS (0 mismatches) |
-| **103** | 18 dB | 100.0% | 100.0% | 13.8% | 86.2% | 0.000% | 2.819% | 39.45% | 24.99% | PASS (0 mismatches) |
-| **103** | 12 dB | 100.0% | 100.0% | 13.8% | 86.2% | 0.000% | 2.949% | 38.57% | 23.86% | PASS (0 mismatches) |
-| **103** | 6 dB | 100.0% | 30.9% | 57.7% | 42.3% | 1.899% | 3.004% | 18.18% | 9.06% | PASS (0 mismatches) |
-| **103** | 0 dB | 100.0% | 33.8% | 58.5% | 41.5% | 1.845% | 2.721% | 16.37% | 7.71% | PASS (0 mismatches) |
-| **105** | 24 dB | 100.0% | 100.0% | 16.3% | 83.7% | 0.670% | 3.035% | 38.70% | 24.78% | PASS (0 mismatches) |
-| **105** | 18 dB | 100.0% | 100.0% | 16.3% | 83.7% | 0.199% | 3.090% | 38.19% | 24.03% | PASS (0 mismatches) |
-| **105** | 12 dB | 100.0% | 95.0% | 17.2% | 82.8% | 0.000% | 3.058% | 37.23% | 22.94% | PASS (0 mismatches) |
-| **105** | 6 dB | 100.0% | 36.8% | 57.8% | 42.2% | 1.854% | 2.987% | 18.05% | 8.98% | PASS (0 mismatches) |
-| **105** | 0 dB | 100.0% | 38.2% | 58.1% | 41.9% | 1.794% | 2.767% | 16.46% | 7.80% | PASS (0 mismatches) |
+| **100** | 24 dB | 100.0% | 100.0% | 14.6% | 85.4% | 0.000% | 5.925% | 21.31% | 13.45% | PASS (0 mismatches) |
+| **100** | 18 dB | 100.0% | 100.0% | 14.6% | 85.4% | 0.000% | 5.991% | 20.67% | 12.62% | PASS (0 mismatches) |
+| **100** | 12 dB | 100.0% | 94.4% | 15.5% | 84.5% | 0.000% | 5.421% | 19.84% | 11.56% | PASS (0 mismatches) |
+| **100** | 6 dB | 100.0% | 27.9% | 57.7% | 42.3% | 2.606% | 5.425% | 9.69% | 4.03% | PASS (0 mismatches) |
+| **100** | 0 dB | 100.0% | 33.8% | 58.3% | 41.7% | 2.834% | 4.352% | 8.50% | 3.13% | PASS (0 mismatches) |
+| **103** | 24 dB | 100.0% | 100.0% | 13.8% | 86.2% | 0.000% | 2.623% | 21.32% | 13.31% | PASS (0 mismatches) |
+| **103** | 18 dB | 100.0% | 100.0% | 13.8% | 86.2% | 0.000% | 2.511% | 20.95% | 12.71% | PASS (0 mismatches) |
+| **103** | 12 dB | 100.0% | 100.0% | 13.8% | 86.2% | 0.000% | 2.627% | 19.98% | 11.59% | PASS (0 mismatches) |
+| **103** | 6 dB | 100.0% | 32.4% | 58.2% | 41.8% | 1.653% | 2.679% | 9.42% | 3.85% | PASS (0 mismatches) |
+| **103** | 0 dB | 100.0% | 33.8% | 58.5% | 41.5% | 1.639% | 2.412% | 8.27% | 2.96% | PASS (0 mismatches) |
+| **105** | 24 dB | 100.0% | 100.0% | 16.3% | 83.7% | 0.533% | 2.652% | 20.08% | 12.39% | PASS (0 mismatches) |
+| **105** | 18 dB | 100.0% | 100.0% | 16.3% | 83.7% | 0.161% | 2.695% | 19.91% | 11.95% | PASS (0 mismatches) |
+| **105** | 12 dB | 100.0% | 95.0% | 17.2% | 82.8% | 0.000% | 2.701% | 19.45% | 11.25% | PASS (0 mismatches) |
+| **105** | 6 dB | 100.0% | 38.2% | 57.8% | 42.2% | 1.607% | 2.579% | 9.30% | 3.81% | PASS (0 mismatches) |
+| **105** | 0 dB | 100.0% | 38.2% | 58.1% | 41.9% | 1.547% | 2.426% | 8.38% | 3.08% | PASS (0 mismatches) |
 
 ---
 
@@ -120,11 +132,11 @@ Evaluated across records 100, 103, 105 under composite synthetic noise (0.3 Hz b
 ## 7. Explicit Technical Disclosures & Limitations
 
 1. **Switching Activity as Power Proxy:** The toggle counts reported are architectural switching activity measurements ($\alpha$), not physical silicon milliwatt figures. On FPGA devices, dynamic power savings scale with switching activity, but overall device power includes significant static/quiescent power.
-2. **Noise Degradation at Low SNR:** Under synthetic noise at <= 6 dB SNR, the detector positive predictivity collapses to ~31–38% and full-precision gate duty increases to ~58%, causing switching savings to shrink to 17.57% datapath and 8.56% whole-core on `noise_stress`.
+2. **Noise Degradation at Low SNR:** Under synthetic noise at <= 6 dB SNR, the detector positive predictivity collapses to ~28–38% and full-precision gate duty increases to ~58%, causing switching savings to shrink to 17.57% datapath and 8.56% whole-core on `noise_stress`.
 3. **Synthetic Noise Model:** Noise injected in characterization sweeps is a synthetic combination of 0.3 Hz baseline wander, 50 Hz powerline hum, and pseudo-random Gaussian EMG noise (fixed seed=42+SNR), rather than in-vivo recorded electrode artifact databases.
 4. **Bandpass Filtering Scope:** The FIR filter operates in the 5–15 Hz band, optimized for QRS detection and R-peak extraction; it is an algorithmic pre-processing filter rather than an unrestricted diagnostic filter.
 5. **Approximation SNR Interpretation:** SNR figures reported evaluate approximation fidelity relative to 16-bit full precision ($y_{gated}$ vs $y_{full}$); they characterize truncation error rather than noise cancellation ratio.
-6. **Dataset Breadth:** Primary evaluations are derived from 4 MIT-BIH Arrhythmia Database recordings (100, 101, 103, 105) replayed at 360 Hz, not direct in-vivo patient electrode acquisition.
+6. **Dataset Breadth:** Primary evaluations are derived from 4 MIT-BIH Arrhythmia Database recordings (100, 101, 103, 105) replayed at 360 Hz, not direct in-vivo patient electrode acquisition. Extended records (ext_*): NOT RUN (no network).
 7. **Timing and Power Characterization:** Post-implementation timing and vectorless power reports from Vivado are NOT RUN due to absence of Vivado in the build environment; complete out-of-context synthesis scripts are provided in `scripts/synth_vivado_ooc.tcl`.
 
 <!-- GOAL_COMPLETE -->

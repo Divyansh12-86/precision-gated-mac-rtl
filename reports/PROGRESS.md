@@ -57,7 +57,7 @@ All commands, runs, architectural refactors, and milestone completions are logge
   - `qrs_detector.v`: Replaced 54-stage MWI register array (1,279 FFs) with 64x17 Distributed RAM; replaced 17x17 combinational squarer with 17-cycle serial shift-add squarer (`SERIAL_SQ = 1`); unified threshold adaptation subtractor.
   - Pipeline Latency: Constant 73 clock cycles ($17 + 54 + 2$).
 - **Synthesis Results (Yosys `xc7 -nodsp`):**
-  - `pg_top`: **1,376 LUTs, 417 FFs** (smashed target of $\le 1500$ LUTs, $\le 800$ FFs; down from 2,691 LUTs, 2,246 FFs).
+  - `pg_top`: **1,394 LUTs, 417 FFs** (smashed target of $\le 1500$ LUTs, $\le 800$ FFs; down from 2,691 LUTs, 2,246 FFs).
   - `qrs_detector`: **624 LUTs, 254 FFs** (down from 1,643 LUTs, 1,279 FFs).
   - `baseline_fir_exact`: **843 LUTs, 123 FFs**.
 
@@ -82,6 +82,27 @@ All commands, runs, architectural refactors, and milestone completions are logge
   - `sim/activity_report.py`: Evaluated whole-core and datapath toggles across 6 sets:
     - Standard records: 20.97% – 22.00% datapath savings (32.90% minmax); 13.37% – 14.29% whole-core savings (21.67% minmax); 83.19% – 85.83% low-operand bus savings.
     - Noise stress: 17.57% datapath, 8.56% whole-core, 42.34% low-operand savings.
-  - `scripts/mutation_check.py`: 14 of 14 mandatory mutants caught (0 survived).
+  - `scripts/mutation_check.py`: 29 of 29 mandatory mutants caught (0 survived).
   - `sim/noise_sweep.py`: Characterized SNRs 24, 18, 12, 6, 0 dB across records 100, 103, 105. All 15 sweeps verified bit-exact on RTL (0 mismatches).
-  - `sim/run_regression.py`: Executed comprehensive regression suite (**34 PASSED, 0 FAILED**).
+  - `sim/run_regression.py`: Executed comprehensive regression suite (**36 PASSED, 0 FAILED** standard, **50 PASSED, 0 FAILED** nightly).
+
+---
+
+## Phase 7: Round-2 Verification Hardening & Hardware Robustness [COMPLETED]
+
+- **Date:** 2026-10-24
+- **Evidence-Layer & Documentation Integrity:**
+  - Removed all hard-coded/frozen summary logic in `sim/run_regression.py`. Summaries always generated dynamically with HEAD hash, tool versions, test list, and 0 wall-clock timestamps in tracked files.
+  - Eliminated medical and clinical overclaim terminology across documentation.
+  - Added `scripts/check_docs_numbers.py` ensuring zero drift between README/AGENTS documentation and reports JSON metrics.
+  - Characterized Yosys 7-series LUT synthesis variability spread (1,376–1,402 LUTs, ±1.9%).
+- **Hardware Robustness Hardening:**
+  - `fpga/board_core.v`: Implemented 16-bit Power-On Reset (POR) counter, 2-flop metastability synchronizers on mode and pause inputs, 1 ms glitch rejection filter, and sample-tick mode latching.
+  - `tb/tb_board_core.v`: Expanded test scenarios covering `por_replay`, `async_switch`, and `debounce_glitch`.
+  - Mutation harness expanded to 29 mandatory mutants (MUT01–MUT29), catching all 29 mutants (0 survived, 0 build errors).
+- **Signal & Noise Sweep Methodology:**
+  - Injected noise strictly in the integer ADU domain before bit shifts, preserving the hardware invariant `(x & 31) == 0` for 100% of samples.
+  - Characterized clean baseline references for identical 5,000-sample pipeline windows and computed delta activity metrics.
+- **Unified Verification & Release Packaging:**
+  - Rewrote `scripts/verify_all.py` (v2) with live re-runs, independent NumPy convolution bit-exact checks, and negative test verification.
+  - Implemented `scripts/make_verification_bundle.py` producing self-contained verification bundles $\le 15$ MB.

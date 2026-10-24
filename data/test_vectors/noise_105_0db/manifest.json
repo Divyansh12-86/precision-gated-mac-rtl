@@ -7,13 +7,13 @@
   },
   "n_samples": 5000,
   "files": {
-    "tv_inputs.hex": "2c14ac076040cb89031e1087d106ddd190b654a7bfa584ea05c42aa6ec6fb9eb",
-    "tv_gate_flags.hex": "37d055dcd96e7ee94f579f35fd732f8319b752c901adb7e355c3862dc3716c66",
-    "tv_outputs_full.hex": "1941389471edf2183a7821592e5c6125aef04b7c4771233d0690dbf51855d18f",
-    "tv_outputs_gated.hex": "14618b8f6bbdcb15cb32752abfbe5048afc061a001f702eddb9a37674b5e541e",
-    "tv_outputs_allapprox.hex": "68515fde06d173f6b7ca9bf733408d4c04846dfad916667b2b33af51390e3ee8",
-    "tv_peaks.hex": "94402e7efa0a16145c3bd584741f4da477871861ee70973f4b3cbc8003438aca",
-    "tv_mwi.hex": "71d5899bea3b523c2dc74cc9802c877c787dcc53d96961419c893d483d39242a",
+    "tv_inputs.hex": "21144e6ed8616fb7062b60c3c479998c15c14a75621645eb8063348d9cad36e6",
+    "tv_gate_flags.hex": "6d427d3ebde4db34efbbb37d42748293b017252629aea43ea1afc0bf3c0d94f1",
+    "tv_outputs_full.hex": "a28c368acb80a5a4f811dce5a6ae51543d6a20caef09325dbbf6d48bf4b63e7c",
+    "tv_outputs_gated.hex": "4e290547f884fdc8595404ff4ca228fcb737edc4807a3148640d8beede0ffb29",
+    "tv_outputs_allapprox.hex": "978ebdf6970c136ec1fe6e6fadd9f0f65231085c91c4dca40f2c236e43adeef7",
+    "tv_peaks.hex": "fc04932933bd6a1926e4fabf9a54de33c3c66edf617ff464d21ffc2048371827",
+    "tv_mwi.hex": "41da27b10dde0159a903c255456d219a5617d582519d91df41f5b14dba583ca2",
     "coeffs.mem": "8f7b3833183f56343b955306889c34d0f908b148b8893fa9b9456a798cb67639"
   }
 }

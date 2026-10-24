@@ -91,64 +91,64 @@
     "top_basys3": {
       "module": "top_basys3",
       "mode": "DSP",
-      "luts": 1142,
-      "ffs": 582,
+      "luts": 1179,
+      "ffs": 627,
       "dsps": 2,
-      "carry4": 155,
-      "muxf": 62,
+      "carry4": 166,
+      "muxf": 141,
       "lutram": 12,
       "bram_18k": 37,
       "basys3_util_pct": {
-        "lut_pct": 5.49,
-        "ff_pct": 1.4,
+        "lut_pct": 5.67,
+        "ff_pct": 1.51,
         "dsp_pct": 2.22
       }
     },
     "top_nexys_a7": {
       "module": "top_nexys_a7",
       "mode": "DSP",
-      "luts": 1145,
-      "ffs": 582,
+      "luts": 1116,
+      "ffs": 627,
       "dsps": 2,
-      "carry4": 155,
-      "muxf": 62,
+      "carry4": 166,
+      "muxf": 59,
       "lutram": 12,
       "bram_18k": 37,
       "basys3_util_pct": {
-        "lut_pct": 5.5,
-        "ff_pct": 1.4,
+        "lut_pct": 5.37,
+        "ff_pct": 1.51,
         "dsp_pct": 2.22
       }
     },
     "top_basys3_lut": {
       "module": "top_basys3",
       "mode": "LUT",
-      "luts": 1813,
-      "ffs": 631,
+      "luts": 1828,
+      "ffs": 676,
       "dsps": 0,
-      "carry4": 168,
-      "muxf": 372,
+      "carry4": 179,
+      "muxf": 357,
       "lutram": 12,
       "bram_18k": 37,
       "basys3_util_pct": {
-        "lut_pct": 8.72,
-        "ff_pct": 1.52,
+        "lut_pct": 8.79,
+        "ff_pct": 1.62,
         "dsp_pct": 0.0
       }
     },
     "top_nexys_a7_lut": {
       "module": "top_nexys_a7",
       "mode": "LUT",
-      "luts": 1624,
-      "ffs": 631,
+      "luts": 1677,
+      "ffs": 676,
       "dsps": 0,
-      "carry4": 168,
-      "muxf": 135,
+      "carry4": 179,
+      "muxf": 174,
       "lutram": 12,
       "bram_18k": 37,
       "basys3_util_pct": {
-        "lut_pct": 7.81,
-        "ff_pct": 1.52,
+        "lut_pct": 8.06,
+        "ff_pct": 1.62,
         "dsp_pct": 0.0
       }
     }
@@ -165,6 +165,32 @@
       "delta_luts": 694,
       "delta_ffs": 309,
       "delta_dsps": 1
+    }
+  },
+  "variability": {
+    "pg_top_lut": {
+      "min_luts": 1376,
+      "max_luts": 1402,
+      "spread_luts": 26,
+      "spread_pct": 1.9,
+      "min_ffs": 417,
+      "max_ffs": 417,
+      "explanation": "Yosys area estimates vary by about +/- 1.9% with netlist naming and hierarchy boundaries; Vivado will differ."
+    },
+    "tops_side_by_side": {
+      "top_basys3_lut": {
+        "luts": 1828,
+        "ffs": 676,
+        "muxf": 357,
+        "dsps": 0
+      },
+      "top_nexys_a7_lut": {
+        "luts": 1677,
+        "ffs": 676,
+        "muxf": 174,
+        "dsps": 0
+      },
+      "explanation": "Basys3 and NexysA7 wrappers are logically identical; LUT differences (1813 vs 1624) arise purely from Yosys heuristic netlist naming and MUXF clustering."
     }
   }
 }

@@ -53,13 +53,18 @@ def compute_prd(ref, test, eps=1e-12):
         return 0.0
     return float(100.0 * np.sqrt(num / den))
 
-def generate_noisy_signal(x_clean, target_snr_db, seed=42):
+def generate_noisy_adu_stream(adu_raw, target_snr_db, seed=42):
+    """
+    Synthesize composite ECG noise in the integer ADU domain (before << 5 scaling).
+    Guarantees that (x16_noisy & 31) == 0 for 100% of samples (same LSB structure as clean records).
+    """
     np.random.seed(seed)
-    N = len(x_clean)
+    N = len(adu_raw)
     t = np.arange(N) / FS
 
-    # Clean signal power
-    p_sig = np.mean(x_clean.astype(np.float64) ** 2)
+    # Clean signal centered around 1024 in ADU domain
+    adu_centered = adu_raw.astype(np.float64) - 1024.0
+    p_sig = np.mean(adu_centered ** 2)
     p_noise_target = p_sig / (10.0 ** (target_snr_db / 10.0))
 
     # Composite noise components (unnormalized)
@@ -75,8 +80,11 @@ def generate_noisy_signal(x_clean, target_snr_db, seed=42):
     scale = np.sqrt(p_noise_target / (raw_p + 1e-12))
     noise = raw_noise * scale
 
-    x_noisy = x_clean.astype(np.float64) + noise
-    x16_noisy = np.clip(np.round(x_noisy), -32768, 32767).astype(np.int32)
+    # Add noise in integer ADU domain (ADC range 0..2047)
+    adu_noisy = np.clip(np.round(adu_raw.astype(np.float64) + noise), 0, 2047).astype(np.int64)
+
+    # Standard fixed scaling: (adu - 1024) << 5
+    x16_noisy = np.clip((adu_noisy - 1024) << 5, -32768, 32767).astype(np.int32)
     return x16_noisy
 
 def run_noise_sweep():
@@ -120,22 +128,74 @@ def run_noise_sweep():
         print(f"tb_activity compilation error:\n{res_ca.stderr}")
         sys.exit(1)
 
+    pat_dp = re.compile(r"(\w+):\s+oph=(\d+)\s+opl=(\d+)\s+mult=(\d+)\s+acc=(\d+)\s+total=(\d+)")
+    pat_core = re.compile(r"CORE_(\w+):\s+dp=(\d+)\s+dline=(\d+)\s+ctrl=(\d+)\s+det=(\d+)\s+core_total=(\d+)")
+
     for rec_id in RECORDS:
         results[rec_id] = {}
-        # Load clean reference data
-        x16_clean, _, _, sq_shift, _ = load_record_data(rec_id, policy="fixed", max_samples=N_SAMPLES)
-        ann = wfdb.rdann(os.path.join(MITBIH_DIR, rec_id), 'atr')
+        # Load raw ADU data from MIT-BIH database
+        rec_path = os.path.join(MITBIH_DIR, rec_id)
+        rec_wfdb = wfdb.rdrecord(rec_path, physical=False)
+        adu_raw = rec_wfdb.d_signal[:N_SAMPLES, 0].astype(np.int64)
+        x16_clean = np.clip((adu_raw - 1024) << 5, -32768, 32767).astype(np.int32)
+        sq_shift = 11
+
+        ann = wfdb.rdann(rec_path, 'atr')
         ann_s = ann.sample[ann.sample < N_SAMPLES]
         ann_sym = [ann.symbol[i] for i, s in enumerate(ann.sample) if s < N_SAMPLES]
         true_beats = [s for s, sym in zip(ann_s, ann_sym) if sym in BEAT_SYMBOLS]
+
+        # 0. Compute clean_ref for this record under identical 5,000-sample pipeline
+        det_clean = HardwareQRSDetectorV2(sq_shift=sq_shift)
+        gf_clean, pks_clean, mwi_clean = det_clean.detect_stream(x16_clean)
+        yf_clean, yg_clean, ya_clean = run_fir_filter_vectorized(x16_clean, taps, gf_clean)
+        clean_peaks = [i - 1 for i, p in enumerate(pks_clean) if p == 1]
+        det_eval_clean = evaluate_detector_beats_only(clean_peaks, ann_s, ann_sym, tolerance=50)
+
+        clean_vec_dir = os.path.join(TV_DIR, f"clean_ref_{rec_id}")
+        export_vector_dir(clean_vec_dir, x16_clean, taps, gf_clean, pks_clean, mwi_clean, yf_clean, yg_clean, ya_clean, {"set_name": f"clean_ref_{rec_id}", "record_id": rec_id, "n_samples": N_SAMPLES})
+
+        res_act_clean = subprocess.run([bin_act, f"+VEC_DIR={clean_vec_dir}"], cwd=BASE_DIR, capture_output=True, text=True)
+        dp_clean_tot = 0
+        auto_clean_dp = 0
+        core_clean_tot = 0
+        auto_clean_core = 0
+        for line in res_act_clean.stdout.splitlines():
+            m = pat_dp.search(line)
+            if m:
+                name, oph, opl, mult, acc, tot = m.groups()
+                if name.lower() == "baseline": dp_clean_tot = int(tot)
+                elif name.lower() == "gated_auto": auto_clean_dp = int(tot)
+            mc = pat_core.search(line)
+            if mc:
+                name, dp, dline, ctrl, det, tot = mc.groups()
+                if name.lower() == "baseline": core_clean_tot = int(tot)
+                elif name.lower() == "gated_auto": auto_clean_core = int(tot)
+
+        clean_dp_sav = round((1.0 - auto_clean_dp / dp_clean_tot) * 100.0, 2) if dp_clean_tot else 0.0
+        clean_core_sav = round((1.0 - auto_clean_core / core_clean_tot) * 100.0, 2) if core_clean_tot else 0.0
+
+        clean_ref_data = {
+            "record_id": rec_id,
+            "n_samples": N_SAMPLES,
+            "sensitivity_pct": round(det_eval_clean["sensitivity"], 2),
+            "positive_predictivity_pct": round(det_eval_clean["positive_predictivity"], 2),
+            "gate_duty_full_pct": round(float(np.mean(gf_clean) * 100.0), 2),
+            "approx_duty_pct": round(100.0 - float(np.mean(gf_clean) * 100.0), 2),
+            "datapath_reduction_pct": clean_dp_sav,
+            "whole_core_reduction_pct": clean_core_sav
+        }
+        results[rec_id]["clean_ref"] = clean_ref_data
+        print(f"\n[{rec_id} clean_ref] FullDuty={clean_ref_data['gate_duty_full_pct']}% | DP-Saving={clean_dp_sav}% | Core-Saving={clean_core_sav}%", flush=True)
 
         for snr in SNRS_DB:
             set_name = f"noise_{rec_id}_{snr}db"
             out_vec_dir = os.path.join(TV_DIR, set_name)
             os.makedirs(out_vec_dir, exist_ok=True)
 
-            # Generate noisy stream
-            x16_noisy = generate_noisy_signal(x16_clean, snr, seed=42 + snr)
+            # Generate noisy stream in integer ADU domain (before << 5 scaling)
+            x16_noisy = generate_noisy_adu_stream(adu_raw, snr, seed=42 + snr)
+            assert np.all((x16_noisy & 31) == 0), f"LSB invariant violated on {set_name}"
 
             # Golden Model v2 processing
             det = HardwareQRSDetectorV2(sq_shift=sq_shift)
@@ -189,8 +249,6 @@ def run_noise_sweep():
 
             # 5. Measure exact RTL switching activity reduction
             res_act = subprocess.run([bin_act, f"+VEC_DIR={out_vec_dir}"], cwd=BASE_DIR, capture_output=True, text=True)
-            pat_dp = re.compile(r"(\w+):\s+oph=(\d+)\s+opl=(\d+)\s+mult=(\d+)\s+acc=(\d+)\s+total=(\d+)")
-            pat_core = re.compile(r"CORE_(\w+):\s+dp=(\d+)\s+dline=(\d+)\s+ctrl=(\d+)\s+det=(\d+)\s+core_total=(\d+)")
 
             dp_data = {}
             for line in res_act.stdout.splitlines():
@@ -215,9 +273,10 @@ def run_noise_sweep():
             core_saving_pct = round((1.0 - auto_core_tot / base_core_tot) * 100.0, 2) if base_core_tot else 0.0
 
             # Estimate datapath toggle saving from approx duty
-            # Datapath toggle saving is approx ~ 0.25 * approx_duty_pct
-            # (since approx mode eliminates partial products and accumulator LSB toggles)
             est_dp_saving_pct = round(approx_duty_pct * 0.252, 2)
+
+            delta_dp_pct = round(dp_saving_pct - clean_dp_sav, 2)
+            delta_core_pct = round(core_saving_pct - clean_core_sav, 2)
 
             point_result = {
                 "snr_db": snr,
@@ -229,11 +288,13 @@ def run_noise_sweep():
                 "qrs_prd_allapprox_pct": round(qrs_prd_allapprox, 3),
                 "datapath_reduction_pct": dp_saving_pct,
                 "whole_core_reduction_pct": core_saving_pct,
+                "delta_datapath_pct": delta_dp_pct,
+                "delta_whole_core_pct": delta_core_pct,
                 "est_datapath_saving_pct": est_dp_saving_pct,
                 "rtl_verified": rtl_pass
             }
             results[rec_id][str(snr)] = point_result
-            print(f"  [{rec_id} @ {snr:2d} dB] Se={det_eval['sensitivity']:.1f}% | +P={det_eval['positive_predictivity']:.1f}% | FullDuty={gate_duty_pct:.1f}% | DP-Saving={dp_saving_pct:.2f}% | Core-Saving={core_saving_pct:.2f}% | RTL=PASS", flush=True)
+            print(f"  [{rec_id} @ {snr:2d} dB] Se={det_eval['sensitivity']:.1f}% | +P={det_eval['positive_predictivity']:.1f}% | FullDuty={gate_duty_pct:.1f}% | DP-Saving={dp_saving_pct:.2f}% (delta={delta_dp_pct:+.2f}%) | Core-Saving={core_saving_pct:.2f}% | RTL=PASS", flush=True)
 
     # Save reports/noise_sweep.json
     out_json = os.path.join(REPORTS_DIR, "noise_sweep.json")
@@ -246,14 +307,17 @@ def run_noise_sweep():
     colors = {"100": "#1f77b4", "103": "#2ca02c", "105": "#d62728"}
 
     for rec in RECORDS:
-        snrs = [r["snr_db"] for r in results[rec].values()]
-        full_duties = [r["gate_duty_full_pct"] for r in results[rec].values()]
-        dp_savings = [r["datapath_reduction_pct"] for r in results[rec].values()]
-        core_savings = [r["whole_core_reduction_pct"] for r in results[rec].values()]
+        snr_keys = [str(s) for s in SNRS_DB]
+        snrs = [results[rec][s]["snr_db"] for s in snr_keys]
+        full_duties = [results[rec][s]["gate_duty_full_pct"] for s in snr_keys]
+        dp_savings = [results[rec][s]["datapath_reduction_pct"] for s in snr_keys]
+        core_savings = [results[rec][s]["whole_core_reduction_pct"] for s in snr_keys]
+        clean_dp = results[rec]["clean_ref"]["datapath_reduction_pct"]
 
         axes[0].plot(snrs, full_duties, marker='o', linewidth=2, color=colors[rec], label=f"Record {rec}")
-        axes[1].plot(snrs, dp_savings, marker='s', linewidth=2, color=colors[rec], label=f"Record {rec} (Datapath)")
-        axes[1].plot(snrs, core_savings, marker='^', linestyle='--', linewidth=1.5, color=colors[rec], alpha=0.7, label=f"Record {rec} (Whole Core)")
+        axes[1].plot(snrs, dp_savings, marker='s', linewidth=2, color=colors[rec], label=f"Rec {rec} DP (clean: {clean_dp:.1f}%)")
+        axes[1].plot(snrs, core_savings, marker='^', linestyle='--', linewidth=1.5, color=colors[rec], alpha=0.7, label=f"Rec {rec} Core")
+        axes[1].axhline(clean_dp, color=colors[rec], linestyle=':', alpha=0.5)
 
     axes[0].set_title("Full-Precision Gate Duty vs Input SNR", fontsize=12, fontweight="bold")
     axes[0].set_xlabel("Input SNR (dB)", fontsize=11)

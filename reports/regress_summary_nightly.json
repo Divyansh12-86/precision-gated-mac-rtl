@@ -1,0 +1,213 @@
+{
+  "commit": "90af97448574d5b254a432bb005c747039985bc3",
+  "dirty": true,
+  "failed": 0,
+  "mode": "nightly",
+  "passed": 50,
+  "tests": [
+    {
+      "name": "Unit test: mult_split across PIPE 1, 2, 3",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_fir_full smoke",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_fir_full corner",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_fir_full std_fixed_100",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_fir_gated smoke",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_fir_gated corner",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_fir_gated std_fixed_100",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector smoke",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector noise_stress (T10)",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector std_fixed_100",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector std_fixed_101",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector std_fixed_103",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector std_fixed_105",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector std_minmax_100",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector std_minmax_101",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector std_minmax_103",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector std_minmax_105",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top smoke",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top smoke (rand gap)",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top noise_stress (T10)",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top std_fixed_100",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top std_fixed_101",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top std_fixed_103",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top std_fixed_105",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top std_minmax_100",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top std_minmax_101",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top std_minmax_103",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top std_minmax_105",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top_realrate smoke (277.8M cycles)",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top_reset mid-stream reset robustness",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top startup_100_off0",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top startup_103_off0",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top startup_105_off200",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_board_core 5000-sample UART stream replay",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector full_fixed_100",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top full_fixed_100",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector full_minmax_100",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top full_minmax_100",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector full_fixed_101",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top full_fixed_101",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector full_minmax_101",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top full_minmax_101",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector full_fixed_103",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top full_fixed_103",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector full_minmax_103",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top full_minmax_103",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector full_fixed_105",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top full_fixed_105",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_detector full_minmax_105",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top full_minmax_105",
+      "status": "PASS"
+    }
+  ],
+  "tool_versions": {
+    "python": "3.12.3",
+    "verilator": "Verilator 5.020 2024-01-01 rev (Debian 5.020-1)"
+  }
+}

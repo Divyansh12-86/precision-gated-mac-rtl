@@ -271,7 +271,7 @@ tb_top summary for data/test_vectors/startup_105_off200:
 TB_RESULT: PASS name=tb_top samples=500 mismatches=0
 - tb/tb_top.v:234: Verilog $finish
 
-=== tb_top full_fixed_100 ( exit: 0) ===
+=== tb_top full_fixed_100 (exit: 0) ===
 ==================================================================
 tb_top starting on vectors: data/test_vectors/full_fixed_100 (RAND_GAP=0)
 ==================================================================
@@ -289,7 +289,7 @@ tb_top summary for data/test_vectors/full_fixed_100:
 TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
 - tb/tb_top.v:234: Verilog $finish
 
-=== tb_top full_minmax_100 ( exit: 0) ===
+=== tb_top full_minmax_100 (exit: 0) ===
 ==================================================================
 tb_top starting on vectors: data/test_vectors/full_minmax_100 (RAND_GAP=0)
 ==================================================================
@@ -307,7 +307,7 @@ tb_top summary for data/test_vectors/full_minmax_100:
 TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
 - tb/tb_top.v:234: Verilog $finish
 
-=== tb_top full_fixed_101 ( exit: 0) ===
+=== tb_top full_fixed_101 (exit: 0) ===
 ==================================================================
 tb_top starting on vectors: data/test_vectors/full_fixed_101 (RAND_GAP=0)
 ==================================================================
@@ -325,7 +325,7 @@ tb_top summary for data/test_vectors/full_fixed_101:
 TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
 - tb/tb_top.v:234: Verilog $finish
 
-=== tb_top full_minmax_101 ( exit: 0) ===
+=== tb_top full_minmax_101 (exit: 0) ===
 ==================================================================
 tb_top starting on vectors: data/test_vectors/full_minmax_101 (RAND_GAP=0)
 ==================================================================
@@ -343,7 +343,7 @@ tb_top summary for data/test_vectors/full_minmax_101:
 TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
 - tb/tb_top.v:234: Verilog $finish
 
-=== tb_top full_fixed_103 ( exit: 0) ===
+=== tb_top full_fixed_103 (exit: 0) ===
 ==================================================================
 tb_top starting on vectors: data/test_vectors/full_fixed_103 (RAND_GAP=0)
 ==================================================================
@@ -361,7 +361,7 @@ tb_top summary for data/test_vectors/full_fixed_103:
 TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
 - tb/tb_top.v:234: Verilog $finish
 
-=== tb_top full_minmax_103 ( exit: 0) ===
+=== tb_top full_minmax_103 (exit: 0) ===
 ==================================================================
 tb_top starting on vectors: data/test_vectors/full_minmax_103 (RAND_GAP=0)
 ==================================================================
@@ -379,7 +379,7 @@ tb_top summary for data/test_vectors/full_minmax_103:
 TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
 - tb/tb_top.v:234: Verilog $finish
 
-=== tb_top full_fixed_105 ( exit: 0) ===
+=== tb_top full_fixed_105 (exit: 0) ===
 ==================================================================
 tb_top starting on vectors: data/test_vectors/full_fixed_105 (RAND_GAP=0)
 ==================================================================
@@ -397,7 +397,7 @@ tb_top summary for data/test_vectors/full_fixed_105:
 TB_RESULT: PASS name=tb_top samples=650000 mismatches=0
 - tb/tb_top.v:234: Verilog $finish
 
-=== tb_top full_minmax_105 ( exit: 0) ===
+=== tb_top full_minmax_105 (exit: 0) ===
 ==================================================================
 tb_top starting on vectors: data/test_vectors/full_minmax_105 (RAND_GAP=0)
 ==================================================================

@@ -89,6 +89,75 @@ def check_file(filepath):
 
     return violations
 
+def check_tcl_file(filepath):
+    rel_path = os.path.relpath(filepath, BASE_DIR)
+    violations = []
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    brace_level = 0
+    bracket_level = 0
+    paren_level = 0
+
+    for line_num, raw_line in enumerate(lines, 1):
+        line = raw_line.strip()
+        # Strip comments
+        clean_chars = []
+        i = 0
+        while i < len(line):
+            c = line[i]
+            if c == '\\':
+                i += 2
+                continue
+            if c == '#' and (i == 0 or line[i-1] in (' ', '\t', ';')):
+                break
+            clean_chars.append(c)
+            i += 1
+        clean_line = "".join(clean_chars)
+
+        brace_level += clean_line.count('{') - clean_line.count('}')
+        bracket_level += clean_line.count('[') - clean_line.count(']')
+        paren_level += clean_line.count('(') - clean_line.count(')')
+
+        if brace_level < 0:
+            violations.append((line_num, "Unmatched closing brace '}' in Tcl script", raw_line))
+            brace_level = 0
+        if bracket_level < 0:
+            violations.append((line_num, "Unmatched closing bracket ']' in Tcl script", raw_line))
+            bracket_level = 0
+        if paren_level < 0:
+            violations.append((line_num, "Unmatched closing parenthesis ')' in Tcl script", raw_line))
+            paren_level = 0
+
+        # Check source statements
+        source_match = re.search(r'\bsource\s+([^\s;]+)', clean_line)
+        if source_match:
+            src_target = source_match.group(1).strip('"\'')
+            if not src_target.startswith('$'):
+                target_path = os.path.join(BASE_DIR, src_target)
+                target_path_rel = os.path.join(os.path.dirname(filepath), src_target)
+                if not (os.path.exists(target_path) or os.path.exists(target_path_rel)):
+                    violations.append((line_num, f"Referenced source file does not exist: {src_target}", raw_line))
+
+        # Check glob patterns
+        glob_match = re.search(r'\[\s*glob\s+([^\s\]]+)\s*\]', clean_line)
+        if glob_match:
+            pattern = glob_match.group(1).strip('"\'')
+            if not pattern.startswith('$'):
+                matched = glob.glob(os.path.join(BASE_DIR, pattern))
+                if not matched:
+                    violations.append((line_num, f"Tcl glob pattern matched 0 files: {pattern}", raw_line))
+
+    if brace_level != 0:
+        violations.append((len(lines), f"Unbalanced braces in Tcl script (net open: {brace_level})", ""))
+    if bracket_level != 0:
+        violations.append((len(lines), f"Unbalanced brackets in Tcl script (net open: {bracket_level})", ""))
+    if paren_level != 0:
+        violations.append((len(lines), f"Unbalanced parentheses in Tcl script (net open: {paren_level})", ""))
+
+    return violations
+
 def main():
     print("==================================================================")
     print("RUNNING VIVADO COMPATIBILITY & PURE VERILOG-2001 STATIC LINT")
@@ -96,6 +165,7 @@ def main():
 
     v_files = sorted(glob.glob(os.path.join(BASE_DIR, "rtl", "*.v")) +
                      glob.glob(os.path.join(BASE_DIR, "fpga", "*.v")))
+    tcl_files = sorted(glob.glob(os.path.join(BASE_DIR, "scripts", "*.tcl")))
 
     total_violations = 0
     for vf in v_files:
@@ -110,9 +180,22 @@ def main():
         else:
             print(f"  [PASS] {rel}")
 
+    print("\nChecking Vivado Tcl scripts...")
+    for tf in tcl_files:
+        rel = os.path.relpath(tf, BASE_DIR)
+        violations = check_tcl_file(tf)
+        if violations:
+            print(f"\n[FAIL] {rel}:")
+            for lnum, desc, line in violations:
+                print(f"  Line {lnum}: {desc}")
+                print(f"    --> {line}")
+            total_violations += len(violations)
+        else:
+            print(f"  [PASS] {rel}")
+
     print("==================================================================")
     if total_violations == 0:
-        print("VIVADO COMPATIBILITY CHECK: PASS (0 violations across all RTL/FPGA files)")
+        print("VIVADO COMPATIBILITY CHECK: PASS (0 violations across all RTL/FPGA/TCL files)")
         print("==================================================================")
         sys.exit(0)
     else:

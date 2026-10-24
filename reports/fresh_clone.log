@@ -1,43 +1,53 @@
 ==================================================================
-STARTING FRESH CLONE REPRODUCIBILITY CHECK
-Date: Sat Oct 24 04:08:01 AM IST 2026
-Source repo: /mnt/D64C86FE4C86D91F/projects/precision-gated-mac-ecg
-HEAD commit: 9ada39e
+HEAD commit: 975046f9466a3bff105d9133a5da6625c94aee4d
+DATA: OFFLINE: copied local data from /mnt/D64C86FE4C86D91F/projects/precision-gated-mac-ecg/data/mitbih
 ==================================================================
-[1/5] Cloning repository into /tmp/fresh_clone_test_qLK6yA...
-Cloning into '/tmp/fresh_clone_test_qLK6yA/repo'...
+STARTING FRESH CLONE REPRODUCIBILITY CHECK (v2)
+[1/6] Cloning repository into /tmp/fresh_clone_test_lzar34...
+Cloning into '/tmp/fresh_clone_test_lzar34/repo'...
 done.
-[2/5] Setting up environment and dataset...
-[3/5] Running 'make data'...
-.venv/bin/python3 scripts/fetch_data.py
-[DATA] All 4 records are already present in /tmp/fresh_clone_test_qLK6yA/repo/data/mitbih.
-[4/5] Running 'make vectors'...
+[2/6] Creating clean virtualenv and installing requirements...
+[3/6] Setting up dataset...
+OFFLINE: copied local data from /mnt/D64C86FE4C86D91F/projects/precision-gated-mac-ecg/data/mitbih
+[4/6] Generating standard and full nightly test vectors...
 .venv/bin/python3 sim/gen_vectors.py --all
 === Generating smoke set ===
-Generated 1000 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/smoke
-Generated 1000 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors
+Generated 1000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/smoke
+Generated 1000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors
 
 === Generating corner set ===
-Generated 1618 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/corner
+Generated 1618 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/corner
 
 === Generating noise stress set (T10) ===
-Generated 5000 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/noise_stress
+Generated 5000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/noise_stress
 
 === Generating squarer saturation set ===
-Generated 500 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/sat_test
+Generated 500 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/sat_test
 
 === Generating standard regression sets (60,000 samples) ===
-Generated 60000 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/std_fixed_100
-Generated 60000 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/std_minmax_100
-Generated 60000 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/std_fixed_101
-Generated 60000 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/std_minmax_101
-Generated 60000 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/std_fixed_103
-Generated 60000 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/std_minmax_103
-Generated 60000 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/std_fixed_105
-Generated 60000 vectors in: /tmp/fresh_clone_test_qLK6yA/repo/data/test_vectors/std_minmax_105
+Generated 60000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/std_fixed_100
+Generated 60000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/std_minmax_100
+Generated 60000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/std_fixed_101
+Generated 60000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/std_minmax_101
+Generated 60000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/std_fixed_103
+Generated 60000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/std_minmax_103
+Generated 60000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/std_fixed_105
+Generated 60000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/std_minmax_105
 
 All test vector sets generated successfully!
-[5/5] Running 'make sim'...
+.venv/bin/python3 sim/gen_vectors.py --full
+=== Generating full-length nightly regression sets (650,000 samples) ===
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_fixed_100
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_minmax_100
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_fixed_101
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_minmax_101
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_fixed_103
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_minmax_103
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_fixed_105
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_minmax_105
+
+All full-length nightly vector sets generated successfully!
+[5/6] Executing standard and full nightly regression suites...
 .venv/bin/python3 sim/run_regression.py
 ==================================================================
 STARTING COMPLETE RTL SIMULATION REGRESSION SUITE
@@ -45,7 +55,7 @@ STARTING COMPLETE RTL SIMULATION REGRESSION SUITE
 [BUILD] Compiling mult with Verilator...
 
 [RUN] Unit test: mult_split across PIPE 1, 2, 3...
-  --> PASS (0.36s)
+  --> PASS (0.43s)
 [BUILD] Compiling fir_full with Verilator...
 
 [RUN] tb_fir_full smoke...
@@ -55,111 +65,348 @@ STARTING COMPLETE RTL SIMULATION REGRESSION SUITE
   --> PASS (0.08s)
 
 [RUN] tb_fir_full std_fixed_100...
-  --> PASS (2.47s)
+  --> PASS (2.82s)
 [BUILD] Compiling fir_gated with Verilator...
 
 [RUN] tb_fir_gated smoke...
-  --> PASS (0.10s)
+  --> PASS (0.11s)
 
 [RUN] tb_fir_gated corner...
-  --> PASS (0.17s)
+  --> PASS (0.18s)
 
 [RUN] tb_fir_gated std_fixed_100...
-  --> PASS (5.70s)
+  --> PASS (6.30s)
 [BUILD] Compiling det_11 with Verilator...
 [BUILD] Compiling det_15 with Verilator...
 
 [RUN] tb_detector smoke...
-  --> PASS (0.03s)
+  --> PASS (0.04s)
 
 [RUN] tb_detector noise_stress (T10)...
-  --> PASS (0.08s)
+  --> PASS (0.09s)
 
 [RUN] tb_detector std_fixed_100...
-  --> PASS (0.71s)
+  --> PASS (0.82s)
 
 [RUN] tb_detector std_fixed_101...
-  --> PASS (0.72s)
+  --> PASS (0.87s)
 
 [RUN] tb_detector std_fixed_103...
-  --> PASS (0.75s)
+  --> PASS (0.87s)
 
 [RUN] tb_detector std_fixed_105...
-  --> PASS (0.70s)
+  --> PASS (0.82s)
 
 [RUN] tb_detector std_minmax_100...
-  --> PASS (0.70s)
+  --> PASS (0.80s)
 
 [RUN] tb_detector std_minmax_101...
-  --> PASS (0.69s)
+  --> PASS (0.83s)
 
 [RUN] tb_detector std_minmax_103...
-  --> PASS (0.70s)
+  --> PASS (0.86s)
 
 [RUN] tb_detector std_minmax_105...
-  --> PASS (0.71s)
+  --> PASS (0.85s)
 [BUILD] Compiling top_11 with Verilator...
 [BUILD] Compiling top_15 with Verilator...
 
 [RUN] tb_top smoke...
-  --> PASS (0.07s)
+  --> PASS (0.08s)
 
 [RUN] tb_top smoke (rand gap)...
-  --> PASS (0.11s)
+  --> PASS (0.12s)
 
 [RUN] tb_top noise_stress (T10)...
-  --> PASS (0.27s)
+  --> PASS (0.31s)
 
 [RUN] tb_top std_fixed_100...
-  --> PASS (3.02s)
+  --> PASS (3.58s)
 
 [RUN] tb_top std_fixed_101...
-  --> PASS (3.11s)
+  --> PASS (3.58s)
 
 [RUN] tb_top std_fixed_103...
-  --> PASS (3.06s)
+  --> PASS (3.55s)
 
 [RUN] tb_top std_fixed_105...
-  --> PASS (3.09s)
+  --> PASS (3.50s)
 
 [RUN] tb_top std_minmax_100...
-  --> PASS (3.09s)
+  --> PASS (3.55s)
 
 [RUN] tb_top std_minmax_101...
-  --> PASS (3.04s)
+  --> PASS (3.46s)
 
 [RUN] tb_top std_minmax_103...
-  --> PASS (3.08s)
+  --> PASS (3.60s)
 
 [RUN] tb_top std_minmax_105...
-  --> PASS (3.03s)
+  --> PASS (3.28s)
 [BUILD] Compiling top_rr with Verilator...
 
 [RUN] tb_top_realrate smoke (277.8M cycles)...
-  --> PASS (148.28s)
+  --> PASS (168.51s)
 [BUILD] Compiling top_reset with Verilator...
 
 [RUN] tb_top_reset mid-stream reset robustness...
-  --> PASS (0.07s)
+  --> PASS (0.06s)
 
 [RUN] tb_top startup_100_off0...
-  --> PASS (0.04s)
+  --> PASS (0.06s)
 
 [RUN] tb_top startup_103_off0...
-  --> PASS (0.04s)
+  --> PASS (0.08s)
 
 [RUN] tb_top startup_105_off200...
-  --> PASS (0.04s)
+  --> PASS (0.06s)
 [BUILD] Compiling board_core with Verilator...
 
-[RUN] tb_board_core 5000-sample UART stream replay...
-  --> PASS (2.50s)
+[RUN] tb_board_core por_replay...
+  --> PASS (3.42s)
+
+[RUN] tb_board_core async_switch...
+  --> PASS (0.21s)
+
+[RUN] tb_board_core debounce_glitch...
+  --> PASS (0.13s)
 
 ==================================================================
-REGRESSION SUITE COMPLETED: 34 PASSED, 0 FAILED
+REGRESSION SUITE COMPLETED: 36 PASSED, 0 FAILED
 ==================================================================
-Checking git working tree in fresh clone...
+.venv/bin/python3 sim/gen_vectors.py --full
+=== Generating full-length nightly regression sets (650,000 samples) ===
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_fixed_100
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_minmax_100
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_fixed_101
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_minmax_101
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_fixed_103
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_minmax_103
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_fixed_105
+Generated 650000 vectors in: /tmp/fresh_clone_test_lzar34/repo/data/test_vectors/full_minmax_105
+
+All full-length nightly vector sets generated successfully!
+.venv/bin/python3 sim/run_regression.py --nightly
 ==================================================================
-FRESH CLONE CHECK: PASS (0 mismatches, clean working tree)
+STARTING COMPLETE RTL SIMULATION REGRESSION SUITE
 ==================================================================
-Cleaning up temporary clone directory: /tmp/fresh_clone_test_qLK6yA
+[BUILD] Compiling mult with Verilator...
+
+[RUN] Unit test: mult_split across PIPE 1, 2, 3...
+  --> PASS (0.42s)
+[BUILD] Compiling fir_full with Verilator...
+
+[RUN] tb_fir_full smoke...
+  --> PASS (0.05s)
+
+[RUN] tb_fir_full corner...
+  --> PASS (0.08s)
+
+[RUN] tb_fir_full std_fixed_100...
+  --> PASS (2.92s)
+[BUILD] Compiling fir_gated with Verilator...
+
+[RUN] tb_fir_gated smoke...
+  --> PASS (0.14s)
+
+[RUN] tb_fir_gated corner...
+  --> PASS (0.18s)
+
+[RUN] tb_fir_gated std_fixed_100...
+  --> PASS (6.70s)
+[BUILD] Compiling det_11 with Verilator...
+[BUILD] Compiling det_15 with Verilator...
+
+[RUN] tb_detector smoke...
+  --> PASS (0.04s)
+
+[RUN] tb_detector noise_stress (T10)...
+  --> PASS (0.11s)
+
+[RUN] tb_detector std_fixed_100...
+  --> PASS (0.80s)
+
+[RUN] tb_detector std_fixed_101...
+  --> PASS (0.83s)
+
+[RUN] tb_detector std_fixed_103...
+  --> PASS (0.84s)
+
+[RUN] tb_detector std_fixed_105...
+  --> PASS (0.82s)
+
+[RUN] tb_detector std_minmax_100...
+  --> PASS (0.81s)
+
+[RUN] tb_detector std_minmax_101...
+  --> PASS (0.84s)
+
+[RUN] tb_detector std_minmax_103...
+  --> PASS (0.83s)
+
+[RUN] tb_detector std_minmax_105...
+  --> PASS (0.82s)
+[BUILD] Compiling top_11 with Verilator...
+[BUILD] Compiling top_15 with Verilator...
+
+[RUN] tb_top smoke...
+  --> PASS (0.10s)
+
+[RUN] tb_top smoke (rand gap)...
+  --> PASS (0.12s)
+
+[RUN] tb_top noise_stress (T10)...
+  --> PASS (0.31s)
+
+[RUN] tb_top std_fixed_100...
+  --> PASS (3.60s)
+
+[RUN] tb_top std_fixed_101...
+  --> PASS (3.67s)
+
+[RUN] tb_top std_fixed_103...
+  --> PASS (3.59s)
+
+[RUN] tb_top std_fixed_105...
+  --> PASS (3.61s)
+
+[RUN] tb_top std_minmax_100...
+  --> PASS (3.61s)
+
+[RUN] tb_top std_minmax_101...
+  --> PASS (3.63s)
+
+[RUN] tb_top std_minmax_103...
+  --> PASS (3.45s)
+
+[RUN] tb_top std_minmax_105...
+  --> PASS (3.55s)
+[BUILD] Compiling top_rr with Verilator...
+
+[RUN] tb_top_realrate smoke (277.8M cycles)...
+  --> PASS (159.41s)
+[BUILD] Compiling top_reset with Verilator...
+
+[RUN] tb_top_reset mid-stream reset robustness...
+  --> PASS (0.06s)
+
+[RUN] tb_top startup_100_off0...
+  --> PASS (0.05s)
+
+[RUN] tb_top startup_103_off0...
+  --> PASS (0.05s)
+
+[RUN] tb_top startup_105_off200...
+  --> PASS (0.05s)
+[BUILD] Compiling board_core with Verilator...
+
+[RUN] tb_board_core por_replay...
+  --> PASS (2.92s)
+
+[RUN] tb_board_core async_switch...
+  --> PASS (0.17s)
+
+[RUN] tb_board_core debounce_glitch...
+  --> PASS (0.10s)
+
+--- EXECUTING NIGHTLY SUITE (650,000-sample full records) ---
+
+[RUN] tb_detector full_fixed_100...
+  --> PASS (7.69s)
+
+[RUN] tb_top full_fixed_100...
+  --> PASS (33.44s)
+
+[RUN] tb_detector full_minmax_100...
+  --> PASS (7.44s)
+
+[RUN] tb_top full_minmax_100...
+  --> PASS (32.99s)
+
+[RUN] tb_detector full_fixed_101...
+  --> PASS (7.57s)
+
+[RUN] tb_top full_fixed_101...
+  --> PASS (33.88s)
+
+[RUN] tb_detector full_minmax_101...
+  --> PASS (7.69s)
+
+[RUN] tb_top full_minmax_101...
+  --> PASS (37.07s)
+
+[RUN] tb_detector full_fixed_103...
+  --> PASS (8.38s)
+
+[RUN] tb_top full_fixed_103...
+  --> PASS (39.18s)
+
+[RUN] tb_detector full_minmax_103...
+  --> PASS (8.60s)
+
+[RUN] tb_top full_minmax_103...
+  --> PASS (34.05s)
+
+[RUN] tb_detector full_fixed_105...
+  --> PASS (7.84s)
+
+[RUN] tb_top full_fixed_105...
+  --> PASS (35.18s)
+
+[RUN] tb_detector full_minmax_105...
+  --> PASS (7.62s)
+
+[RUN] tb_top full_minmax_105...
+  --> PASS (34.91s)
+
+==================================================================
+REGRESSION SUITE COMPLETED: 52 PASSED, 0 FAILED
+==================================================================
+[6/6] Executing master verification harness...
+==================================================================
+RUNNING MASTER VERIFICATION HARNESS (V-01 THROUGH V-26)
+==================================================================
+  [V-01] PASS: Uncommitted non-report changes: []
+  [V-02] PASS: Tags 'round2-start' and 'finalize-r1-complete' verified
+  [V-03] FAIL: Found obsolete counts:
+reports/PROGRESS.md:60:  - `pg_top`: **1,376 LUTs, 417 FFs** (smashed target of $\le 1500$ LUTs, $\le 800$ FFs; down from 2,691 LUTs, 2,246 FFs).
+reports/DECISIONS.md:48:- Resource usage on Artix-7: `pg_top` uses 1,376 LUTs and 417 FFs (comfortably below the $\le 1500$ LUT / $\le 800$ FF target).
+AGENTS.md:28:| **Top-Level Filter Core** | **Complete** | `rtl/pg_top.v`, 1,376 LUTs, 417 FFs (meets $\le 1500$ LUT / $\le 800$ FF target) |
+AGENTS.md:44:  - `pg_top`: **1,376 LUTs** (target $\le 1,500$), **417 FFs** (target $\le 800$)
+README.md:14:- **Approximate Mode (8-bit Truncated Multiplier):** Operates during quiescent baseline and T-wave regions (~84–86% of the cardiac cycle), cutting dynamic switching power with negligible clinical error.
+README.md:26:| **Hardware Area (`pg_top`)** | $\le 1,500$ LUTs, $\le 800$ FFs | **1,376 LUTs, 417 FFs** (-50.6% LUTs) | **PASS** |
+
+  [V-04] PASS: Passed=36, Failed=0
+  [V-05] PASS: Found control characters: []
+  [V-06] PASS: 
+  [V-07] PASS: Expected 31, 38, 58, 17.57/17.6, 8.56/8.6, synthetic in RESULTS.md
+  [V-08] FAIL: Missing clean_ref for record 100
+  [V-09] PASS: Found hard-coded counts in generate_report.py: []
+  [V-10] PASS: Parsed 42 TB_RESULT lines; exactly 16 650k nightly runs all PASS
+  [V-11] FAIL: total=21, caught=21, survived=0, build_errors=0, compile_status=False
+  [V-12] FAIL: total=21, caught=21, survived=0, build_errors=0, compile_status=False
+  [V-13] FAIL: Missing disclosure: 'Extended records (ext_*): NOT RUN (no network)'
+  [V-14] PASS: 
+  [V-15] PASS: All 9 synthesis targets verified like-for-like
+  [V-16] PASS: Passed: 36
+  [V-17] PASS: 
+  [V-18] FAIL: RUN_ON_BOARD lines: 32
+  [V-19] PASS: Fresh clone check did not pass in log
+  [V-20] FAIL: Fresh clone log missing expected test passes
+  [V-21] FAIL: ' in README.md!
+  FAIL: Found banned pattern '1,376' in AGENTS.md!
+  FAIL: Found banned pattern '30\+ suites' in AGENTS.md!
+
+==================================================================
+[DOCS_CHECK] FAILED with 13 mismatch(es)
+==================================================================
+
+  [V-22] PASS: Live re-runs, independent convolve (6 sets), and negative test verified (8.88s)
+  [V-23] FAIL: Report commit c892244c18bb2d24ba733c99bf420246ea6ca20c does not match parent (90af974) or HEAD (975046f)
+  [V-24] PASS: dp_100=21.75, dp_ns=17.57
+  [V-25] PASS: All 10 criteria verified with existing evidence files
+  [V-26] PASS: Hardware replay UART capture verified bit-exact
+==================================================================
+VERIFICATION SUMMARY: 17 PASSED, 9 FAILED out of 26 criteria
+==================================================================
+Cleaning up temporary clone directory: /tmp/fresh_clone_test_lzar34
