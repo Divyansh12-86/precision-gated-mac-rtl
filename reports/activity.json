@@ -1,7 +1,6 @@
 {
   "std_fixed_100": {
     "set_name": "std_fixed_100",
-    "elapsed_sec": 5.28,
     "datapath": {
       "baseline": {
         "op_high": 1780967,
@@ -54,7 +53,6 @@
   },
   "std_fixed_101": {
     "set_name": "std_fixed_101",
-    "elapsed_sec": 5.33,
     "datapath": {
       "baseline": {
         "op_high": 2354073,
@@ -107,7 +105,6 @@
   },
   "std_fixed_103": {
     "set_name": "std_fixed_103",
-    "elapsed_sec": 5.32,
     "datapath": {
       "baseline": {
         "op_high": 2144828,
@@ -160,7 +157,6 @@
   },
   "std_fixed_105": {
     "set_name": "std_fixed_105",
-    "elapsed_sec": 5.3,
     "datapath": {
       "baseline": {
         "op_high": 2339688,
@@ -213,7 +209,6 @@
   },
   "std_minmax_100": {
     "set_name": "std_minmax_100",
-    "elapsed_sec": 5.23,
     "datapath": {
       "baseline": {
         "op_high": 5047540,
@@ -266,7 +261,6 @@
   },
   "noise_stress": {
     "set_name": "noise_stress",
-    "elapsed_sec": 0.44,
     "datapath": {
       "baseline": {
         "op_high": 653690,
