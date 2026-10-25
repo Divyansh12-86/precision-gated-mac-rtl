@@ -40,13 +40,6 @@ FIGS_DIR = os.path.join(REPORTS_DIR, "figs")
 
 os.makedirs(FIGS_DIR, exist_ok=True)
 
-def get_git_commit():
-    try:
-        res = subprocess.run(["git", "rev-parse", "HEAD"], cwd=BASE_DIR, capture_output=True, text=True)
-        return res.stdout.strip()
-    except Exception:
-        return "unknown"
-
 def parse_hex16(h):
     v = int(h, 16)
     return v - 65536 if v >= 32768 else v

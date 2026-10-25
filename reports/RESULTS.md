@@ -1,6 +1,6 @@
 # Characterization & Verification Report: Precision-Gated Approximate-MAC ECG Filter
 
-**Source Commit:** `1cc4a20c8eb801ed699f8a08635b8e23021c065a` (code tree clean: yes)  
+**Source Commit:** `52911a02123c380fe9f1b9deffbc2b6d1dd5afda` (code tree clean: no)  
 **Environment:** Linux x86_64, Python 3.12, Verilator 5.020, Yosys 0.33  
 **Regression Status:** 36 tests executed, 0 failed across all suites  
 **Mutation Harness:** 29/29 mandatory mutants caught, 0 survived  
@@ -11,11 +11,11 @@
 
 | ID | Criterion | Evidence File | Status | Notes |
 |---|---|---|---|---|
-| **H1** | Clean clone -> `make all` | `Makefile`, `reports/` | **PASS** | Complete pipeline reproducible |
+| **H1** | Clean clone -> `make all` | `Makefile`, `reports/` | **PASS (caveat)** | Reproducible clean clone; local data copy path exercised |
 | **H2** | 0 failures across all TBs | `reports/regress_*.log` | **PASS** | 0 mismatches against Golden Model v2 |
 | **H3** | Mutation coverage | `reports/mutation.json` | **PASS** | 29/29 mandatory mutants caught |
 | **H4** | Same-mode area target | `reports/synth.json` | **PASS** | pg_top LUTs <= 1500, FFs <= 800 met |
-| **H5** | Whole-core & datapath activity | `reports/activity.json` | **PASS** | Evaluated on 6 sets unweighted |
+| **H5** | Whole-core & datapath activity | `reports/activity.json` | **PASS** | Evaluated on standard clean sets |
 | **H6** | Timing & power | `reports/synth.json` | **NOT RUN** | Vivado absent; OOC script provided in scripts/ |
 | **H7** | Board wrappers & UART replay | `tb_board_core.v`, `top_*.v` | **PASS** | 5000 frames bit-exact, both tops synthesize |
 | **H8** | Noise sweep | `reports/noise_sweep.json` | **PASS (with documented degradation at <= 6 dB)** | 15 sweeps (SNRs 24..0 dB), plot emitted |
@@ -43,7 +43,7 @@ Evaluated across **60,000 samples (~2.78 minutes)** per record on MIT-BIH Arrhyt
 
 ## 3. RTL Switching Activity & Toggle Reductions (Phase D)
 
-Measurements gathered on Verilator by tracking bit transitions cycle-by-cycle across the 6 standard and noise sets.
+Measurements gathered on Verilator by tracking bit transitions cycle-by-cycle across the standard clean records and legacy noise stress set.
 
 | Vector Set | Baseline Datapath | Gated Datapath | Datapath Saving (%) | Low-Operand Saving (%) | Whole-Core Saving (%) |
 |---|---|---|---|---|---|
@@ -52,7 +52,7 @@ Measurements gathered on Verilator by tracking bit transitions cycle-by-cycle ac
 | `std_fixed_103` | 49,236,230 | 38,402,576 | **22.00%** | 85.83% | 14.21% |
 | `std_fixed_105` | 49,337,000 | 38,989,046 | **20.97%** | 83.19% | 13.37% |
 | `std_minmax_100` | 78,600,411 | 52,740,288 | **32.90%** | 83.75% | 21.67% |
-| `noise_stress` | 6,776,354 | 5,585,993 | **17.57%** | 42.34% | 8.56% |
+| `noise_stress` *(Legacy set: post-scaling noise, not comparable)* | 6,776,354 | 5,585,993 | **17.57%** | 42.34% | 8.56% |
 
 ---
 
@@ -60,8 +60,8 @@ Measurements gathered on Verilator by tracking bit transitions cycle-by-cycle ac
 
 Target technology: `Xilinx 7-Series xc7 family generic (no part-specific data)`  
 Timing & Power Status: `NOT RUN (no Vivado installed on host; Vivado OOC script provided in scripts/synth_vivado_ooc.tcl)`  
-Phase C Area Check: `1394 LUTs, 417 FFs` vs target `<= 1500 LUTs, <= 800 FFs` (Target Met: **True**, spread: 1376–1402 LUTs (1.9%))  
-*Note on Netlist Variability:* Yosys area estimates vary by about ±1.9% depending on netlist naming and hierarchy boundaries; Vivado physical implementation will differ.
+Phase C Area Check: `1394 LUTs, 417 FFs` vs target `<= 1500 LUTs, <= 800 FFs` (Target Met: **True**, spread: ~8.3% top-level, 1.9% pg_top)  
+*Note on Netlist Variability:* Yosys area estimates vary by about ±1.9% on pg_top and ~8.3% between top-level wrappers; likely caused by netlist naming/ordering effects in ABC; not further investigated. Vivado physical implementation will differ.
 
 | Module / Target | Synthesis Mode | LUTs | FFs | DSPs | CARRY4 | MUXF | Basys 3 LUT Util (%) |
 |---|---|---|---|---|---|---|---|
@@ -87,7 +87,7 @@ Phase C Area Check: `1394 LUTs, 417 FFs` vs target `<= 1500 LUTs, <= 800 FFs` (T
 | `top_nexys_a7_lut` | LUT | 1677 | 676 | 0 | 179 | 174 | 8.06% |
 
 > [!NOTE] Top Wrapper Equivalence
-> Basys 3 and Nexys A7 wrappers are logically identical (differing only in pin naming and reset polarity). In LUT mode, Yosys synthesizes 1828 vs 1677 LUTs (MUXF 357 vs 174) due purely to internal naming heuristics in cell clustering.
+> Basys 3 and Nexys A7 wrappers are logically identical (differing only in pin naming and reset polarity). In LUT mode, Yosys synthesizes 1828 vs 1677 LUTs (MUXF 357 vs 174), likely caused by netlist naming/ordering effects in ABC; not further investigated.
 
 ---
 
@@ -132,7 +132,7 @@ Evaluated across records 100, 103, 105 under composite synthetic noise (0.3 Hz b
 ## 7. Explicit Technical Disclosures & Limitations
 
 1. **Switching Activity as Power Proxy:** The toggle counts reported are architectural switching activity measurements ($\alpha$), not physical silicon milliwatt figures. On FPGA devices, dynamic power savings scale with switching activity, but overall device power includes significant static/quiescent power.
-2. **Noise Degradation at Low SNR:** Under synthetic noise at <= 6 dB SNR, the detector positive predictivity collapses to ~28–38% and full-precision gate duty increases to ~58%, causing switching savings to shrink to 17.57% datapath and 8.56% whole-core on `noise_stress`.
+2. **Noise Degradation at Low SNR:** Under synthetic noise at <= 6 dB SNR (in-domain ADU noise), the detector positive predictivity collapses to ~28–38% and full-precision gate duty increases to ~58%, causing switching savings to shrink to 8.3–9.7% datapath and 3.0–4.0% whole-core (compared to 20.1–21.3% datapath and 12.4–13.4% whole-core at 24 dB). The legacy `noise_stress` set (post-scaling noise, not comparable to clean data) yielded 17.57% datapath and 8.56% whole-core savings.
 3. **Synthetic Noise Model:** Noise injected in characterization sweeps is a synthetic combination of 0.3 Hz baseline wander, 50 Hz powerline hum, and pseudo-random Gaussian EMG noise (fixed seed=42+SNR), rather than in-vivo recorded electrode artifact databases.
 4. **Bandpass Filtering Scope:** The FIR filter operates in the 5–15 Hz band, optimized for QRS detection and R-peak extraction; it is an algorithmic pre-processing filter rather than an unrestricted diagnostic filter.
 5. **Approximation SNR Interpretation:** SNR figures reported evaluate approximation fidelity relative to 16-bit full precision ($y_{gated}$ vs $y_{full}$); they characterize truncation error rather than noise cancellation ratio.

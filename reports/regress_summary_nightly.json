@@ -1,9 +1,10 @@
 {
-  "commit": "90af97448574d5b254a432bb005c747039985bc3",
-  "dirty": true,
+  "commit": "fc70161b2232becd2b9ad8e2f9a6d25a0e4e6aca",
+  "dirty": false,
   "failed": 0,
   "mode": "nightly",
-  "passed": 50,
+  "passed": 53,
+  "source_digest": "9c20847163ee569310a796ac61e8aec185fa78383b27387dc4cb88a4238bab8f",
   "tests": [
     {
       "name": "Unit test: mult_split across PIPE 1, 2, 3",
@@ -138,7 +139,19 @@
       "status": "PASS"
     },
     {
-      "name": "tb_board_core 5000-sample UART stream replay",
+      "name": "tb_board_core por_replay",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_board_core async_switch",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_board_core debounce_glitch",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_board_core realparams",
       "status": "PASS"
     },
     {

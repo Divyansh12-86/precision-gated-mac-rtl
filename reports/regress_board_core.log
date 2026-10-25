@@ -16,7 +16,7 @@ tb_board_core Summary (por_replay):
   Gate mismatches:   0
 ==================================================================
 TB_RESULT: PASS name=tb_board_core_por_replay samples=5000 mismatches=0
-- tb/tb_board_core.v:323: Verilog $finish
+- tb/tb_board_core.v:456: Verilog $finish
 
 === tb_board_core async_switch (exit: 0) ===
 ==================================================================
@@ -32,7 +32,7 @@ tb_board_core Summary (async_switch):
   Gate mismatches:   0
 ==================================================================
 TB_RESULT: PASS name=tb_board_core_async_switch samples=151 mismatches=0
-- tb/tb_board_core.v:323: Verilog $finish
+- tb/tb_board_core.v:456: Verilog $finish
 
 === tb_board_core debounce_glitch (exit: 0) ===
 ==================================================================
@@ -51,5 +51,20 @@ tb_board_core Summary (debounce_glitch):
   Gate mismatches:   0
 ==================================================================
 TB_RESULT: PASS name=tb_board_core_debounce_glitch samples=32 mismatches=0
-- tb/tb_board_core.v:323: Verilog $finish
+- tb/tb_board_core.v:456: Verilog $finish
+
+=== tb_board_core realparams (exit: 0) ===
+==================================================================
+STARTING tb_board_core (SCENARIO: realparams)
+==================================================================
+==================================================================
+tb_board_core Summary (realparams):
+  Frames decoded:    10
+  Preamble errors:   0
+  Checksum errors:   0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+==================================================================
+TB_RESULT: PASS name=tb_board_core_realparams samples=10 mismatches=0
+- tb/tb_board_core.v:456: Verilog $finish
 

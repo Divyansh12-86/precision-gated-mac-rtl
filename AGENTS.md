@@ -24,12 +24,12 @@
 | **RTL FIR Core** | **Complete** | `rtl/pg_fir.v`, 51-cycle time-multiplexed compute + 2-cycle drain |
 | **RAM-Based Delay Line** | **Complete** | `rtl/sample_delay_line.v`, 64x16 distributed RAM (RAM64M), 12 FFs (down from 816) |
 | **Approximate Multiplier** | **Complete** | `rtl/mult_split.v`, operand isolation, clock-enable hold (`p_low_r1`) |
-| **RAM/Serial QRS Detector** | **Complete** | `rtl/qrs_detector.v`, 64x17 RAM MWI buffer, 17-cycle serial squarer (`SERIAL_SQ=1`), 629 LUTs / 254 FFs |
+| **RAM/Serial QRS Detector** | **Complete** | `rtl/qrs_detector.v`, 64x17 RAM MWI buffer, 17-cycle serial squarer (`SERIAL_SQ=1`), 624 LUTs / 254 FFs |
 | **Top-Level Filter Core** | **Complete** | `rtl/pg_top.v`, 1,394 LUTs, 417 FFs (meets $\le 1500$ LUT / $\le 800$ FF target) |
 | **Baseline FIR** | **Complete** | `rtl/baseline_fir_exact.v`, identical 51-cycle time multiplexing for like-for-like comparison |
 | **UART Hardware Replay** | **Complete** | `fpga/board_core.v`, `fpga/uart_tx.v`, `fpga/top_basys3.v`, `fpga/top_nexys_a7.v` |
 | **Bit-Level UART TB** | **Complete** | `tb/tb_board_core.v`, 5000 frames decoded with 0 preamble/chk/sample mismatches |
-| **Full Regression Suite** | **Complete** | `sim/run_regression.py`, 36 standard / 50 nightly suites passing (0 mismatches against Golden Model v2) |
+| **Full Regression Suite** | **Complete** | `sim/run_regression.py`, 37 standard / 52 nightly suites passing (0 mismatches against Golden Model v2) |
 | **Mutation Testing** | **Complete** | `scripts/mutation_check.py`, 29/29 mandatory mutants caught (`reports/mutation.json`) |
 | **Whole-Core Activity** | **Complete** | `sim/activity_report.py`, 6 standard/noise sets, datapath & whole-core (`reports/activity.json`) |
 | **Like-for-Like Synthesis**| **Complete** | `scripts/synth_runner.py`, Yosys 7-series LUT/DSP same-mode tables (`reports/synth.json`) |
@@ -53,7 +53,7 @@
   - Low-operand bus: **83.2% – 85.8%** toggle reduction
   - Whole-core (including detector & delay-line RAM): **13.4% – 21.7%** toggle savings
 - **Signal Quality & Reconstruction Fidelity (PRD):**
-  - QRS-region PRD gated: **0.000% – 0.448%** (compared to 0.91% – 5.60% for all-approx)
+  - QRS-region PRD gated: **0.000% – 0.448%** (min-max, up to 0.730% fixed scale; 3.3× – 75.8× lower than all-approx)
   - Sensitivity: $\ge 99.5\%$ (Record 100/103/105: 100%)
   - Positive Predictivity: $\ge 94.7\%$ (Records 100/103/105: $\ge 99.5\%$)
 

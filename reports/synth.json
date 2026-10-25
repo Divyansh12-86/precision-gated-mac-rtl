@@ -1,4 +1,7 @@
 {
+  "commit": "fc70161b2232becd2b9ad8e2f9a6d25a0e4e6aca",
+  "dirty": false,
+  "source_digest": "9c20847163ee569310a796ac61e8aec185fa78383b27387dc4cb88a4238bab8f",
   "target_technology": "Xilinx 7-Series xc7 family generic (no part-specific data)",
   "tool": "Yosys 0.33",
   "timing_and_power_status": "NOT RUN (no Vivado installed on host; Vivado OOC script provided in scripts/synth_vivado_ooc.tcl)",
@@ -177,6 +180,21 @@
       "max_ffs": 417,
       "explanation": "Yosys area estimates vary by about +/- 1.9% with netlist naming and hierarchy boundaries; Vivado will differ."
     },
+    "top_level": {
+      "lut_mode": {
+        "top_basys3_luts": 1828,
+        "top_nexys_a7_luts": 1677,
+        "diff_luts": 151,
+        "diff_pct": 8.3
+      },
+      "dsp_mode": {
+        "top_basys3_luts": 1179,
+        "top_nexys_a7_luts": 1116,
+        "diff_luts": 63,
+        "diff_pct": 5.3
+      },
+      "explanation": "Basys3 and NexysA7 wrappers are logically identical; LUT differences (1828 vs 1677, ~8.3%) are likely caused by netlist naming/ordering effects in ABC; not further investigated."
+    },
     "tops_side_by_side": {
       "top_basys3_lut": {
         "luts": 1828,
@@ -190,7 +208,7 @@
         "muxf": 174,
         "dsps": 0
       },
-      "explanation": "Basys3 and NexysA7 wrappers are logically identical; LUT differences (1813 vs 1624) arise purely from Yosys heuristic netlist naming and MUXF clustering."
+      "explanation": "Basys3 and NexysA7 wrappers are logically identical; LUT differences (1828 vs 1677) are likely caused by netlist naming/ordering effects in ABC; not further investigated."
     }
   }
 }

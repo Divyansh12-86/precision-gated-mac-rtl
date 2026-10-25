@@ -1,12 +1,17 @@
 {
+  "commit": "fc70161b2232becd2b9ad8e2f9a6d25a0e4e6aca",
+  "dirty": true,
+  "source_digest": "b7aba8af65eac5742462a227c661fd4ac2b56077a1a69721f1131725ad9e16bc",
   "meta": {
-    "commit": "7dbeed32ea5bd55fd108c95bdf0a3529469bf41d",
+    "commit": "fc70161b2232becd2b9ad8e2f9a6d25a0e4e6aca",
+    "dirty": true,
+    "source_digest": "b7aba8af65eac5742462a227c661fd4ac2b56077a1a69721f1131725ad9e16bc",
     "tools": {
       "simulator": "verilator 5.020",
       "yosys": "0.33",
       "vivado": null
     },
-    "date": "2026-10-21T19:50:32.773912"
+    "date": "2026-10-26T02:08:26.591435"
   },
   "records": [
     {
@@ -235,350 +240,321 @@
     }
   ],
   "activity": {
-    "baseline": {
-      "op_high": 1780967,
-      "op_low": 4254830,
-      "mult": 21403088,
-      "acc": 21943631,
-      "total": 49382516
-    },
-    "gated_auto": {
-      "op_high": 1780967,
-      "op_low": 647826,
-      "mult": 17728858,
-      "acc": 18482488,
-      "total": 38640139
-    },
-    "gated_full": {
-      "op_high": 1780967,
-      "op_low": 4254830,
-      "mult": 21403088,
-      "acc": 21943631,
-      "total": 49382516
-    },
-    "gated_approx": {
-      "op_high": 1780967,
-      "op_low": 0,
-      "mult": 17093370,
-      "acc": 17893128,
-      "total": 36767465
-    },
-    "low_operand_reduction_pct": 84.77,
-    "datapath_reduction_pct": 21.75
-  },
-  "synth": {},
-  "activity_multiset": {
-    "std_fixed_100": {
-      "set_name": "std_fixed_100",
+    "commit": "fc70161b2232becd2b9ad8e2f9a6d25a0e4e6aca",
+    "dirty": false,
+    "noise_stress": {
       "datapath": {
         "baseline": {
-          "op_high": 1780967,
-          "op_low": 4254830,
-          "mult": 21403088,
-          "acc": 21943631,
-          "total": 49382516
+          "acc": 2417434,
+          "mult": 2710874,
+          "op_high": 653690,
+          "op_low": 994356,
+          "total": 6776354
+        },
+        "datapath_reduction_pct": 17.57,
+        "gated_approx": {
+          "acc": 1533113,
+          "mult": 1769234,
+          "op_high": 653690,
+          "op_low": 0,
+          "total": 3956037
         },
         "gated_auto": {
+          "acc": 2044989,
+          "mult": 2313972,
+          "op_high": 653690,
+          "op_low": 573342,
+          "total": 5585993
+        },
+        "gated_full": {
+          "acc": 2417434,
+          "mult": 2710874,
+          "op_high": 653690,
+          "op_low": 994356,
+          "total": 6776354
+        },
+        "low_operand_reduction_pct": 42.34
+      },
+      "set_name": "noise_stress",
+      "whole_core": {
+        "baseline": {
+          "control": 539996,
+          "core_total": 9474393,
+          "datapath": 6776354,
+          "delay_line": 2158043,
+          "detector": 0
+        },
+        "gated_auto": {
+          "control": 539996,
+          "core_total": 8663230,
+          "datapath": 5585993,
+          "delay_line": 2158043,
+          "detector": 379198
+        },
+        "whole_core_reduction_pct": 8.56
+      }
+    },
+    "source_digest": "9c20847163ee569310a796ac61e8aec185fa78383b27387dc4cb88a4238bab8f",
+    "std_fixed_100": {
+      "datapath": {
+        "baseline": {
+          "acc": 21943631,
+          "mult": 21403088,
+          "op_high": 1780967,
+          "op_low": 4254830,
+          "total": 49382516
+        },
+        "datapath_reduction_pct": 21.75,
+        "gated_approx": {
+          "acc": 17893128,
+          "mult": 17093370,
+          "op_high": 1780967,
+          "op_low": 0,
+          "total": 36767465
+        },
+        "gated_auto": {
+          "acc": 18482488,
+          "mult": 17728858,
           "op_high": 1780967,
           "op_low": 647826,
-          "mult": 17728858,
-          "acc": 18482488,
           "total": 38640139
         },
         "gated_full": {
+          "acc": 21943631,
+          "mult": 21403088,
           "op_high": 1780967,
           "op_low": 4254830,
-          "mult": 21403088,
-          "acc": 21943631,
           "total": 49382516
         },
-        "gated_approx": {
-          "op_high": 1780967,
-          "op_low": 0,
-          "mult": 17093370,
-          "acc": 17893128,
-          "total": 36767465
-        },
-        "low_operand_reduction_pct": 84.77,
-        "datapath_reduction_pct": 21.75
+        "low_operand_reduction_pct": 84.77
       },
+      "set_name": "std_fixed_100",
       "whole_core": {
         "baseline": {
+          "control": 6479996,
+          "core_total": 68018306,
           "datapath": 49382516,
           "delay_line": 12155794,
-          "control": 6479996,
-          "detector": 0,
-          "core_total": 68018306
+          "detector": 0
         },
         "gated_auto": {
+          "control": 6479996,
+          "core_total": 58296126,
           "datapath": 38640139,
           "delay_line": 12155794,
-          "control": 6479996,
-          "detector": 1020197,
-          "core_total": 58296126
+          "detector": 1020197
         },
         "whole_core_reduction_pct": 14.29
       }
     },
     "std_fixed_101": {
-      "set_name": "std_fixed_101",
       "datapath": {
         "baseline": {
+          "acc": 21737631,
+          "mult": 21436650,
           "op_high": 2354073,
           "op_low": 4376855,
-          "mult": 21436650,
-          "acc": 21737631,
           "total": 49905209
         },
+        "datapath_reduction_pct": 21.36,
+        "gated_approx": {
+          "acc": 17792033,
+          "mult": 17209714,
+          "op_high": 2354073,
+          "op_low": 0,
+          "total": 37355820
+        },
         "gated_auto": {
+          "acc": 18384535,
+          "mult": 17842870,
           "op_high": 2354073,
           "op_low": 666376,
-          "mult": 17842870,
-          "acc": 18384535,
           "total": 39247854
         },
         "gated_full": {
+          "acc": 21737631,
+          "mult": 21436650,
           "op_high": 2354073,
           "op_low": 4376855,
-          "mult": 21436650,
-          "acc": 21737631,
           "total": 49905209
         },
-        "gated_approx": {
-          "op_high": 2354073,
-          "op_low": 0,
-          "mult": 17209714,
-          "acc": 17792033,
-          "total": 37355820
-        },
-        "low_operand_reduction_pct": 84.78,
-        "datapath_reduction_pct": 21.36
+        "low_operand_reduction_pct": 84.78
       },
+      "set_name": "std_fixed_101",
       "whole_core": {
         "baseline": {
+          "control": 6479996,
+          "core_total": 69236130,
           "datapath": 49905209,
           "delay_line": 12850925,
-          "control": 6479996,
-          "detector": 0,
-          "core_total": 69236130
+          "detector": 0
         },
         "gated_auto": {
+          "control": 6479996,
+          "core_total": 59746690,
           "datapath": 39247854,
           "delay_line": 12850925,
-          "control": 6479996,
-          "detector": 1167915,
-          "core_total": 59746690
+          "detector": 1167915
         },
         "whole_core_reduction_pct": 13.71
       }
     },
     "std_fixed_103": {
-      "set_name": "std_fixed_103",
       "datapath": {
         "baseline": {
+          "acc": 21467672,
+          "mult": 21287384,
           "op_high": 2144828,
           "op_low": 4336346,
-          "mult": 21287384,
-          "acc": 21467672,
           "total": 49236230
         },
+        "datapath_reduction_pct": 22.0,
+        "gated_approx": {
+          "acc": 17424315,
+          "mult": 17069518,
+          "op_high": 2144828,
+          "op_low": 0,
+          "total": 36638661
+        },
         "gated_auto": {
+          "acc": 17980424,
+          "mult": 17662912,
           "op_high": 2144828,
           "op_low": 614412,
-          "mult": 17662912,
-          "acc": 17980424,
           "total": 38402576
         },
         "gated_full": {
+          "acc": 21467672,
+          "mult": 21287384,
           "op_high": 2144828,
           "op_low": 4336346,
-          "mult": 21287384,
-          "acc": 21467672,
           "total": 49236230
         },
-        "gated_approx": {
-          "op_high": 2144828,
-          "op_low": 0,
-          "mult": 17069518,
-          "acc": 17424315,
-          "total": 36638661
-        },
-        "low_operand_reduction_pct": 85.83,
-        "datapath_reduction_pct": 22.0
+        "low_operand_reduction_pct": 85.83
       },
+      "set_name": "std_fixed_103",
       "whole_core": {
         "baseline": {
+          "control": 6479996,
+          "core_total": 68317397,
           "datapath": 49236230,
           "delay_line": 12601171,
-          "control": 6479996,
-          "detector": 0,
-          "core_total": 68317397
+          "detector": 0
         },
         "gated_auto": {
+          "control": 6479996,
+          "core_total": 58610823,
           "datapath": 38402576,
           "delay_line": 12601171,
-          "control": 6479996,
-          "detector": 1127080,
-          "core_total": 58610823
+          "detector": 1127080
         },
         "whole_core_reduction_pct": 14.21
       }
     },
     "std_fixed_105": {
-      "set_name": "std_fixed_105",
       "datapath": {
         "baseline": {
+          "acc": 21450092,
+          "mult": 21176686,
           "op_high": 2339688,
           "op_low": 4370534,
-          "mult": 21176686,
-          "acc": 21450092,
           "total": 49337000
         },
+        "datapath_reduction_pct": 20.97,
+        "gated_approx": {
+          "acc": 17530434,
+          "mult": 17018892,
+          "op_high": 2339688,
+          "op_low": 0,
+          "total": 36889014
+        },
         "gated_auto": {
+          "acc": 18198350,
+          "mult": 17716532,
           "op_high": 2339688,
           "op_low": 734476,
-          "mult": 17716532,
-          "acc": 18198350,
           "total": 38989046
         },
         "gated_full": {
+          "acc": 21450092,
+          "mult": 21176686,
           "op_high": 2339688,
           "op_low": 4370534,
-          "mult": 21176686,
-          "acc": 21450092,
           "total": 49337000
         },
-        "gated_approx": {
-          "op_high": 2339688,
-          "op_low": 0,
-          "mult": 17018892,
-          "acc": 17530434,
-          "total": 36889014
-        },
-        "low_operand_reduction_pct": 83.19,
-        "datapath_reduction_pct": 20.97
+        "low_operand_reduction_pct": 83.19
       },
+      "set_name": "std_fixed_105",
       "whole_core": {
         "baseline": {
+          "control": 6479996,
+          "core_total": 68647215,
           "datapath": 49337000,
           "delay_line": 12830219,
-          "control": 6479996,
-          "detector": 0,
-          "core_total": 68647215
+          "detector": 0
         },
         "gated_auto": {
+          "control": 6479996,
+          "core_total": 59471280,
           "datapath": 38989046,
           "delay_line": 12830219,
-          "control": 6479996,
-          "detector": 1172019,
-          "core_total": 59471280
+          "detector": 1172019
         },
         "whole_core_reduction_pct": 13.37
       }
     },
     "std_minmax_100": {
-      "set_name": "std_minmax_100",
       "datapath": {
         "baseline": {
+          "acc": 32405666,
+          "mult": 31778116,
           "op_high": 5047540,
           "op_low": 9369089,
-          "mult": 31778116,
-          "acc": 32405666,
           "total": 78600411
         },
+        "datapath_reduction_pct": 32.9,
+        "gated_approx": {
+          "acc": 21887244,
+          "mult": 21027244,
+          "op_high": 5047540,
+          "op_low": 0,
+          "total": 47962028
+        },
         "gated_auto": {
+          "acc": 23492608,
+          "mult": 22677712,
           "op_high": 5047540,
           "op_low": 1522428,
-          "mult": 22677712,
-          "acc": 23492608,
           "total": 52740288
         },
         "gated_full": {
+          "acc": 32405666,
+          "mult": 31778116,
           "op_high": 5047540,
           "op_low": 9369089,
-          "mult": 31778116,
-          "acc": 32405666,
           "total": 78600411
         },
-        "gated_approx": {
-          "op_high": 5047540,
-          "op_low": 0,
-          "mult": 21027244,
-          "acc": 21887244,
-          "total": 47962028
-        },
-        "low_operand_reduction_pct": 83.75,
-        "datapath_reduction_pct": 32.9
+        "low_operand_reduction_pct": 83.75
       },
+      "set_name": "std_minmax_100",
       "whole_core": {
         "baseline": {
+          "control": 6479996,
+          "core_total": 105617033,
           "datapath": 78600411,
           "delay_line": 20536626,
-          "control": 6479996,
-          "detector": 0,
-          "core_total": 105617033
+          "detector": 0
         },
         "gated_auto": {
+          "control": 6479996,
+          "core_total": 82729024,
           "datapath": 52740288,
           "delay_line": 20536626,
-          "control": 6479996,
-          "detector": 2972114,
-          "core_total": 82729024
+          "detector": 2972114
         },
         "whole_core_reduction_pct": 21.67
       }
-    },
-    "noise_stress": {
-      "set_name": "noise_stress",
-      "datapath": {
-        "baseline": {
-          "op_high": 653690,
-          "op_low": 994356,
-          "mult": 2710874,
-          "acc": 2417434,
-          "total": 6776354
-        },
-        "gated_auto": {
-          "op_high": 653690,
-          "op_low": 573342,
-          "mult": 2313972,
-          "acc": 2044989,
-          "total": 5585993
-        },
-        "gated_full": {
-          "op_high": 653690,
-          "op_low": 994356,
-          "mult": 2710874,
-          "acc": 2417434,
-          "total": 6776354
-        },
-        "gated_approx": {
-          "op_high": 653690,
-          "op_low": 0,
-          "mult": 1769234,
-          "acc": 1533113,
-          "total": 3956037
-        },
-        "low_operand_reduction_pct": 42.34,
-        "datapath_reduction_pct": 17.57
-      },
-      "whole_core": {
-        "baseline": {
-          "datapath": 6776354,
-          "delay_line": 2158043,
-          "control": 539996,
-          "detector": 0,
-          "core_total": 9474393
-        },
-        "gated_auto": {
-          "datapath": 5585993,
-          "delay_line": 2158043,
-          "control": 539996,
-          "detector": 379198,
-          "core_total": 8663230
-        },
-        "whole_core_reduction_pct": 8.56
-      }
     }
-  }
+  },
+  "synth": {}
 }

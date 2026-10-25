@@ -11,7 +11,7 @@ This repository contains the complete hardware design, bit-exact Python golden m
 
 The core architecture exploits the asymmetric diagnostic importance of the cardiac cycle:
 - **Full Precision (16-bit Q1.15):** Dynamically activated during the QRS detection window (~120 ms around R-peaks) to preserve critical signal morphology.
-- **Approximate Mode (8-bit Truncated Multiplier):** Operates during quiescent baseline and T-wave regions (~84–86% of the cardiac cycle), cutting dynamic switching power with negligible reconstruction error (PRD $\le 0.45\%$).
+- **Approximate Mode (8-bit Truncated Multiplier):** Operates during quiescent baseline and T-wave regions (~84–86% of the cardiac cycle), cutting dynamic switching power with negligible reconstruction error (QRS-region PRD $\le 0.45\%$ min-max, $\le 0.73\%$ fixed-scale; $\ge 3.3\times$ lower error than all-approximate).
 
 ---
 
@@ -24,8 +24,8 @@ All metrics are gathered from cycle-accurate Verilator RTL simulations across MI
 | **RTL ≡ Golden Model** | 0 bit mismatches | **0 mismatches** (over 480k+ samples) | **PASS** |
 | **Mutation Testing** | Catch all mandatory mutants | **29 / 29 caught (0 survived)** | **PASS** |
 | **Hardware Area (`pg_top`)** | $\le 1,500$ LUTs, $\le 800$ FFs | **1,394 LUTs, 417 FFs** (variability spread: 1376–1402 LUTs) | **PASS** |
-| **QRS-Region PRD** | $\le 1.0\%$ | **0.000% – 0.448%** ($\ge 10\times$ lower than all-approx) | **PASS** |
-| **Datapath Toggle Reduction** | $\ge 20\%$ | **21.0% – 32.9%** (Clean), **17.6%** (Noise Stress) | **PASS** |
+| **QRS-Region PRD** | $\le 1.0\%$ | **0.000% – 0.448% (min-max), 0.000% – 0.730% (fixed)** (3.3× – 75.8× lower than all-approx) | **PASS** |
+| **Datapath Toggle Reduction** | $\ge 20\%$ | **21.0% – 32.9%** (Clean), **8.3% – 9.7%** (Low SNR $\le 6$ dB) | **PASS** |
 | **Low-Operand Bus Reduction**| $\ge 80\%$ | **83.2% – 85.8%** | **PASS** |
 | **UART Hardware Replay** | 5,000 frames bit-exact | **0 preamble errors, 0 checksum errors, 0 mismatches** | **PASS** |
 
@@ -54,7 +54,7 @@ precision-gated-mac-ecg/
 ├── sim/                # Python golden models and simulation runners
 │   ├── golden_v2.py        # Bit-exact integer golden model v2
 │   ├── qrs_detector_v2.py  # Integer hardware-equivalent Pan-Tompkins detector
-│   ├── run_regression.py   # Complete regression runner (30+ testsuites)
+│   ├── run_regression.py   # Complete regression runner (37 standard / 52 nightly suites)
 │   ├── activity_report.py  # Whole-core & datapath toggle characterization
 │   └── noise_sweep.py      # Noise sweep across SNRs {24, 18, 12, 6, 0} dB
 ├── tb/                 # Verilog testbenches (Verilator compatible)
@@ -63,7 +63,7 @@ precision-gated-mac-ecg/
 │   └── tb_activity.v       # Hardware toggle activity characterization
 ├── scripts/            # Automation tools
 │   ├── synth_runner.py     # Yosys synthesis runner and JSON parser
-│   ├── mutation_check.py   # 14-mutant fault injection harness
+│   ├── mutation_check.py   # Fault injection mutation harness (≥ 31 mutants)
 │   ├── uart_capture.py     # Python host PC serial receiver & plot tool
 │   └── generate_report.py  # Dynamically generates reports/RESULTS.md
 └── reports/            # Complete characterization evidence and JSON artifacts

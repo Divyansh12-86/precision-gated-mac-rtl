@@ -1,6 +1,8 @@
 {
   "build_errors": 0,
-  "caught": 29,
+  "caught": 31,
+  "commit": "fc70161b2232becd2b9ad8e2f9a6d25a0e4e6aca",
+  "dirty": false,
   "results": [
     {
       "desc": "Tap coefficient incremented by +1",
@@ -175,8 +177,21 @@
       "id": "MUT29_flags_bit_order",
       "status": "CAUGHT",
       "suite": "por_replay"
+    },
+    {
+      "desc": "POR_CYCLES reduced from 65535 to 6553",
+      "id": "MUT30_por_cycles",
+      "status": "CAUGHT",
+      "suite": "realparams"
+    },
+    {
+      "desc": "DEBOUNCE_CYCLES reduced from 100000 to 10000",
+      "id": "MUT31_debounce_cycles",
+      "status": "CAUGHT",
+      "suite": "realparams"
     }
   ],
+  "source_digest": "9c20847163ee569310a796ac61e8aec185fa78383b27387dc4cb88a4238bab8f",
   "survived": 0,
-  "total_mutants": 29
+  "total_mutants": 31
 }
