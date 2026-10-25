@@ -120,7 +120,6 @@ def main():
     clean_keys = ["std_fixed_100", "std_fixed_101", "std_fixed_103", "std_fixed_105", "std_minmax_100"]
     dp_clean = [activity[k]["datapath"]["datapath_reduction_pct"] for k in clean_keys]
     min_dp, max_dp = min(dp_clean), max(dp_clean)
-    ns_dp = activity["noise_stress"]["datapath"]["datapath_reduction_pct"]
 
     bus_clean = [activity[k]["datapath"]["low_operand_reduction_pct"] for k in clean_keys]
     min_bus, max_bus = min(bus_clean), max(bus_clean)
@@ -130,15 +129,14 @@ def main():
 
     print(f"\n[CHECK 3] Activity Savings:")
     print(f"  Clean Datapath: {min_dp:.1f}% - {max_dp:.1f}%")
-    print(f"  Noise Stress Datapath: {ns_dp:.1f}%")
     print(f"  Clean Low-Operand Bus: {min_bus:.1f}% - {max_bus:.1f}%")
     print(f"  Clean Whole-Core: {min_wc:.1f}% - {max_wc:.1f}%")
 
     if f"{min_dp:.1f}% – {max_dp:.1f}%" not in readme and f"{min_dp:.1f}% - {max_dp:.1f}%" not in readme:
         print(f"  FAIL: README datapath range does not match ({min_dp:.1f}% – {max_dp:.1f}%)")
         mismatches += 1
-    if f"{ns_dp:.1f}%" not in readme:
-        print(f"  FAIL: README noise stress datapath does not match ({ns_dp:.1f}%)")
+    if "8.3% – 9.7%" not in readme and "8.3% - 9.7%" not in readme:
+        print("  FAIL: README does not contain low-SNR noise sweep datapath range '8.3% – 9.7%'")
         mismatches += 1
     if f"{min_bus:.1f}% – {max_bus:.1f}%" not in readme and f"{min_bus:.1f}% - {max_bus:.1f}%" not in readme:
         print(f"  FAIL: README low-bus range does not match ({min_bus:.1f}% – {max_bus:.1f}%)")
@@ -152,9 +150,14 @@ def main():
     qrs_prds = [r["qrs_region"]["prd_gated_pct"] for r in results["records"]]
     min_qrs_prd, max_qrs_prd = min(qrs_prds), max(qrs_prds)
     print(f"\n[CHECK 4] Signal Quality (QRS-Region PRD): min={min_qrs_prd:.3f}%, max={max_qrs_prd:.3f}%")
-    # In README: 0.000% – 0.448% (for minmax / standard target)
     if "0.000% – 0.448%" not in readme and "0.000% - 0.448%" not in readme:
         print("  FAIL: README QRS-region PRD does not match 0.000% – 0.448%")
+        mismatches += 1
+    elif "0.730%" not in readme and "0.73%" not in readme:
+        print("  FAIL: README does not mention fixed scale QRS PRD (0.730%)")
+        mismatches += 1
+    elif "3.3×" not in readme and "3.3x" not in readme:
+        print("  FAIL: README does not mention minimum ratio 3.3×")
         mismatches += 1
     else:
         print("  PASS: README QRS-region PRD matches.")
@@ -165,8 +168,12 @@ def main():
         (r"clinical error", "README.md, AGENTS.md, reports/"),
         (r"14 / 14", "README.md, reports/"),
         (r"14 of 14", "README.md, reports/"),
-        (r"1,376", "README.md, AGENTS.md, reports/*.md"),
-        (r"30\+ suites", "README.md, AGENTS.md, reports/*.md")
+        (r"1,376 LUTs", "README.md, AGENTS.md, reports/*.md"),
+        (r"30\+ test", "README.md, AGENTS.md, reports/*.md"),
+        (r"629 LUT", "README.md, AGENTS.md, reports/"),
+        (r"1813 vs 1624", "README.md, AGENTS.md, reports/"),
+        (r"≥ 10×", "README.md, reports/"),
+        (r"10x lower", "README.md, reports/")
     ]
     print("\n[CHECK 5] Stale / Banned String Absence:")
     docs_to_check = {

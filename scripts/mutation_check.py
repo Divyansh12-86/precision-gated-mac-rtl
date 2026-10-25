@@ -18,6 +18,8 @@ import subprocess
 import time
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+from scripts.source_digest import get_source_digest, get_git_commit, is_git_dirty
 RTL_DIR = os.path.join(BASE_DIR, "rtl")
 FPGA_DIR = os.path.join(BASE_DIR, "fpga")
 TB_DIR = os.path.join(BASE_DIR, "tb")
@@ -267,6 +269,24 @@ MUTANTS = [
         "desc": "UART frame flags bit order swapped ({force, peak, gate} -> {gate, peak, force})",
         "tb": "board",
         "scenario": "por_replay"
+    },
+    {
+        "id": "MUT30_por_cycles",
+        "file": "board_core.v",
+        "target": "parameter POR_CYCLES      = (FAST_TICK > 0) ? 1000 : 65535,",
+        "replacement": "parameter POR_CYCLES      = (FAST_TICK > 0) ? 1000 : 6553,",
+        "desc": "POR_CYCLES reduced from 65535 to 6553",
+        "tb": "board",
+        "scenario": "realparams"
+    },
+    {
+        "id": "MUT31_debounce_cycles",
+        "file": "board_core.v",
+        "target": "parameter DEBOUNCE_CYCLES = (FAST_TICK > 0) ? 32 : 100_000",
+        "replacement": "parameter DEBOUNCE_CYCLES = (FAST_TICK > 0) ? 32 : 10_000",
+        "desc": "DEBOUNCE_CYCLES reduced from 100000 to 10000",
+        "tb": "board",
+        "scenario": "realparams"
     }
 ]
 
@@ -331,7 +351,7 @@ def check_unmutated_baseline():
         return False
 
     bin_board = os.path.join(board_build_dir, "sim_board_base")
-    for scen in ["por_replay", "async_switch"]:
+    for scen in ["por_replay", "async_switch", "realparams"]:
         cmd_run = [bin_board, f"+SCENARIO={scen}"]
         res_r = subprocess.run(cmd_run, cwd=BASE_DIR, capture_output=True, text=True)
         if res_r.returncode != 0 or "TB_RESULT: PASS" not in res_r.stdout:
@@ -485,7 +505,10 @@ def main():
     summary = {
         "build_errors": build_errors,
         "caught": caught,
+        "commit": get_git_commit(verify_exists=True),
+        "dirty": is_git_dirty(),
         "results": all_results,
+        "source_digest": get_source_digest(),
         "survived": survived,
         "total_mutants": len(all_results)
     }

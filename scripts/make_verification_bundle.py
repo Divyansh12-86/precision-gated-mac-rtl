@@ -21,6 +21,8 @@ import platform
 import subprocess
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+from scripts.source_digest import get_source_digest
 REPORTS_DIR = os.path.join(BASE_DIR, "reports")
 PYTHON_EXE = sys.executable
 
@@ -113,6 +115,8 @@ def get_tool_versions():
 
 def generate_independent_checks(evidence_dir):
     import numpy as np
+    t_start = time.time()
+    utc_start = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime(t_start))
     out_lines = []
     out_lines.append("==================================================================")
     out_lines.append("INDEPENDENT NUMERICAL CHECKS (pure Python + numpy)")
@@ -138,6 +142,15 @@ def generate_independent_checks(evidence_dir):
 
     ok_count = 0
     fail_count = 0
+
+    legacy_file = os.path.join(BASE_DIR, "scripts", "known_legacy_sets.txt")
+    allow_list = set()
+    if os.path.exists(legacy_file):
+        with open(legacy_file, "r") as f:
+            allow_list = set(line.strip() for line in f if line.strip() and not line.startswith("#"))
+
+    allowed_legacy_count = 0
+    unallowed_fail_count = 0
 
     for s in all_sets:
         p = os.path.join(sets_dir, s)
@@ -196,15 +209,36 @@ def generate_independent_checks(evidence_dir):
             out_lines.append(f"SET {s:25s}: OK ({len(x)} samples, diffs: full=0 approx=0 gated=0){extra_str}")
         else:
             fail_count += 1
-            out_lines.append(f"SET {s:25s}: MISMATCH (full={diff_full} approx={diff_approx} gated={diff_gated}){extra_str}")
+            if s in allow_list:
+                allowed_legacy_count += 1
+                out_lines.append(f"SET {s:25s}: MISMATCH (full={diff_full} approx={diff_approx} gated={diff_gated}){extra_str} *(Known legacy set from scripts/known_legacy_sets.txt)*")
+            else:
+                unallowed_fail_count += 1
+                out_lines.append(f"SET {s:25s}: UNAPPROVED MISMATCH (full={diff_full} approx={diff_approx} gated={diff_gated}){extra_str}")
 
     out_lines.append("==================================================================")
-    out_lines.append(f"INDEPENDENT CHECKS SUMMARY: {ok_count} OK, {fail_count} MISMATCH out of {ok_count + fail_count} sets")
+    out_lines.append(f"INDEPENDENT CHECKS SUMMARY: {ok_count} OK, {fail_count} MISMATCH ({allowed_legacy_count} allowed legacy, {unallowed_fail_count} unapproved) out of {ok_count + fail_count} sets")
     out_lines.append("==================================================================")
 
     with open(os.path.join(evidence_dir, "independent_checks.txt"), "w", encoding="utf-8") as f:
         f.write("\n".join(out_lines) + "\n")
     print(f"  --> Saved {ok_count} vector set independent checks to evidence/independent_checks.txt")
+
+    if unallowed_fail_count > 0:
+        print(f"ERROR: {unallowed_fail_count} unapproved mismatch(es) detected in independent checks!")
+        sys.exit(1)
+
+    t_end = time.time()
+    utc_end = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime(t_end))
+    duration = t_end - t_start
+    return {
+        "command": [PYTHON_EXE, "scripts/make_verification_bundle.py", "--independent-checks"],
+        "name": "independent_checks",
+        "exit_code": 0,
+        "start_utc": utc_start,
+        "end_utc": utc_end,
+        "duration_sec": round(duration, 2)
+    }
 
 def main():
     run_checks = "--run-checks" in sys.argv
@@ -225,6 +259,38 @@ def main():
         sys.exit(1)
     elif git_info["dirty"]:
         print("WARNING: Working tree is DIRTY! 'dirty': true will be recorded in manifest.")
+
+    # Rule S3 / Phase 2: Refuse to package if any evidence fails provenance
+    print("\n--- Verifying evidence provenance and commit existence ---")
+    cur_digest = get_source_digest()
+    evidence_jsons = [
+        "regress_summary.json",
+        "regress_summary_nightly.json",
+        "mutation.json",
+        "synth.json",
+        "activity.json",
+        "noise_sweep.json",
+        "results.json"
+    ]
+    for ej in evidence_jsons:
+        pj = os.path.join(REPORTS_DIR, ej)
+        if not os.path.exists(pj):
+            print(f"ERROR: Missing report artifact {ej}")
+            sys.exit(1)
+        with open(pj, "r") as f:
+            d = json.load(f)
+        c = d.get("commit")
+        if not c or c == "unknown":
+            print(f"ERROR: Missing commit in {ej}")
+            sys.exit(1)
+        chk = subprocess.run(["git", "cat-file", "-e", f"{c}^{{commit}}"], cwd=BASE_DIR)
+        if chk.returncode != 0:
+            print(f"ERROR: Stale/dangling commit {c} in {ej} does not exist in git history!")
+            sys.exit(1)
+        sd = d.get("source_digest")
+        if sd != cur_digest:
+            print(f"ERROR: Stale source_digest in {ej}: got {sd}, current is {cur_digest}!")
+            sys.exit(1)
 
     bundle_dir_name = f"verification_bundle_{head_7}"
     zip_path = os.path.join(BASE_DIR, f"{bundle_dir_name}.zip")
@@ -302,7 +368,7 @@ def main():
 
     # 2b. Independent Numerical Checks (evidence/independent_checks.txt)
     print("\n--- Generating independent numerical checks ---")
-    generate_independent_checks(evidence_dir)
+    commands_log.append(generate_independent_checks(evidence_dir))
 
     # 3. HOW_TO_REPRODUCE.txt
     with open(os.path.join(b_root, "HOW_TO_REPRODUCE.txt"), "w", encoding="utf-8") as f:
@@ -409,12 +475,16 @@ def main():
             bundle_files_sha[rel_in_bundle] = sha256_file(fp)
 
     # Sorted list hash
-    list_str = "\n".join(f"{k}:{bundle_files_sha[k]}" for k in sorted(bundle_files_sha.keys()))
+    list_str = "\n".join(f"{bundle_files_sha[k]}  {k}" for k in sorted(bundle_files_sha.keys()))
     bundle_content_sha256 = hashlib.sha256(list_str.encode("utf-8")).hexdigest()
 
     manifest_data = {
         "head": git_info["head"],
         "parent": git_info["parent"],
+        "code_commit": git_info["parent"] if git_info["parent"] else git_info["head"],
+        "report_commit": git_info["head"],
+        "source_digest": get_source_digest(),
+        "content_hash_algorithm": "sha256('\\n'.join(f'{sha256}  {rel_path}' for rel_path in sorted(files)))",
         "branch": git_info["branch"],
         "tags": git_info["tags"],
         "dirty": git_info["dirty"],

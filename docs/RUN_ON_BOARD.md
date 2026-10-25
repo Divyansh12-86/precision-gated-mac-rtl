@@ -18,7 +18,7 @@ This guide explains how to program and verify the bit-exact ECG filter demo on B
 
 ## 3. Programming & Live Capture Verification
 1. Power on board and connect via USB. Open **Hardware Manager** -> **Program Device**.
-2. Internal 16-bit Power-On Reset (POR) automatically initializes detector registers; button reset (`btnC` / `CPU_RESETN`) is optional.
+2. Internal 16-bit Power-On Reset (POR) automatically initializes detector registers; button reset (`btnC` / `CPU_RESETN`) is optional. Mode-switch changes take effect after 1–2 samples (≈ 3–6 ms) due to sample-tick latching.
 3. Run the host capture script within ~2 minutes of power-up/reset (during first ROM playback pass):
    ```bash
    python3 scripts/uart_capture.py --port /dev/ttyUSB0 --baud 115200 --ref data/test_vectors/std_fixed_100

@@ -36,6 +36,7 @@ mutation:
 
 report:
 	$(PYTHON) scripts/generate_report.py
+	$(PYTHON) scripts/generate_pdf.py
 
 nightly: full-vectors
 	$(PYTHON) sim/run_regression.py --nightly

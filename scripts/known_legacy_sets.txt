@@ -1,0 +1,4 @@
+# scripts/known_legacy_sets.txt
+# Test vector sets known to use legacy post-scaling noise or non-standard formatting.
+# Any mismatch in independent_checks for sets NOT in this list will fail verification.
+noise_stress

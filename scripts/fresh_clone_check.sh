@@ -60,7 +60,8 @@ make sim
 make nightly
 
 echo "[6/6] Executing master verification harness..."
-FRESH_CLONE_RUNNING=1 python3 scripts/verify_all.py
+export INSIDE_FRESH_CLONE_CHECK=1
+python3 scripts/verify_all.py --skip-fresh-clone-dependent
 
 echo "Checking git working tree in fresh clone..."
 DIRTY="$(git status --porcelain | grep -v '^ M reports/' || true)"

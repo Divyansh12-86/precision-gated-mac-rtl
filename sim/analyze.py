@@ -29,6 +29,10 @@ import wfdb
 from qrs_detector_v2 import evaluate_detector_beats_only, BEAT_SYMBOLS
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+from scripts.source_digest import get_source_digest, get_git_commit, is_git_dirty
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TV_DIR = os.path.join(BASE_DIR, "data", "test_vectors")
 MITBIH_DIR = os.path.join(BASE_DIR, "data", "mitbih")
 REPORTS_DIR = os.path.join(BASE_DIR, "reports")
@@ -263,9 +267,18 @@ def run_all():
               f"{r['qrs_region']['prd_allapprox_pct']:.4f} |")
 
     # Save results.json
+    commit = get_git_commit(verify_exists=True)
+    dirty = is_git_dirty()
+    digest = get_source_digest()
+
     out_json = {
+        "commit": commit,
+        "dirty": dirty,
+        "source_digest": digest,
         "meta": {
-            "commit": get_git_commit(),
+            "commit": commit,
+            "dirty": dirty,
+            "source_digest": digest,
             "tools": {
                 "simulator": "verilator 5.020",
                 "yosys": "0.33",

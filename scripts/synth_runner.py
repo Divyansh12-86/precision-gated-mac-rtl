@@ -17,6 +17,8 @@ import re
 import subprocess
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+from scripts.source_digest import get_source_digest, get_git_commit, is_git_dirty
 REPORTS_DIR = os.path.join(BASE_DIR, "reports")
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
@@ -57,29 +59,36 @@ def main():
     ys_path = os.path.join(BASE_DIR, "scripts", "synth_yosys.ys")
     rpt_path = os.path.join(REPORTS_DIR, "synth_yosys.rpt")
 
-    print("[SYNTH] Running Yosys synthesis script...", flush=True)
-    cmd = ["yosys", "-s", ys_path]
-    res = subprocess.run(cmd, cwd=BASE_DIR, capture_output=True, text=True)
+    if "--parse-only" in sys.argv and os.path.exists(rpt_path):
+        print(f"[SYNTH] Reading existing synthesis report from {rpt_path} (--parse-only)...")
+        with open(rpt_path, "r", encoding="utf-8") as f:
+            clean_rpt = f.read()
+        raw_stdout = clean_rpt
+    else:
+        print("[SYNTH] Running Yosys synthesis script...", flush=True)
+        cmd = ["yosys", "-s", ys_path]
+        res = subprocess.run(cmd, cwd=BASE_DIR, capture_output=True, text=True)
 
-    # Strip non-deterministic time and CPU lines from report output
-    clean_lines = []
-    for line in res.stdout.splitlines():
-        if re.match(r"^End of script\. Logfile hash: .*, CPU:.*", line):
-            clean_lines.append("End of script. Execution completed successfully.")
-        elif re.match(r"^Time spent:.*", line):
-            continue
-        else:
-            clean_lines.append(line)
-    clean_rpt = "\n".join(clean_lines) + "\n"
-    if res.stderr:
-        clean_rpt += "\nSTDERR:\n" + res.stderr
+        # Strip non-deterministic time and CPU lines from report output
+        clean_lines = []
+        for line in res.stdout.splitlines():
+            if re.match(r"^End of script\. Logfile hash: .*, CPU:.*", line):
+                clean_lines.append("End of script. Execution completed successfully.")
+            elif re.match(r"^Time spent:.*", line):
+                continue
+            else:
+                clean_lines.append(line)
+        clean_rpt = "\n".join(clean_lines) + "\n"
+        if res.stderr:
+            clean_rpt += "\nSTDERR:\n" + res.stderr
 
-    with open(rpt_path, "w") as f:
-        f.write(clean_rpt)
+        with open(rpt_path, "w") as f:
+            f.write(clean_rpt)
 
-    if res.returncode != 0:
-        print(f"Yosys synthesis failed:\n{res.stderr}")
-        sys.exit(1)
+        if res.returncode != 0:
+            print(f"Yosys synthesis failed:\n{res.stderr}")
+            sys.exit(1)
+        raw_stdout = res.stdout
 
     print(f"[SYNTH] Parsing synthesis report from {rpt_path}...")
     section_defs = [
@@ -95,7 +104,7 @@ def main():
     ]
 
     # Split report by SYNTH_SECTION:
-    sec_splits = re.split(r"SYNTH_SECTION:\s*(\w+)", res.stdout)
+    sec_splits = re.split(r"SYNTH_SECTION:\s*(\w+)", raw_stdout)
     sec_dict = {}
     for i in range(1, len(sec_splits), 2):
         s_name = sec_splits[i].strip()
@@ -151,6 +160,17 @@ def main():
         "delta_dsps": parsed["pg_top_dsp"]["dsps"] - parsed["baseline_fir_dsp"]["dsps"]
     }
 
+    # Calculate top-level wrapper differences
+    b3_lut = parsed["top_basys3_lut"]["luts"]
+    na7_lut = parsed["top_nexys_a7_lut"]["luts"]
+    top_lut_diff = abs(b3_lut - na7_lut)
+    top_lut_pct = round((top_lut_diff / max(b3_lut, na7_lut)) * 100.0, 1)
+
+    b3_dsp = parsed["top_basys3"]["luts"]
+    na7_dsp = parsed["top_nexys_a7"]["luts"]
+    top_dsp_diff = abs(b3_dsp - na7_dsp)
+    top_dsp_pct = round((top_dsp_diff / max(b3_dsp, na7_dsp)) * 100.0, 1)
+
     variability = {
         "pg_top_lut": {
             "min_luts": 1376,
@@ -160,6 +180,21 @@ def main():
             "min_ffs": 417,
             "max_ffs": 417,
             "explanation": "Yosys area estimates vary by about +/- 1.9% with netlist naming and hierarchy boundaries; Vivado will differ."
+        },
+        "top_level": {
+            "lut_mode": {
+                "top_basys3_luts": b3_lut,
+                "top_nexys_a7_luts": na7_lut,
+                "diff_luts": top_lut_diff,
+                "diff_pct": top_lut_pct
+            },
+            "dsp_mode": {
+                "top_basys3_luts": b3_dsp,
+                "top_nexys_a7_luts": na7_dsp,
+                "diff_luts": top_dsp_diff,
+                "diff_pct": top_dsp_pct
+            },
+            "explanation": f"Basys3 and NexysA7 wrappers are logically identical; LUT differences ({b3_lut} vs {na7_lut}, ~{top_lut_pct}%) are likely caused by netlist naming/ordering effects in ABC; not further investigated."
         },
         "tops_side_by_side": {
             "top_basys3_lut": {
@@ -174,11 +209,24 @@ def main():
                 "muxf": parsed["top_nexys_a7_lut"]["muxf"],
                 "dsps": parsed["top_nexys_a7_lut"]["dsps"]
             },
-            "explanation": "Basys3 and NexysA7 wrappers are logically identical; LUT differences (1813 vs 1624) arise purely from Yosys heuristic netlist naming and MUXF clustering."
+            "explanation": f"Basys3 and NexysA7 wrappers are logically identical; LUT differences ({b3_lut} vs {na7_lut}) are likely caused by netlist naming/ordering effects in ABC; not further investigated."
         }
     }
 
+    try:
+        from scripts.source_digest import get_source_digest, get_git_commit, is_git_dirty
+        s_digest = get_source_digest()
+        g_commit = get_git_commit()
+        g_dirty = is_git_dirty()
+    except Exception:
+        s_digest = "unknown"
+        g_commit = "unknown"
+        g_dirty = False
+
     synth_json_data = {
+        "commit": g_commit,
+        "dirty": g_dirty,
+        "source_digest": s_digest,
         "target_technology": "Xilinx 7-Series xc7 family generic (no part-specific data)",
         "tool": "Yosys 0.33",
         "timing_and_power_status": "NOT RUN (no Vivado installed on host; Vivado OOC script provided in scripts/synth_vivado_ooc.tcl)",

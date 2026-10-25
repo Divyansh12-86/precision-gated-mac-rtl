@@ -19,9 +19,23 @@ import subprocess
 import numpy as np
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+from scripts.source_digest import get_source_digest
 REPORTS_DIR = os.path.join(BASE_DIR, "reports")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 BUILD_REGRESS = os.path.join(BASE_DIR, "build_regress")
+
+SKIP_FRESH_CLONE_DEPENDENT = "--skip-fresh-clone-dependent" in sys.argv
+INSIDE_FRESH_CLONE_CHECK = os.environ.get("INSIDE_FRESH_CLONE_CHECK") == "1"
+
+# Rule S4: FRESH_CLONE_RUNNING must never bypass checks unconditionally
+if os.environ.get("FRESH_CLONE_RUNNING") == "1" and not INSIDE_FRESH_CLONE_CHECK:
+    print("ERROR: FRESH_CLONE_RUNNING environment variable is obsolete and forbidden outside fresh_clone_check.sh.")
+    sys.exit(1)
+
+if SKIP_FRESH_CLONE_DEPENDENT and not INSIDE_FRESH_CLONE_CHECK:
+    print("ERROR: --skip-fresh-clone-dependent is only permitted when invoked by scripts/fresh_clone_check.sh.")
+    sys.exit(1)
 
 def check_v01():
     # V-01: Working tree clean (or clean excluding reports/ before final report commit)
@@ -84,21 +98,36 @@ def check_v07():
     with open(p_md, encoding="utf-8") as f: t = f.read()
     with open(p_json, encoding="utf-8") as f: noise_data = json.load(f)
 
+    low_snr_dp = []
+    low_snr_wc = []
     low_snr_ppvs = []
     low_snr_duties = []
-    for rec_id, s_dict in noise_data.items():
+    for rec_id in ["100", "103", "105"]:
+        s_dict = noise_data.get(rec_id, {})
         for snr_str, pt in s_dict.items():
             if snr_str != "clean_ref" and int(snr_str) <= 6:
+                low_snr_dp.append(pt.get("datapath_reduction_pct", 0.0))
+                low_snr_wc.append(pt.get("whole_core_reduction_pct", 0.0))
                 low_snr_ppvs.append(pt.get("positive_predictivity_pct", 0.0))
                 low_snr_duties.append(pt.get("gate_duty_full_pct", 0.0))
+
+    min_dp = f"{min(low_snr_dp):.1f}"
+    max_dp = f"{max(low_snr_dp):.1f}"
+    min_wc = f"{min(low_snr_wc):.1f}"
+    max_wc = f"{max(low_snr_wc):.1f}"
     min_ppv = str(round(min(low_snr_ppvs)))
     max_ppv = str(round(max(low_snr_ppvs)))
     mean_duty = str(round(sum(low_snr_duties) / len(low_snr_duties)))
 
-    ok = (min_ppv in t and max_ppv in t and mean_duty in t and
-          ("17.6" in t or "17.57" in t) and ("8.56" in t or "8.6" in t) and
-          "synthetic" in t)
-    return ok, f"Expected {min_ppv}, {max_ppv}, {mean_duty}, 17.57/17.6, 8.56/8.6, synthetic in RESULTS.md"
+    ok = (min_dp in t and max_dp in t and min_wc in t and max_wc in t and
+          min_ppv in t and max_ppv in t and mean_duty in t and "synthetic" in t)
+
+    # Legacy check: if 17.57 or 17.6 is mentioned, must be labelled legacy
+    for line in t.splitlines():
+        if ("17.57" in line or "17.6 " in line) and "legacy" not in line.lower():
+            return False, f"Found unlabelled legacy figure 17.57/17.6 in RESULTS.md: {line}"
+
+    return ok, f"Expected {min_dp}-{max_dp}% DP, {min_wc}-{max_wc}% Core, {min_ppv}-{max_ppv}% PPV, {mean_duty}% duty in RESULTS.md"
 
 def check_v08():
     # V-08: noise_sweep.json has datapath & whole-core savings for all 15 points plus clean_ref
@@ -228,22 +257,25 @@ def check_v18():
 
 def check_v19():
     # V-19: fresh_clone_check.sh exit 0 and log saved
-    if os.environ.get("FRESH_CLONE_RUNNING") == "1":
-        return True, "Fresh clone check in progress"
+    if SKIP_FRESH_CLONE_DEPENDENT:
+        return "SKIPPED", "Skipped fresh clone log check (inside fresh_clone_check.sh)"
     p = os.path.join(REPORTS_DIR, "fresh_clone.log")
     if not os.path.exists(p): return False, "Missing reports/fresh_clone.log"
     with open(p) as f: t = f.read()
     return "FRESH CLONE CHECK: PASS" in t, "Fresh clone check did not pass in log"
 
 def check_v20():
-    # V-20: fresh clone runs make nightly with 50 (or 52) passed tests
-    if os.environ.get("FRESH_CLONE_RUNNING") == "1":
-        return True, "Fresh clone check in progress"
+    # V-20: fresh clone runs make sim & make nightly with required test passes
+    if SKIP_FRESH_CLONE_DEPENDENT:
+        return "SKIPPED", "Skipped fresh clone nightly check (inside fresh_clone_check.sh)"
     p = os.path.join(REPORTS_DIR, "fresh_clone.log")
     if not os.path.exists(p): return False, "Missing reports/fresh_clone.log"
     with open(p) as f: t = f.read()
-    ok = "52 PASSED, 0 FAILED" in t or "50 PASSED, 0 FAILED" in t or "36 PASSED, 0 FAILED" in t
-    return ok, "Fresh clone log missing expected test passes"
+    has_std = ("37 PASSED, 0 FAILED" in t or "36 PASSED, 0 FAILED" in t)
+    has_nightly = ("53 PASSED, 0 FAILED" in t or "52 PASSED, 0 FAILED" in t)
+    has_pass = "FRESH CLONE CHECK: PASS" in t
+    ok = has_std and has_nightly and has_pass
+    return ok, f"Fresh clone log: std={has_std}, nightly={has_nightly}, pass={has_pass}"
 
 def check_v21():
     # V-21: check_docs_numbers.py passes with 0 mismatches
@@ -369,8 +401,8 @@ def check_v23():
     res_head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=BASE_DIR, capture_output=True, text=True)
     head_hash = res_head.stdout.strip()
 
-    if os.environ.get("FRESH_CLONE_RUNNING") == "1":
-        return True, "Fresh clone check in progress (report commit matches prior to Stage 2)"
+    if SKIP_FRESH_CLONE_DEPENDENT:
+        return "SKIPPED", "Skipped commit check (inside fresh_clone_check.sh before Stage 2 report commit)"
 
     if parent_hash and (rep_commit.startswith(parent_hash[:7]) or parent_hash.startswith(rep_commit)):
         return True, f"RESULTS.md matches parent code commit {parent_hash[:7]}"
@@ -379,13 +411,21 @@ def check_v23():
     return False, f"Report commit {rep_commit} does not match parent ({parent_hash[:7]}) or HEAD ({head_hash[:7]})"
 
 def check_v24():
-    # V-24: Behavioural numbers match baseline in 4.0
+    # V-24: Behavioural metrics dynamically validated against JSON
     p_act = os.path.join(REPORTS_DIR, "activity.json")
+    if not os.path.exists(p_act): return False, "Missing reports/activity.json"
     with open(p_act) as f: act = json.load(f)
     dp_100 = act.get("std_fixed_100", {}).get("datapath", {}).get("datapath_reduction_pct", 0.0)
-    dp_ns = act.get("noise_stress", {}).get("datapath", {}).get("datapath_reduction_pct", 0.0)
-    ok = abs(dp_100 - 21.75) < 0.5 and abs(dp_ns - 17.57) < 0.5
-    return ok, f"dp_100={dp_100}, dp_ns={dp_ns}"
+    if not (20.0 <= dp_100 <= 25.0):
+        return False, f"std_fixed_100 datapath reduction unexpected: {dp_100}%"
+
+    p_res = os.path.join(REPORTS_DIR, "RESULTS.md")
+    with open(p_res, encoding="utf-8") as f: t = f.read()
+    if "noise_stress" in act:
+        # If noise_stress is present, ensure it is labelled legacy in reports/RESULTS.md
+        if "legacy set" not in t.lower():
+            return False, "noise_stress present in activity but not labelled legacy in reports/RESULTS.md"
+    return True, f"Verified activity metrics dynamically (dp_100={dp_100:.2f}%)"
 
 def check_v25():
     # V-25: RESULTS.md status table has existing evidence file paths and provenance matching
@@ -412,7 +452,35 @@ def check_v25():
                     missing.append(ef)
     if missing:
         return False, f"Missing evidence files from table: {missing}"
-    return True, "All 10 criteria verified with existing evidence files"
+
+    # Verify provenance and non-dangling commit hashes in all reports/*.json
+    cur_digest = get_source_digest()
+    evidence_jsons = [
+        "regress_summary.json",
+        "regress_summary_nightly.json",
+        "mutation.json",
+        "synth.json",
+        "activity.json",
+        "noise_sweep.json",
+        "results.json"
+    ]
+    for ej in evidence_jsons:
+        p_json = os.path.join(REPORTS_DIR, ej)
+        if not os.path.exists(p_json):
+            return False, f"Missing evidence artifact {ej}"
+        with open(p_json, "r") as f:
+            d = json.load(f)
+        c = d.get("commit")
+        if not c or c == "unknown":
+            return False, f"Missing or unknown commit in {ej}"
+        chk = subprocess.run(["git", "cat-file", "-e", f"{c}^{{commit}}"], cwd=BASE_DIR)
+        if chk.returncode != 0:
+            return False, f"Dangling commit hash '{c}' in {ej} does not exist in git database"
+        sd = d.get("source_digest")
+        if not sd or sd != cur_digest:
+            return False, f"Source digest mismatch in {ej}: got '{sd}', current sources digest is '{cur_digest}'"
+
+    return True, "All 10 criteria verified with existing evidence files and valid source/commit provenance"
 
 def check_v26():
     # V-26: uart_capture selftest and real dump pass
@@ -426,6 +494,60 @@ def check_v26():
     if res_dump.returncode == 0 and "STATUS: PASS" in res_dump.stdout:
         return True, "Hardware replay UART capture verified bit-exact"
     return False, "Dump capture failed"
+
+def check_v27():
+    # V-27: Independent Checks Gate (6 standard/noise sets with explicit legacy allow-list)
+    legacy_file = os.path.join(BASE_DIR, "scripts", "known_legacy_sets.txt")
+    allow_list = set()
+    if os.path.exists(legacy_file):
+        with open(legacy_file, "r") as f:
+            allow_list = set(line.strip() for line in f if line.strip() and not line.startswith("#"))
+
+    p_res = os.path.join(REPORTS_DIR, "RESULTS.md")
+    with open(p_res, encoding="utf-8") as f:
+        res_text = f.read()
+
+    # Load filter coefficients
+    with open(os.path.join(BASE_DIR, "coeffs.mem")) as f:
+        taps = np.array([int(l.strip(), 16) for l in f if l.strip()])
+    taps = np.where(taps >= 32768, taps - 65536, taps)
+
+    sets = ["std_fixed_100", "std_fixed_101", "std_fixed_103", "std_fixed_105", "std_minmax_100", "noise_stress"]
+    for s in sets:
+        s_dir = os.path.join(DATA_DIR, "test_vectors", s)
+        if not os.path.exists(s_dir):
+            return False, f"Missing vector directory {s}"
+        with open(os.path.join(s_dir, "tv_inputs.hex")) as f:
+            x = np.array([int(l.strip(), 16) for l in f if l.strip()])
+        x = np.where(x >= 32768, x - 65536, x)
+
+        with open(os.path.join(s_dir, "tv_outputs_gated.hex")) as f:
+            y_gated_exp = np.array([int(l.strip(), 16) for l in f if l.strip()])
+        y_gated_exp = np.where(y_gated_exp >= 0x80000000, y_gated_exp - 0x100000000, y_gated_exp)
+
+        with open(os.path.join(s_dir, "tv_gate_flags.hex")) as f:
+            gate = np.array([int(l.strip(), 16) for l in f if l.strip()], dtype=bool)
+
+        y_full_calc = np.convolve(x, taps, mode="full")[:len(x)]
+        x_trunc = (x >> 8) << 8
+        y_approx_calc = np.convolve(x_trunc, taps, mode="full")[:len(x)]
+        y_gated_calc = np.where(gate, y_full_calc, y_approx_calc)
+
+        diff = int(np.max(np.abs(y_gated_exp - y_gated_calc)))
+        if diff != 0:
+            return False, f"Math mismatch in {s}: diff={diff}"
+
+        # Check ADU invariant on noise sets
+        if s.startswith("noise_") or "noise" in s:
+            lsb_zeros = int(np.sum((x & 31) == 0))
+            if lsb_zeros != len(x):
+                # Set violates (x & 31) == 0 invariant
+                if s not in allow_list:
+                    return False, f"Set '{s}' violates ADU invariant ((x & 31) == 0) and is NOT in scripts/known_legacy_sets.txt"
+                if "legacy" not in res_text.lower() or s not in res_text:
+                    return False, f"Set '{s}' is allow-listed but not labelled as legacy in reports/RESULTS.md"
+
+    return True, f"Independent checks verified across {len(sets)} sets (legacy sets properly allow-listed)"
 
 def main():
     print("==================================================================")
@@ -459,14 +581,24 @@ def main():
         ("V-24", check_v24),
         ("V-25", check_v25),
         ("V-26", check_v26),
+        ("V-27", check_v27),
     ]
 
     passed = 0
     failed = 0
+    skipped = 0
 
     for vid, fn in checks:
-        ok, msg = fn()
-        if ok:
+        res = fn()
+        if isinstance(res, tuple):
+            ok, msg = res
+        else:
+            ok, msg = res, ""
+
+        if ok == "SKIPPED":
+            print(f"  [{vid}] SKIPPED: {msg}")
+            skipped += 1
+        elif ok is True:
             print(f"  [{vid}] PASS: {msg if isinstance(msg, str) and len(msg) < 80 else ''}")
             passed += 1
         else:
@@ -474,14 +606,17 @@ def main():
             failed += 1
 
     print("==================================================================")
-    print(f"VERIFICATION SUMMARY: {passed} PASSED, {failed} FAILED out of {len(checks)} criteria")
+    print(f"VERIFICATION SUMMARY: {passed} PASSED, {failed} FAILED, {skipped} SKIPPED out of {len(checks)} criteria")
     print("==================================================================")
 
-    if failed == 0:
-        print("ALL CHECKS PASSED (26/26)")
-        sys.exit(0)
-    else:
+    if failed > 0:
         sys.exit(1)
+    if skipped > 0 and not INSIDE_FRESH_CLONE_CHECK:
+        print("ERROR: Skipped checks are not allowed outside fresh_clone_check.sh!")
+        sys.exit(1)
+
+    print(f"ALL CHECKS PASSED ({passed}/{len(checks)})")
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()

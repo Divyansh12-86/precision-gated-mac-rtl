@@ -28,6 +28,8 @@ import matplotlib.pyplot as plt
 import wfdb
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+from scripts.source_digest import get_source_digest, get_git_commit, is_git_dirty
 TV_DIR = os.path.join(BASE_DIR, "data", "test_vectors")
 MITBIH_DIR = os.path.join(BASE_DIR, "data", "mitbih")
 REPORTS_DIR = os.path.join(BASE_DIR, "reports")
@@ -297,9 +299,13 @@ def run_noise_sweep():
             print(f"  [{rec_id} @ {snr:2d} dB] Se={det_eval['sensitivity']:.1f}% | +P={det_eval['positive_predictivity']:.1f}% | FullDuty={gate_duty_pct:.1f}% | DP-Saving={dp_saving_pct:.2f}% (delta={delta_dp_pct:+.2f}%) | Core-Saving={core_saving_pct:.2f}% | RTL=PASS", flush=True)
 
     # Save reports/noise_sweep.json
+    results["commit"] = get_git_commit(verify_exists=True)
+    results["dirty"] = is_git_dirty()
+    results["source_digest"] = get_source_digest()
+
     out_json = os.path.join(REPORTS_DIR, "noise_sweep.json")
     with open(out_json, "w") as f:
-        json.dump(results, f, indent=2)
+        json.dump(results, f, indent=2, sort_keys=True)
     print(f"\n[DONE] Noise sweep metrics saved to {out_json}")
 
     # Generate Plot

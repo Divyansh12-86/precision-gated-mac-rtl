@@ -24,6 +24,10 @@ import subprocess
 import time
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+from scripts.source_digest import get_source_digest, get_git_commit, is_git_dirty
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORTS_DIR = os.path.join(BASE_DIR, "reports")
 BUILD_DIR = os.path.join(BASE_DIR, "build_activity")
 os.makedirs(REPORTS_DIR, exist_ok=True)
@@ -146,9 +150,16 @@ def main():
     for s in SETS:
         results[s] = run_set(bin_path, s)
 
+    commit = get_git_commit(verify_exists=True)
+    dirty = is_git_dirty()
+    digest = get_source_digest()
+    results["commit"] = commit
+    results["dirty"] = dirty
+    results["source_digest"] = digest
+
     act_file = os.path.join(REPORTS_DIR, "activity.json")
     with open(act_file, "w") as f:
-        json.dump(results, f, indent=2)
+        json.dump(results, f, indent=2, sort_keys=True)
     print(f"\n[DONE] Saved activity report for all {len(SETS)} sets to {act_file}")
 
     # Also update reports/results.json if present
@@ -160,8 +171,11 @@ def main():
         # keep standard 100 as top-level activity
         if "std_fixed_100" in results:
             rj["activity"] = results["std_fixed_100"]["datapath"]
+        rj["commit"] = commit
+        rj["dirty"] = dirty
+        rj["source_digest"] = digest
         with open(res_file, "w") as f:
-            json.dump(rj, f, indent=2)
+            json.dump(rj, f, indent=2, sort_keys=True)
         print(f"Updated {res_file} with activity data.")
 
 if __name__ == "__main__":

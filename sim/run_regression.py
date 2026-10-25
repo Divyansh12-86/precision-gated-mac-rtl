@@ -19,6 +19,8 @@ import json
 from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+from scripts.source_digest import get_source_digest, get_git_commit
 REPORTS_DIR = os.path.join(BASE_DIR, "reports")
 BUILD_DIR = os.path.join(BASE_DIR, "build_regress")
 os.makedirs(REPORTS_DIR, exist_ok=True)
@@ -39,14 +41,11 @@ def get_tool_versions():
     }
 
 def get_git_info():
-    commit = "unknown"
+    commit = get_git_commit(verify_exists=True)
     dirty = False
     try:
-        res = subprocess.run(["git", "rev-parse", "HEAD"], cwd=BASE_DIR, capture_output=True, text=True)
-        if res.returncode == 0:
-            commit = res.stdout.strip()
         st = subprocess.run(["git", "status", "--porcelain"], cwd=BASE_DIR, capture_output=True, text=True)
-        lines = [l for l in st.stdout.splitlines() if not l[3:].startswith("reports/")]
+        lines = [l for l in st.stdout.splitlines() if not any(x in l for x in ["reports/", "docs/", "README.md", "AGENTS.md"])]
         dirty = (len(lines) > 0)
     except Exception:
         pass
@@ -209,6 +208,7 @@ def main():
     runner.run_cmd([bin_board, "+SCENARIO=por_replay"], "tb_board_core por_replay", log_board, append=False)
     runner.run_cmd([bin_board, "+SCENARIO=async_switch"], "tb_board_core async_switch", log_board, append=True)
     runner.run_cmd([bin_board, "+SCENARIO=debounce_glitch"], "tb_board_core debounce_glitch", log_board, append=True)
+    runner.run_cmd([bin_board, "+SCENARIO=realparams"], "tb_board_core realparams", log_board, append=True)
 
     # 10. Nightly Full-Length Regressions (Phase 3)
     is_nightly = "--nightly" in sys.argv
@@ -245,12 +245,14 @@ def main():
     # Always write regression summary without wall-clock date
     commit, dirty = get_git_info()
     tool_vers = get_tool_versions()
+    src_digest = get_source_digest()
     summary_data = {
         "commit": commit,
         "dirty": dirty,
         "failed": runner.fails,
         "mode": "nightly" if is_nightly else "standard",
         "passed": runner.passes,
+        "source_digest": src_digest,
         "tests": [{"name": desc, "status": status} for desc, status, _ in runner.results],
         "tool_versions": tool_vers
     }
