@@ -1,9 +1,9 @@
 # Characterization & Verification Report: Precision-Gated Approximate-MAC ECG Filter
 
-**Source Commit:** `52911a02123c380fe9f1b9deffbc2b6d1dd5afda` (code tree clean: no)  
+**Source Commit:** `570f492cc6738d4ec7f5bf2b3bd69a494748edcd` (code tree clean: yes)  
 **Environment:** Linux x86_64, Python 3.12, Verilator 5.020, Yosys 0.33  
-**Regression Status:** 36 tests executed, 0 failed across all suites  
-**Mutation Harness:** 29/29 mandatory mutants caught, 0 survived  
+**Regression Status:** 37 tests executed, 0 failed across all suites  
+**Mutation Harness:** 31/31 mandatory mutants caught, 0 survived  
 
 ---
 
@@ -13,7 +13,7 @@
 |---|---|---|---|---|
 | **H1** | Clean clone -> `make all` | `Makefile`, `reports/` | **PASS (caveat)** | Reproducible clean clone; local data copy path exercised |
 | **H2** | 0 failures across all TBs | `reports/regress_*.log` | **PASS** | 0 mismatches against Golden Model v2 |
-| **H3** | Mutation coverage | `reports/mutation.json` | **PASS** | 29/29 mandatory mutants caught |
+| **H3** | Mutation coverage | `reports/mutation.json` | **PASS** | 31/31 mandatory mutants caught |
 | **H4** | Same-mode area target | `reports/synth.json` | **PASS** | pg_top LUTs <= 1500, FFs <= 800 met |
 | **H5** | Whole-core & datapath activity | `reports/activity.json` | **PASS** | Evaluated on standard clean sets |
 | **H6** | Timing & power | `reports/synth.json` | **NOT RUN** | Vivado absent; OOC script provided in scripts/ |
@@ -47,12 +47,12 @@ Measurements gathered on Verilator by tracking bit transitions cycle-by-cycle ac
 
 | Vector Set | Baseline Datapath | Gated Datapath | Datapath Saving (%) | Low-Operand Saving (%) | Whole-Core Saving (%) |
 |---|---|---|---|---|---|
+| `noise_stress` *(Legacy set: post-scaling noise, not comparable)* | 6,776,354 | 5,585,993 | **17.57%** | 42.34% | 8.56% |
 | `std_fixed_100` | 49,382,516 | 38,640,139 | **21.75%** | 84.77% | 14.29% |
 | `std_fixed_101` | 49,905,209 | 39,247,854 | **21.36%** | 84.78% | 13.71% |
 | `std_fixed_103` | 49,236,230 | 38,402,576 | **22.00%** | 85.83% | 14.21% |
 | `std_fixed_105` | 49,337,000 | 38,989,046 | **20.97%** | 83.19% | 13.37% |
 | `std_minmax_100` | 78,600,411 | 52,740,288 | **32.90%** | 83.75% | 21.67% |
-| `noise_stress` *(Legacy set: post-scaling noise, not comparable)* | 6,776,354 | 5,585,993 | **17.57%** | 42.34% | 8.56% |
 
 ---
 

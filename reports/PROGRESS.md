@@ -106,3 +106,36 @@ All commands, runs, architectural refactors, and milestone completions are logge
 - **Unified Verification & Release Packaging:**
   - Rewrote `scripts/verify_all.py` (v2) with live re-runs, independent NumPy convolution bit-exact checks, and negative test verification.
   - Implemented `scripts/make_verification_bundle.py` producing self-contained verification bundles $\le 15$ MB.
+
+---
+
+## Phase 8: Round-3 Honesty Gap Closure, Default Hardware Parameters & Provenance Integrity [COMPLETED]
+
+- **Date:** 2026-10-26
+- **Phase 1: Truthful Headline Numbers & Legacy Allow-List (S1, S2, S5, S6):**
+  - Re-anchored noise degradation statements to real integer ADU sweep metrics ($\le 6\text{ dB}$: 8.3%–9.7% datapath and 3.0%–4.0% whole-core savings; $+P$ drops to 28%–38% and gate-full duty increases to 58%).
+  - Demarcated legacy `noise_stress` as non-comparable (post-scaling noise violating $(x \ \& \ 31) == 0$) and added strict allow-list `scripts/known_legacy_sets.txt`.
+  - Updated QRS-region PRD claims to exact dynamic values ($0.000\% - 0.730\%$, min finite ratio $3.3\times$).
+  - Full Yosys synthesis spread honestly characterized: 1.9% spread on `pg_top` and 9.0% wrapper variation between `top_basys3` and `top_nexys_a7`, attributing to ABC netlist naming/ordering heuristics without asserting unverified "purely".
+  - Negative Test (X-05): Temporarily emptied `scripts/known_legacy_sets.txt` $\to$ `verify_all.py` check V-27 failed on `noise_stress`; restoring the entry passed.
+
+- **Phase 2: Provenance Integrity & Verifier Hardening (S3, S4):**
+  - Created `scripts/source_digest.py` computing canonical SHA256 over 60 tracked RTL/TB/script sources.
+  - Hardened check V-25 to verify that every evidence JSON commit exists in git (`git cat-file -e <hash>^{commit}`) and that its `source_digest` matches current project sources.
+  - Replaced `FRESH_CLONE_RUNNING` bypass with `--skip-fresh-clone-dependent` requiring `INSIDE_FRESH_CLONE_CHECK=1` or failing (X-09).
+  - Negative Test 1 (X-10a): Corrupted 1 byte in `rtl/qrs_detector.v` $\to$ verifier failed on `source_digest` mismatch.
+  - Negative Test 2 (X-10b): Deleted the nightly block from log $\to$ V-10 and V-20 failed.
+
+- **Phase 3: Shipped Board-Core Default Hardware Simulation (S7):**
+  - Added scenario `realparams` to `tb/tb_board_core.v` evaluating `dut_real` under 100% shipped default hardware parameters (`POR_CYCLES=65535`, `DEBOUNCE_CYCLES=100000`, 360 Hz pacing, 115200 baud). Verified 8 initial frames against golden model, 0.4 ms glitch rejection, and 1.5 ms reset re-synchronization.
+  - Added mutants MUT30 (POR cycles) and MUT31 (debounce cycles) to `scripts/mutation_check.py`.
+  - Mutation harness: **31 of 31 mutants CAUGHT** (0 survived, 0 build errors).
+  - Updated `docs/RUN_ON_BOARD.md` (33 lines $\le 45$) documenting 1–2 sample mode switch latency.
+
+- **Phase 4: Two-Stage Commit Sequence, Fresh Clone & Release Packaging:**
+  - Stage 1 code commit: `570f492cc6738d4ec7f5bf2b3bd69a494748edcd`.
+  - Stage 2 report commit: `613847ca9d9a8af2483c17ae7641b06e26a4fc5e` (touching only `reports/`).
+  - Fresh clone check (`scripts/fresh_clone_check.sh`) passed in isolated `/tmp` directory with clean working tree, standard regression (37/37 PASS), nightly regression (53/53 PASS), and harness PASS.
+  - Master harness `scripts/verify_all.py`: **27 PASSED, 0 FAILED, 0 SKIPPED**.
+  - Generated `reports/RESULTS.pdf` (characterization deliverable).
+  - Packaged final verification bundle: `verification_bundle_613847c.zip` (8.28 MB $\le 15$ MB, SHA256: `504a2a04...`) with `dirty: false`, `code_commit` = parent of `report_commit`, reproducible `content_hash_algorithm`, and all 12 command execution logs.
