@@ -65,7 +65,7 @@ def headline_numbers():
     wc_clean_list = []
     low_op_list = []
     for s_name, s_data in act_data.items():
-        if s_name != "noise_stress":
+        if isinstance(s_data, dict) and s_name != "noise_stress":
             dp_clean_list.append(s_data.get("datapath", {}).get("datapath_reduction_pct", 0.0))
             wc_clean_list.append(s_data.get("whole_core", {}).get("whole_core_reduction_pct", 0.0))
             low_op_list.append(s_data.get("datapath", {}).get("low_operand_reduction_pct", 0.0))
@@ -252,6 +252,8 @@ def main():
     md.append(f"|---|---|---|---|---|---|")
 
     for s_name, s_data in act_data.items():
+        if not isinstance(s_data, dict):
+            continue
         dp = s_data.get("datapath", {})
         wc = s_data.get("whole_core", {})
         base_dp = dp.get("baseline", {}).get("total", 0)
