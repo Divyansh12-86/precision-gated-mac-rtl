@@ -168,3 +168,44 @@ All commands, runs, architectural refactors, and milestone completions are logge
   - `scripts/verify_all.py` $\to$ **27 PASSED, 0 FAILED, 0 SKIPPED**.
 - **Automated Summary & Benchmark Deliverables:**
   - `scripts/generate_benchmarks_and_summary.py`: generates `reports/BENCHMARKS.json` and `reports/REVIEW_SUMMARY.md` (`REVIEW_STATUS: READY`).
+
+---
+
+## Phase 10: Round-5 Self-Verifying Provenance & Integrity [COMPLETED]
+
+- **Date:** 2026-10-26
+- **Code Commit:** `a9b0fcd486f97a2f26a8af2fc65b3c9eada76119`
+- **Canonical Source Digest:** `a6de0c9454d1dbe00fcc457bf1ea9c8ec14bdb3c1f1d93090d567a39e9422230` (61 tracked source files)
+- **Provenance & Integrity Hardening (Z1, Z2, Z3, Z4, Z5):**
+  - **Eliminated Internal Bundle Checksum:** Removed `bundle_sha256` from `reports/BENCHMARKS.json` and `reports/REVIEW_SUMMARY.md`. The archive SHA-256 is strictly emitted to an external sidecar `.sha256` file outside the zip (`verification_bundle_<hash>.zip.sha256`).
+  - **Relabelled Legacy Noise Stress:** Formally labelled `noise_stress` as `legacy_noise_stress_not_comparable` in `reports/BENCHMARKS.json`.
+  - **Fresh Clone Header Extraction:** Updated `scripts/fresh_clone_check.sh` to log both `HEAD commit: <hash>` and `SOURCE_DIGEST: <digest>`.
+  - **Self-Verification Mode (`--verify`):** Implemented `--verify` in `scripts/make_verification_bundle.py` performing full member re-hashing against `manifest.json`, recomputing `bundle_content_sha256`, verifying ancestor reachability (`git merge-base --is-ancestor`), checking `dirty == False`, checking `code_commit` is parent of `report_commit`, and asserting absence of bundle hash inside internal files.
+  - **Dynamic Review Integrity:** Updated `verify_all.py` (V-19, V-28) to cross-check exit codes against `evidence/*.txt`, verify ancestor reachability of fresh clone HEAD commit, verify `SOURCE_DIGEST` match, and assert `REVIEW_STATUS: READY` only when all checks pass.
+- **Negative Testing of Verification Harness (Z7):**
+  - **Negative Test (a) - Corrupted Zip Member Detection:**
+    - Flipped one byte in `reports/BENCHMARKS.json` inside a copy of the bundle zip.
+    - Executed `python3 scripts/make_verification_bundle.py --verify test_corrupt.zip`.
+    - **Observed Result:** Exit code 1, failed with:
+      `BUNDLE VERIFY: FAIL`
+      `SHA256 mismatch in 2 file(s): ['reports/BENCHMARKS.json', 'reports/REVIEW_SUMMARY.md']`
+      `bundle_content_sha256 mismatch: computed ... manifest has ...`
+    - Removed test corrupted copy; restored clean state.
+  - **Negative Test (b) - Premature REVIEW_STATUS: READY Conflict Detection:**
+    - Forced one row in `reports/REVIEW_SUMMARY.md` to indicate a failure (`| check_v04 | ... | **FAIL** | ... |`) while keeping `REVIEW_STATUS: READY`.
+    - Executed `python3 scripts/verify_all.py`.
+    - **Observed Result:** Exit code 1, check V-28 failed with:
+      `[V-28] FAIL: Conflict: REVIEW_STATUS is READY but failing evidence/table row detected! Row: check_v04 | ... | **FAIL**`
+    - Restored `reports/REVIEW_SUMMARY.md`; re-executed `verify_all.py` $\to$ passed check V-28.
+  - **Negative Test (c) - Non-Ancestor Fresh Clone Commit Rejection:**
+    - Modified `reports/fresh_clone.log` to claim a non-ancestral fictitious commit: `HEAD commit: deadbeef0123456789abcdef0123456789abcdef`.
+    - Executed `python3 scripts/verify_all.py`.
+    - **Observed Result:** Exit code 1, check V-19 failed with:
+      `[V-19] FAIL: Fresh clone commit 'deadbeef0123456789abcdef0123456789abcdef' is not an ancestor of HEAD`
+    - Restored `reports/fresh_clone.log`; check restored.
+- **Full Verification Suite on Code Commit `a9b0fcd` (Z6, Z8):**
+  - `git diff --stat a1a8f6d HEAD -- rtl fpga tb sim/*.py coeffs.mem ecg_rom.mem data/test_vectors`: **0 lines changed (strictly empty)**.
+  - Standard regression: **37 PASSED, 0 FAILED**.
+  - Nightly regression: **53 PASSED, 0 FAILED**.
+  - Mutation testing: **31 of 31 caught (0 survived, 0 build errors)**.
+

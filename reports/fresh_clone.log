@@ -1,10 +1,11 @@
 ==================================================================
-HEAD commit: 37f6f96c505e3a4de0b2c71d72c1912581a49979
+HEAD commit: a9b0fcd486f97a2f26a8af2fc65b3c9eada76119
+SOURCE_DIGEST: a6de0c9454d1dbe00fcc457bf1ea9c8ec14bdb3c1f1d93090d567a39e9422230
 DATA: OFFLINE: copied local data from /mnt/D64C86FE4C86D91F/projects/precision-gated-mac-ecg/data/mitbih
 ==================================================================
 STARTING FRESH CLONE REPRODUCIBILITY CHECK (v2)
-[1/6] Cloning repository into /tmp/fresh_clone_test_wBKP5B...
-Cloning into '/tmp/fresh_clone_test_wBKP5B/repo'...
+[1/6] Cloning repository into /tmp/fresh_clone_test_z30V7e...
+Cloning into '/tmp/fresh_clone_test_z30V7e/repo'...
 done.
 [2/6] Creating clean virtualenv and installing requirements...
 [3/6] Setting up dataset...
@@ -12,39 +13,39 @@ OFFLINE: copied local data from /mnt/D64C86FE4C86D91F/projects/precision-gated-m
 [4/6] Generating standard and full nightly test vectors...
 .venv/bin/python3 sim/gen_vectors.py --all
 === Generating smoke set ===
-Generated 1000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/smoke
-Generated 1000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors
+Generated 1000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/smoke
+Generated 1000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors
 
 === Generating corner set ===
-Generated 1618 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/corner
+Generated 1618 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/corner
 
 === Generating noise stress set (T10) ===
-Generated 5000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/noise_stress
+Generated 5000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/noise_stress
 
 === Generating squarer saturation set ===
-Generated 500 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/sat_test
+Generated 500 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/sat_test
 
 === Generating standard regression sets (60,000 samples) ===
-Generated 60000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/std_fixed_100
-Generated 60000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/std_minmax_100
-Generated 60000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/std_fixed_101
-Generated 60000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/std_minmax_101
-Generated 60000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/std_fixed_103
-Generated 60000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/std_minmax_103
-Generated 60000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/std_fixed_105
-Generated 60000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/std_minmax_105
+Generated 60000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/std_fixed_100
+Generated 60000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/std_minmax_100
+Generated 60000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/std_fixed_101
+Generated 60000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/std_minmax_101
+Generated 60000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/std_fixed_103
+Generated 60000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/std_minmax_103
+Generated 60000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/std_fixed_105
+Generated 60000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/std_minmax_105
 
 All test vector sets generated successfully!
 .venv/bin/python3 sim/gen_vectors.py --full
 === Generating full-length nightly regression sets (650,000 samples) ===
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_fixed_100
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_minmax_100
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_fixed_101
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_minmax_101
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_fixed_103
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_minmax_103
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_fixed_105
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_minmax_105
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_fixed_100
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_minmax_100
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_fixed_101
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_minmax_101
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_fixed_103
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_minmax_103
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_fixed_105
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_minmax_105
 
 All full-length nightly vector sets generated successfully!
 [5/6] Executing standard and full nightly regression suites...
@@ -55,27 +56,27 @@ STARTING COMPLETE RTL SIMULATION REGRESSION SUITE
 [BUILD] Compiling mult with Verilator...
 
 [RUN] Unit test: mult_split across PIPE 1, 2, 3...
-  --> PASS (0.36s)
+  --> PASS (0.37s)
 [BUILD] Compiling fir_full with Verilator...
 
 [RUN] tb_fir_full smoke...
-  --> PASS (0.05s)
+  --> PASS (0.06s)
 
 [RUN] tb_fir_full corner...
   --> PASS (0.07s)
 
 [RUN] tb_fir_full std_fixed_100...
-  --> PASS (2.45s)
+  --> PASS (2.44s)
 [BUILD] Compiling fir_gated with Verilator...
 
 [RUN] tb_fir_gated smoke...
   --> PASS (0.11s)
 
 [RUN] tb_fir_gated corner...
-  --> PASS (0.17s)
+  --> PASS (0.18s)
 
 [RUN] tb_fir_gated std_fixed_100...
-  --> PASS (5.75s)
+  --> PASS (5.69s)
 [BUILD] Compiling det_11 with Verilator...
 [BUILD] Compiling det_15 with Verilator...
 
@@ -83,172 +84,31 @@ STARTING COMPLETE RTL SIMULATION REGRESSION SUITE
   --> PASS (0.03s)
 
 [RUN] tb_detector noise_stress (T10)...
-  --> PASS (0.10s)
-
-[RUN] tb_detector std_fixed_100...
-  --> PASS (0.74s)
-
-[RUN] tb_detector std_fixed_101...
-  --> PASS (0.71s)
-
-[RUN] tb_detector std_fixed_103...
-  --> PASS (0.69s)
-
-[RUN] tb_detector std_fixed_105...
-  --> PASS (0.70s)
-
-[RUN] tb_detector std_minmax_100...
-  --> PASS (0.71s)
-
-[RUN] tb_detector std_minmax_101...
-  --> PASS (0.70s)
-
-[RUN] tb_detector std_minmax_103...
-  --> PASS (0.70s)
-
-[RUN] tb_detector std_minmax_105...
-  --> PASS (0.71s)
-[BUILD] Compiling top_11 with Verilator...
-[BUILD] Compiling top_15 with Verilator...
-
-[RUN] tb_top smoke...
-  --> PASS (0.07s)
-
-[RUN] tb_top smoke (rand gap)...
-  --> PASS (0.11s)
-
-[RUN] tb_top noise_stress (T10)...
-  --> PASS (0.27s)
-
-[RUN] tb_top std_fixed_100...
-  --> PASS (3.09s)
-
-[RUN] tb_top std_fixed_101...
-  --> PASS (3.12s)
-
-[RUN] tb_top std_fixed_103...
-  --> PASS (3.02s)
-
-[RUN] tb_top std_fixed_105...
-  --> PASS (3.07s)
-
-[RUN] tb_top std_minmax_100...
-  --> PASS (3.09s)
-
-[RUN] tb_top std_minmax_101...
-  --> PASS (3.08s)
-
-[RUN] tb_top std_minmax_103...
-  --> PASS (2.99s)
-
-[RUN] tb_top std_minmax_105...
-  --> PASS (3.01s)
-[BUILD] Compiling top_rr with Verilator...
-
-[RUN] tb_top_realrate smoke (277.8M cycles)...
-  --> PASS (146.39s)
-[BUILD] Compiling top_reset with Verilator...
-
-[RUN] tb_top_reset mid-stream reset robustness...
-  --> PASS (0.06s)
-
-[RUN] tb_top startup_100_off0...
-  --> PASS (0.05s)
-
-[RUN] tb_top startup_103_off0...
-  --> PASS (0.05s)
-
-[RUN] tb_top startup_105_off200...
-  --> PASS (0.05s)
-[BUILD] Compiling board_core with Verilator...
-
-[RUN] tb_board_core por_replay...
-  --> PASS (3.47s)
-
-[RUN] tb_board_core async_switch...
-  --> PASS (0.19s)
-
-[RUN] tb_board_core debounce_glitch...
-  --> PASS (0.11s)
-
-[RUN] tb_board_core realparams...
-  --> PASS (2.52s)
-
-==================================================================
-REGRESSION SUITE COMPLETED: 37 PASSED, 0 FAILED
-==================================================================
-.venv/bin/python3 sim/gen_vectors.py --full
-=== Generating full-length nightly regression sets (650,000 samples) ===
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_fixed_100
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_minmax_100
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_fixed_101
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_minmax_101
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_fixed_103
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_minmax_103
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_fixed_105
-Generated 650000 vectors in: /tmp/fresh_clone_test_wBKP5B/repo/data/test_vectors/full_minmax_105
-
-All full-length nightly vector sets generated successfully!
-.venv/bin/python3 sim/run_regression.py --nightly
-==================================================================
-STARTING COMPLETE RTL SIMULATION REGRESSION SUITE
-==================================================================
-[BUILD] Compiling mult with Verilator...
-
-[RUN] Unit test: mult_split across PIPE 1, 2, 3...
-  --> PASS (0.36s)
-[BUILD] Compiling fir_full with Verilator...
-
-[RUN] tb_fir_full smoke...
-  --> PASS (0.06s)
-
-[RUN] tb_fir_full corner...
   --> PASS (0.08s)
 
-[RUN] tb_fir_full std_fixed_100...
-  --> PASS (2.46s)
-[BUILD] Compiling fir_gated with Verilator...
-
-[RUN] tb_fir_gated smoke...
-  --> PASS (0.10s)
-
-[RUN] tb_fir_gated corner...
-  --> PASS (0.16s)
-
-[RUN] tb_fir_gated std_fixed_100...
-  --> PASS (5.67s)
-[BUILD] Compiling det_11 with Verilator...
-[BUILD] Compiling det_15 with Verilator...
-
-[RUN] tb_detector smoke...
-  --> PASS (0.04s)
-
-[RUN] tb_detector noise_stress (T10)...
-  --> PASS (0.10s)
-
 [RUN] tb_detector std_fixed_100...
-  --> PASS (0.71s)
+  --> PASS (0.72s)
 
 [RUN] tb_detector std_fixed_101...
-  --> PASS (0.70s)
+  --> PASS (0.71s)
 
 [RUN] tb_detector std_fixed_103...
-  --> PASS (0.69s)
+  --> PASS (0.70s)
 
 [RUN] tb_detector std_fixed_105...
   --> PASS (0.70s)
 
 [RUN] tb_detector std_minmax_100...
-  --> PASS (0.70s)
+  --> PASS (0.73s)
 
 [RUN] tb_detector std_minmax_101...
-  --> PASS (0.72s)
+  --> PASS (0.71s)
 
 [RUN] tb_detector std_minmax_103...
-  --> PASS (0.77s)
+  --> PASS (0.70s)
 
 [RUN] tb_detector std_minmax_105...
-  --> PASS (0.71s)
+  --> PASS (0.75s)
 [BUILD] Compiling top_11 with Verilator...
 [BUILD] Compiling top_15 with Verilator...
 
@@ -262,49 +122,49 @@ STARTING COMPLETE RTL SIMULATION REGRESSION SUITE
   --> PASS (0.28s)
 
 [RUN] tb_top std_fixed_100...
-  --> PASS (3.01s)
+  --> PASS (3.04s)
 
 [RUN] tb_top std_fixed_101...
-  --> PASS (3.09s)
+  --> PASS (3.34s)
 
 [RUN] tb_top std_fixed_103...
-  --> PASS (2.99s)
+  --> PASS (3.52s)
 
 [RUN] tb_top std_fixed_105...
-  --> PASS (3.03s)
+  --> PASS (3.22s)
 
 [RUN] tb_top std_minmax_100...
-  --> PASS (2.98s)
+  --> PASS (3.54s)
 
 [RUN] tb_top std_minmax_101...
-  --> PASS (3.06s)
+  --> PASS (3.64s)
 
 [RUN] tb_top std_minmax_103...
-  --> PASS (3.07s)
+  --> PASS (3.44s)
 
 [RUN] tb_top std_minmax_105...
-  --> PASS (3.01s)
+  --> PASS (3.16s)
 [BUILD] Compiling top_rr with Verilator...
 
 [RUN] tb_top_realrate smoke (277.8M cycles)...
-  --> PASS (142.75s)
+  --> PASS (155.89s)
 [BUILD] Compiling top_reset with Verilator...
 
 [RUN] tb_top_reset mid-stream reset robustness...
-  --> PASS (0.05s)
+  --> PASS (0.07s)
 
 [RUN] tb_top startup_100_off0...
-  --> PASS (0.06s)
+  --> PASS (0.05s)
 
 [RUN] tb_top startup_103_off0...
-  --> PASS (0.05s)
+  --> PASS (0.04s)
 
 [RUN] tb_top startup_105_off200...
-  --> PASS (0.05s)
+  --> PASS (0.04s)
 [BUILD] Compiling board_core with Verilator...
 
 [RUN] tb_board_core por_replay...
-  --> PASS (3.37s)
+  --> PASS (3.55s)
 
 [RUN] tb_board_core async_switch...
   --> PASS (0.19s)
@@ -313,57 +173,198 @@ STARTING COMPLETE RTL SIMULATION REGRESSION SUITE
   --> PASS (0.12s)
 
 [RUN] tb_board_core realparams...
-  --> PASS (2.44s)
+  --> PASS (2.54s)
+
+==================================================================
+REGRESSION SUITE COMPLETED: 37 PASSED, 0 FAILED
+==================================================================
+.venv/bin/python3 sim/gen_vectors.py --full
+=== Generating full-length nightly regression sets (650,000 samples) ===
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_fixed_100
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_minmax_100
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_fixed_101
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_minmax_101
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_fixed_103
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_minmax_103
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_fixed_105
+Generated 650000 vectors in: /tmp/fresh_clone_test_z30V7e/repo/data/test_vectors/full_minmax_105
+
+All full-length nightly vector sets generated successfully!
+.venv/bin/python3 sim/run_regression.py --nightly
+==================================================================
+STARTING COMPLETE RTL SIMULATION REGRESSION SUITE
+==================================================================
+[BUILD] Compiling mult with Verilator...
+
+[RUN] Unit test: mult_split across PIPE 1, 2, 3...
+  --> PASS (0.42s)
+[BUILD] Compiling fir_full with Verilator...
+
+[RUN] tb_fir_full smoke...
+  --> PASS (0.06s)
+
+[RUN] tb_fir_full corner...
+  --> PASS (0.09s)
+
+[RUN] tb_fir_full std_fixed_100...
+  --> PASS (2.78s)
+[BUILD] Compiling fir_gated with Verilator...
+
+[RUN] tb_fir_gated smoke...
+  --> PASS (0.11s)
+
+[RUN] tb_fir_gated corner...
+  --> PASS (0.18s)
+
+[RUN] tb_fir_gated std_fixed_100...
+  --> PASS (6.00s)
+[BUILD] Compiling det_11 with Verilator...
+[BUILD] Compiling det_15 with Verilator...
+
+[RUN] tb_detector smoke...
+  --> PASS (0.07s)
+
+[RUN] tb_detector noise_stress (T10)...
+  --> PASS (0.08s)
+
+[RUN] tb_detector std_fixed_100...
+  --> PASS (0.76s)
+
+[RUN] tb_detector std_fixed_101...
+  --> PASS (0.74s)
+
+[RUN] tb_detector std_fixed_103...
+  --> PASS (0.74s)
+
+[RUN] tb_detector std_fixed_105...
+  --> PASS (0.73s)
+
+[RUN] tb_detector std_minmax_100...
+  --> PASS (0.83s)
+
+[RUN] tb_detector std_minmax_101...
+  --> PASS (0.73s)
+
+[RUN] tb_detector std_minmax_103...
+  --> PASS (0.78s)
+
+[RUN] tb_detector std_minmax_105...
+  --> PASS (0.76s)
+[BUILD] Compiling top_11 with Verilator...
+[BUILD] Compiling top_15 with Verilator...
+
+[RUN] tb_top smoke...
+  --> PASS (0.08s)
+
+[RUN] tb_top smoke (rand gap)...
+  --> PASS (0.10s)
+
+[RUN] tb_top noise_stress (T10)...
+  --> PASS (0.29s)
+
+[RUN] tb_top std_fixed_100...
+  --> PASS (3.21s)
+
+[RUN] tb_top std_fixed_101...
+  --> PASS (3.16s)
+
+[RUN] tb_top std_fixed_103...
+  --> PASS (3.09s)
+
+[RUN] tb_top std_fixed_105...
+  --> PASS (3.21s)
+
+[RUN] tb_top std_minmax_100...
+  --> PASS (3.23s)
+
+[RUN] tb_top std_minmax_101...
+  --> PASS (3.26s)
+
+[RUN] tb_top std_minmax_103...
+  --> PASS (3.41s)
+
+[RUN] tb_top std_minmax_105...
+  --> PASS (3.18s)
+[BUILD] Compiling top_rr with Verilator...
+
+[RUN] tb_top_realrate smoke (277.8M cycles)...
+  --> PASS (152.30s)
+[BUILD] Compiling top_reset with Verilator...
+
+[RUN] tb_top_reset mid-stream reset robustness...
+  --> PASS (0.08s)
+
+[RUN] tb_top startup_100_off0...
+  --> PASS (0.06s)
+
+[RUN] tb_top startup_103_off0...
+  --> PASS (0.04s)
+
+[RUN] tb_top startup_105_off200...
+  --> PASS (0.04s)
+[BUILD] Compiling board_core with Verilator...
+
+[RUN] tb_board_core por_replay...
+  --> PASS (3.58s)
+
+[RUN] tb_board_core async_switch...
+  --> PASS (0.22s)
+
+[RUN] tb_board_core debounce_glitch...
+  --> PASS (0.12s)
+
+[RUN] tb_board_core realparams...
+  --> PASS (2.66s)
 
 --- EXECUTING NIGHTLY SUITE (650,000-sample full records) ---
 
 [RUN] tb_detector full_fixed_100...
-  --> PASS (7.72s)
+  --> PASS (7.75s)
 
 [RUN] tb_top full_fixed_100...
-  --> PASS (33.03s)
+  --> PASS (35.73s)
 
 [RUN] tb_detector full_minmax_100...
-  --> PASS (7.56s)
+  --> PASS (7.57s)
 
 [RUN] tb_top full_minmax_100...
-  --> PASS (32.48s)
+  --> PASS (35.32s)
 
 [RUN] tb_detector full_fixed_101...
-  --> PASS (7.98s)
+  --> PASS (7.85s)
 
 [RUN] tb_top full_fixed_101...
-  --> PASS (33.28s)
+  --> PASS (33.40s)
 
 [RUN] tb_detector full_minmax_101...
-  --> PASS (7.31s)
+  --> PASS (7.62s)
 
 [RUN] tb_top full_minmax_101...
-  --> PASS (32.40s)
+  --> PASS (33.99s)
 
 [RUN] tb_detector full_fixed_103...
-  --> PASS (7.71s)
+  --> PASS (7.54s)
 
 [RUN] tb_top full_fixed_103...
-  --> PASS (32.92s)
+  --> PASS (33.97s)
 
 [RUN] tb_detector full_minmax_103...
-  --> PASS (7.44s)
+  --> PASS (7.48s)
 
 [RUN] tb_top full_minmax_103...
-  --> PASS (33.33s)
+  --> PASS (33.31s)
 
 [RUN] tb_detector full_fixed_105...
-  --> PASS (7.31s)
+  --> PASS (7.70s)
 
 [RUN] tb_top full_fixed_105...
-  --> PASS (33.38s)
+  --> PASS (35.19s)
 
 [RUN] tb_detector full_minmax_105...
-  --> PASS (7.25s)
+  --> PASS (7.83s)
 
 [RUN] tb_top full_minmax_105...
-  --> PASS (32.24s)
+  --> PASS (33.84s)
 
 ==================================================================
 REGRESSION SUITE COMPLETED: 53 PASSED, 0 FAILED
@@ -394,18 +395,19 @@ RUNNING MASTER VERIFICATION HARNESS (V-01 THROUGH V-26)
   [V-19] SKIPPED: Skipped fresh clone log check (inside fresh_clone_check.sh)
   [V-20] SKIPPED: Skipped fresh clone nightly check (inside fresh_clone_check.sh)
   [V-21] PASS: 
-  [V-22] PASS: Live re-runs, independent convolve (6 sets), and negative test verified (8.34s)
+  [V-22] PASS: Live re-runs, independent convolve (6 sets), and negative test verified (8.74s)
   [V-23] SKIPPED: Skipped commit check (inside fresh_clone_check.sh before Stage 2 report commit)
   [V-24] PASS: Verified activity metrics dynamically (dp_100=21.75%)
   [V-25] PASS: 
   [V-26] PASS: Hardware replay UART capture verified bit-exact
   [V-27] PASS: Independent checks verified across 6 sets (legacy sets properly allow-listed)
+  [V-28] PASS: 
 ==================================================================
-VERIFICATION SUMMARY: 24 PASSED, 0 FAILED, 3 SKIPPED out of 27 criteria
+VERIFICATION SUMMARY: 25 PASSED, 0 FAILED, 3 SKIPPED out of 28 criteria
 ==================================================================
-ALL CHECKS PASSED (24/27)
+ALL CHECKS PASSED (25/28)
 Checking git working tree in fresh clone...
 ==================================================================
 FRESH CLONE CHECK: PASS (0 mismatches, clean working tree)
 ==================================================================
-Cleaning up temporary clone directory: /tmp/fresh_clone_test_wBKP5B
+Cleaning up temporary clone directory: /tmp/fresh_clone_test_z30V7e

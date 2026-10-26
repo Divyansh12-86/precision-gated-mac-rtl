@@ -32,7 +32,7 @@
     "low_operand_reduction_pct": 84.77
   },
   "activity_multiset": {
-    "commit": "a1a8f6da9f326ea22682b3631b5a896f3d90e2f5",
+    "commit": "a9b0fcd486f97a2f26a8af2fc65b3c9eada76119",
     "dirty": false,
     "noise_stress": {
       "datapath": {
@@ -86,7 +86,7 @@
         "whole_core_reduction_pct": 8.56
       }
     },
-    "source_digest": "edf1a13a6847e7cfdb17417e53d9bdc48633750536c41979b049be26fc50df10",
+    "source_digest": "a6de0c9454d1dbe00fcc457bf1ea9c8ec14bdb3c1f1d93090d567a39e9422230",
     "std_fixed_100": {
       "datapath": {
         "baseline": {
@@ -348,13 +348,13 @@
       }
     }
   },
-  "commit": "a1a8f6da9f326ea22682b3631b5a896f3d90e2f5",
+  "commit": "a9b0fcd486f97a2f26a8af2fc65b3c9eada76119",
   "dirty": false,
   "meta": {
-    "commit": "066976ab061cd397ef136fb34f67130dce110dd9",
-    "date": "2026-10-26T14:36:11.031214",
+    "commit": "a9b0fcd486f97a2f26a8af2fc65b3c9eada76119",
+    "date": "2026-10-26T18:16:20.614777",
     "dirty": false,
-    "source_digest": "c270671c4e7a9ac8debbc8e26cd829393696cfbd3cff7db05289a0aac693b7f7",
+    "source_digest": "a6de0c9454d1dbe00fcc457bf1ea9c8ec14bdb3c1f1d93090d567a39e9422230",
     "tools": {
       "simulator": "verilator 5.020",
       "vivado": null,
@@ -587,6 +587,6 @@
       "sq_shift": 15
     }
   ],
-  "source_digest": "edf1a13a6847e7cfdb17417e53d9bdc48633750536c41979b049be26fc50df10",
+  "source_digest": "a6de0c9454d1dbe00fcc457bf1ea9c8ec14bdb3c1f1d93090d567a39e9422230",
   "synth": {}
 }
