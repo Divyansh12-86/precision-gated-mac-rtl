@@ -22,7 +22,7 @@ All metrics are gathered from cycle-accurate Verilator RTL simulations across MI
 | Metric | Target | Measured Result | Status |
 |---|---|---|---|
 | **RTL ≡ Golden Model** | 0 bit mismatches | **0 mismatches** (over 480k+ samples) | **PASS** |
-| **Mutation Testing** | Catch all mandatory mutants | **29 / 29 caught (0 survived)** | **PASS** |
+| **Mutation Testing** | Catch all mandatory mutants | **31 / 31 caught (0 survived)** | **PASS** |
 | **Hardware Area (`pg_top`)** | $\le 1,500$ LUTs, $\le 800$ FFs | **1,394 LUTs, 417 FFs** (variability spread: 1376–1402 LUTs) | **PASS** |
 | **QRS-Region PRD** | $\le 1.0\%$ | **0.000% – 0.448% (min-max), 0.000% – 0.730% (fixed)** (3.3× – 75.8× lower than all-approx) | **PASS** |
 | **Datapath Toggle Reduction** | $\ge 20\%$ | **21.0% – 32.9%** (Clean), **8.3% – 9.7%** (Low SNR $\le 6$ dB) | **PASS** |
@@ -54,7 +54,7 @@ precision-gated-mac-ecg/
 ├── sim/                # Python golden models and simulation runners
 │   ├── golden_v2.py        # Bit-exact integer golden model v2
 │   ├── qrs_detector_v2.py  # Integer hardware-equivalent Pan-Tompkins detector
-│   ├── run_regression.py   # Complete regression runner (37 standard / 52 nightly suites)
+│   ├── run_regression.py   # Complete regression runner (37 standard / 53 nightly suites)
 │   ├── activity_report.py  # Whole-core & datapath toggle characterization
 │   └── noise_sweep.py      # Noise sweep across SNRs {24, 18, 12, 6, 0} dB
 ├── tb/                 # Verilog testbenches (Verilator compatible)
@@ -89,7 +89,7 @@ Execute from repo root:
 ```bash
 make data      # Fetch MIT-BIH records into data/mitbih
 make all       # Run vectors, sim, quality, activity, synth, noise, report
-make mutation  # Run strict 21-mutant fault injection harness
+make mutation  # Run strict 31-mutant fault injection harness
 ```
 All verification summaries and hardware tables land in `reports/` (see `reports/RESULTS.md`).
 

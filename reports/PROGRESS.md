@@ -139,3 +139,32 @@ All commands, runs, architectural refactors, and milestone completions are logge
   - Master harness `scripts/verify_all.py`: **27 PASSED, 0 FAILED, 0 SKIPPED**.
   - Generated `reports/RESULTS.pdf` (characterization deliverable).
   - Packaged final verification bundle: `verification_bundle_613847c.zip` (8.28 MB $\le 15$ MB, SHA256: `504a2a04...`) with `dirty: false`, `code_commit` = parent of `report_commit`, reproducible `content_hash_algorithm`, and all 12 command execution logs.
+
+---
+
+## Phase 9: Round-4 Final Pass — Dynamic Doc Checks, Strict Reachability & Ancestor Provenance [COMPLETED]
+
+- **Date:** 2026-10-26
+- **Code/Script Commit:** `066976ab061cd397ef136fb34f67130dce110dd9`
+- **Source Digest:** `c270671c4e7a9ac8debbc8e26cd829393696cfbd3cff7db05289a0aac693b7f7` (61 tracked source files)
+- **Hardened Documentation Validator (`scripts/check_docs_numbers.py` - D1, D3):**
+  - Removed all hardcoded mutant numbers (`expected_m = 29`).
+  - Dynamically extracts `total_mutants` (31), `caught` (31), and `survived` (0) from `reports/mutation.json`.
+  - Dynamically extracts standard passed suites (37) from `reports/regress_summary.json` and nightly passed suites (53) from `reports/regress_summary_nightly.json`.
+  - Enforces exact numbers across `README.md`, `AGENTS.md`, and `reports/RESULTS.md`.
+  - Added strict regex scans rejecting stale mutant, suites, and regression counts.
+- **Negative Test of D1 (D2):**
+  - Temporarily corrupted `README.md` by replacing `"31 / 31 caught (0 survived)"` with `"21 / 21 caught (0 survived)"`.
+  - Executed `python3 scripts/check_docs_numbers.py` $\to$ returned exit code 1 (`[DOCS_CHECK] FAILED with 2 mismatch(es)`: missing expected metric and wrong mutant count detected).
+  - Restored `README.md` and re-executed `python3 scripts/check_docs_numbers.py` $\to$ returned exit code 0 (`[DOCS_CHECK] ALL DOCUMENTATION NUMBERS VALIDATED AND MATCH JSON (0 mismatches)`).
+- **Strict Reachability & Ancestor Provenance (D4):**
+  - Updated `scripts/verify_all.py` (V-25) and `scripts/make_verification_bundle.py` to replace `git cat-file -e` with `git merge-base --is-ancestor <commit> HEAD`.
+  - Updated `scripts/source_digest.py` `get_git_commit()` to automatically return the parent code commit ancestor when HEAD is a report/docs-only commit.
+  - Verified that all evidence artifacts in `reports/*.json` reference reachable ancestor commits and bit-exact source digests.
+- **Evidence Verification (D5, D6, D7):**
+  - `sim/run_regression.py` $\to$ **37 PASSED, 0 FAILED** (bit-exact on RTL).
+  - `sim/run_regression.py --nightly` $\to$ **53 PASSED, 0 FAILED** (all 650,000-sample nightly runs passed with 0 mismatches).
+  - `scripts/mutation_check.py` $\to$ **31 of 31 mutants CAUGHT** (0 survived, 0 build errors).
+  - `scripts/verify_all.py` $\to$ **27 PASSED, 0 FAILED, 0 SKIPPED**.
+- **Automated Summary & Benchmark Deliverables:**
+  - `scripts/generate_benchmarks_and_summary.py`: generates `reports/BENCHMARKS.json` and `reports/REVIEW_SUMMARY.md` (`REVIEW_STATUS: READY`).

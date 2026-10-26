@@ -1,6 +1,6 @@
 # Characterization & Verification Report: Precision-Gated Approximate-MAC ECG Filter
 
-**Source Commit:** `570f492cc6738d4ec7f5bf2b3bd69a494748edcd` (code tree clean: yes)  
+**Source Commit:** `a1a8f6da9f326ea22682b3631b5a896f3d90e2f5` (code tree clean: no)  
 **Environment:** Linux x86_64, Python 3.12, Verilator 5.020, Yosys 0.33  
 **Regression Status:** 37 tests executed, 0 failed across all suites  
 **Mutation Harness:** 31/31 mandatory mutants caught, 0 survived  
