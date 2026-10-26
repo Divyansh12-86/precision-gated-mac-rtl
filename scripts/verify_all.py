@@ -473,9 +473,9 @@ def check_v25():
         c = d.get("commit")
         if not c or c == "unknown":
             return False, f"Missing or unknown commit in {ej}"
-        chk = subprocess.run(["git", "cat-file", "-e", f"{c}^{{commit}}"], cwd=BASE_DIR)
+        chk = subprocess.run(["git", "merge-base", "--is-ancestor", c, "HEAD"], cwd=BASE_DIR)
         if chk.returncode != 0:
-            return False, f"Dangling commit hash '{c}' in {ej} does not exist in git database"
+            return False, f"Commit hash '{c}' in {ej} is not reachable from HEAD (not an ancestor)"
         sd = d.get("source_digest")
         if not sd or sd != cur_digest:
             return False, f"Source digest mismatch in {ej}: got '{sd}', current sources digest is '{cur_digest}'"

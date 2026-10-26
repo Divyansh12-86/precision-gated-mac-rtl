@@ -82,10 +82,17 @@ def get_git_commit(verify_exists=True):
         r = subprocess.run(["git", "rev-parse", "HEAD"], cwd=BASE_DIR, capture_output=True, text=True)
         if r.returncode == 0:
             commit = r.stdout.strip()
+            # If HEAD is a report/docs-only commit, return the parent code commit
+            diff_r = subprocess.run(["git", "diff-tree", "--no-commit-id", "--name-only", "-r", commit], cwd=BASE_DIR, capture_output=True, text=True)
+            changed_files = diff_r.stdout.splitlines()
+            if changed_files and all(any(f.startswith(p) for p in ["reports/", "docs/"]) or f in ["README.md", "AGENTS.md"] for f in changed_files):
+                r_parent = subprocess.run(["git", "rev-parse", "HEAD~1"], cwd=BASE_DIR, capture_output=True, text=True)
+                if r_parent.returncode == 0:
+                    commit = r_parent.stdout.strip()
             if verify_exists:
-                chk = subprocess.run(["git", "cat-file", "-e", f"{commit}^{{commit}}"], cwd=BASE_DIR)
+                chk = subprocess.run(["git", "merge-base", "--is-ancestor", commit, "HEAD"], cwd=BASE_DIR)
                 if chk.returncode != 0:
-                    print(f"WARNING: commit {commit} does not exist in git database!")
+                    print(f"WARNING: commit {commit} is not an ancestor of HEAD!")
     except Exception:
         pass
     return commit

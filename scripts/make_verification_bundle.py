@@ -283,9 +283,9 @@ def main():
         if not c or c == "unknown":
             print(f"ERROR: Missing commit in {ej}")
             sys.exit(1)
-        chk = subprocess.run(["git", "cat-file", "-e", f"{c}^{{commit}}"], cwd=BASE_DIR)
+        chk = subprocess.run(["git", "merge-base", "--is-ancestor", c, "HEAD"], cwd=BASE_DIR)
         if chk.returncode != 0:
-            print(f"ERROR: Stale/dangling commit {c} in {ej} does not exist in git history!")
+            print(f"ERROR: Stale/unreachable commit {c} in {ej} is not an ancestor of HEAD!")
             sys.exit(1)
         sd = d.get("source_digest")
         if sd != cur_digest:
