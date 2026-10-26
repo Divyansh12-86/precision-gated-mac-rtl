@@ -256,13 +256,30 @@ def check_v18():
     return ok, f"RUN_ON_BOARD lines: {len(lines)}"
 
 def check_v19():
-    # V-19: fresh_clone_check.sh exit 0 and log saved
+    # V-19: fresh_clone_check.sh exit 0 and log saved with reachable commit and matching source digest
     if SKIP_FRESH_CLONE_DEPENDENT:
         return "SKIPPED", "Skipped fresh clone log check (inside fresh_clone_check.sh)"
     p = os.path.join(REPORTS_DIR, "fresh_clone.log")
     if not os.path.exists(p): return False, "Missing reports/fresh_clone.log"
-    with open(p) as f: t = f.read()
-    return "FRESH CLONE CHECK: PASS" in t, "Fresh clone check did not pass in log"
+    with open(p, "r", encoding="utf-8") as f: t = f.read()
+    if "FRESH CLONE CHECK: PASS" not in t:
+        return False, "Fresh clone check did not pass in log"
+    # Z4: verify HEAD commit and SOURCE_DIGEST
+    m_commit = re.search(r"^HEAD commit:\s*([a-f0-9]+)", t, re.MULTILINE)
+    m_digest = re.search(r"^SOURCE_DIGEST:\s*([a-f0-9]+)", t, re.MULTILINE)
+    if not m_commit:
+        return False, "HEAD commit not found in fresh_clone.log"
+    fc_commit = m_commit.group(1)
+    chk = subprocess.run(["git", "merge-base", "--is-ancestor", fc_commit, "HEAD"], cwd=BASE_DIR)
+    if chk.returncode != 0:
+        return False, f"Fresh clone commit '{fc_commit}' is not an ancestor of HEAD"
+    if not m_digest:
+        return False, "SOURCE_DIGEST not found in fresh_clone.log"
+    fc_digest = m_digest.group(1)
+    cur_digest = get_source_digest()
+    if fc_digest != cur_digest:
+        return False, f"Fresh clone source_digest mismatch: got '{fc_digest}', expected '{cur_digest}'"
+    return True, f"Fresh clone log passed with valid commit ({fc_commit[:7]}) and digest ({fc_digest[:8]}...)"
 
 def check_v20():
     # V-20: fresh clone runs make sim & make nightly with required test passes
@@ -549,6 +566,111 @@ def check_v27():
 
     return True, f"Independent checks verified across {len(sets)} sets (legacy sets properly allow-listed)"
 
+def check_v28():
+    # V-28: Independent recomputation and validation of reports/BENCHMARKS.json and reports/REVIEW_SUMMARY.md
+    p_b = os.path.join(REPORTS_DIR, "BENCHMARKS.json")
+    if not os.path.exists(p_b):
+        return False, "Missing reports/BENCHMARKS.json"
+    with open(p_b, "r", encoding="utf-8") as f:
+        b_data = json.load(f)
+
+    # 1. Check no bundle_sha256 in BENCHMARKS.json
+    if "bundle_sha256" in b_data:
+        return False, "Forbidden 'bundle_sha256' key found in reports/BENCHMARKS.json"
+
+    # 2. Check source digest and commit reachability
+    cur_digest = get_source_digest()
+    if b_data.get("source_digest") != cur_digest:
+        return False, f"BENCHMARKS source_digest mismatch: got {b_data.get('source_digest')}, expected {cur_digest}"
+    b_commit = b_data.get("commit")
+    if not b_commit:
+        return False, "Missing commit in BENCHMARKS.json"
+    chk_c = subprocess.run(["git", "merge-base", "--is-ancestor", b_commit, "HEAD"], cwd=BASE_DIR)
+    if chk_c.returncode != 0:
+        return False, f"BENCHMARKS commit '{b_commit}' is not an ancestor of HEAD"
+
+    # 3. Recompute and compare all fields
+    reg_std = os.path.join(REPORTS_DIR, "regress_summary.json")
+    with open(reg_std) as f: d_std = json.load(f)
+    if b_data.get("regression_standard") != d_std.get("passed"):
+        return False, f"regression_standard mismatch: got {b_data.get('regression_standard')}, expected {d_std.get('passed')}"
+
+    reg_night = os.path.join(REPORTS_DIR, "regress_summary_nightly.json")
+    with open(reg_night) as f: d_night = json.load(f)
+    if b_data.get("regression_nightly") != d_night.get("passed"):
+        return False, f"regression_nightly mismatch: got {b_data.get('regression_nightly')}, expected {d_night.get('passed')}"
+
+    mut_p = os.path.join(REPORTS_DIR, "mutation.json")
+    with open(mut_p) as f: d_mut = json.load(f)
+    if b_data.get("mutation_caught") != d_mut.get("caught") or \
+       b_data.get("mutation_total") != d_mut.get("total_mutants") or \
+       b_data.get("mutation_survived") != d_mut.get("survived"):
+        return False, "mutation counts mismatch in BENCHMARKS.json"
+
+    synth_p = os.path.join(REPORTS_DIR, "synth.json")
+    with open(synth_p) as f: d_synth = json.load(f)
+    mods = d_synth.get("modules", {})
+    if b_data.get("synth_pg_top_lut") != mods.get("pg_top_lut", {}).get("luts") or \
+       b_data.get("synth_pg_top_ff") != mods.get("pg_top_lut", {}).get("ffs") or \
+       b_data.get("synth_qrs_lut") != mods.get("qrs_detector_lut", {}).get("luts"):
+        return False, "synthesis metrics mismatch in BENCHMARKS.json"
+
+    # 4. Activity per set: check noise_stress is labelled legacy_noise_stress_not_comparable or removed
+    act_p = os.path.join(REPORTS_DIR, "activity.json")
+    with open(act_p) as f: d_act = json.load(f)
+    b_act_dp = b_data.get("activity_datapath_pct_per_set", {})
+    b_act_wc = b_data.get("whole_core_pct_per_set", {})
+    if "noise_stress" in b_act_dp or "noise_stress" in b_act_wc:
+        return False, "'noise_stress' unlabelled in BENCHMARKS.json (must be 'legacy_noise_stress_not_comparable' or omitted)"
+    for s_name, s_data in d_act.items():
+        if isinstance(s_data, dict):
+            k = "legacy_noise_stress_not_comparable" if s_name == "noise_stress" else s_name
+            exp_dp = s_data.get("datapath", {}).get("datapath_reduction_pct", 0.0)
+            exp_wc = s_data.get("whole_core", {}).get("whole_core_reduction_pct", 0.0)
+            if k in b_act_dp and abs(b_act_dp[k] - exp_dp) > 0.01:
+                return False, f"activity datapath mismatch for {k}"
+            if k in b_act_wc and abs(b_act_wc[k] - exp_wc) > 0.01:
+                return False, f"activity whole-core mismatch for {k}"
+
+    # 5. Check REVIEW_SUMMARY.md
+    p_s = os.path.join(REPORTS_DIR, "REVIEW_SUMMARY.md")
+    if not os.path.exists(p_s):
+        return False, "Missing reports/REVIEW_SUMMARY.md"
+    with open(p_s, "r", encoding="utf-8") as f:
+        s_text = f.read()
+
+    if re.search(r"bundle_sha256\s*[:=]\s*[a-f0-9]{32,}", s_text, re.IGNORECASE):
+        return False, "Bundle sha256 found in reports/REVIEW_SUMMARY.md"
+
+    # Verify REVIEW_STATUS line
+    lines = [l.strip() for l in s_text.splitlines() if l.strip()]
+    status_line = lines[-1] if lines else ""
+    if not (status_line.startswith("REVIEW_STATUS: READY") or status_line.startswith("REVIEW_STATUS: BLOCKED")):
+        return False, f"Missing or invalid REVIEW_STATUS line: '{status_line}'"
+
+    # Check exit codes against evidence files if evidence directory exists
+    ev_dir = os.path.join(BASE_DIR, "evidence")
+    has_failing_evidence = False
+    if os.path.exists(ev_dir):
+        for ef in glob.glob(os.path.join(ev_dir, "*.txt")):
+            with open(ef, "r", encoding="utf-8") as f:
+                et = f.read()
+            m = re.search(r"^Exit Code:\s*(\d+)", et, re.MULTILINE)
+            if m and int(m.group(1)) != 0:
+                has_failing_evidence = True
+
+    # Check table rows in REVIEW_SUMMARY.md
+    has_failing_table = False
+    for line in s_text.splitlines():
+        if re.match(r"^\|\s*\*\*D\d+\*\*", line):
+            if "**FAIL**" in line:
+                has_failing_table = True
+
+    if (has_failing_evidence or has_failing_table) and "REVIEW_STATUS: READY" in status_line:
+        return False, "Conflict: REVIEW_STATUS is READY but failing evidence/table row detected!"
+
+    return True, "BENCHMARKS.json and REVIEW_SUMMARY.md verified independently against primary artifacts"
+
 def main():
     print("==================================================================")
     print("RUNNING MASTER VERIFICATION HARNESS (V-01 THROUGH V-26)")
@@ -582,6 +704,7 @@ def main():
         ("V-25", check_v25),
         ("V-26", check_v26),
         ("V-27", check_v27),
+        ("V-28", check_v28),
     ]
 
     passed = 0

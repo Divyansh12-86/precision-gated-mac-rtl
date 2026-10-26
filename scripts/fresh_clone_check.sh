@@ -12,6 +12,13 @@ exec > >(tee "${LOG_FILE}") 2>&1
 
 HEAD_HASH="$(git -C "${REPO_DIR}" rev-parse HEAD)"
 
+if [ -f "${REPO_DIR}/.venv/bin/python3" ]; then
+    PY_BIN="${REPO_DIR}/.venv/bin/python3"
+else
+    PY_BIN="python3"
+fi
+SOURCE_DIGEST="$(${PY_BIN} -c "import sys; sys.path.insert(0, '${REPO_DIR}'); from scripts.source_digest import get_source_digest; print(get_source_digest())")"
+
 # Check if network is available to download data
 DATA_MSG="OFFLINE: copied local data from ${REPO_DIR}/data/mitbih"
 if ping -c 1 -W 2 physionet.org >/dev/null 2>&1; then
@@ -20,6 +27,7 @@ fi
 
 echo "=================================================================="
 echo "HEAD commit: ${HEAD_HASH}"
+echo "SOURCE_DIGEST: ${SOURCE_DIGEST}"
 echo "DATA: ${DATA_MSG}"
 echo "=================================================================="
 echo "STARTING FRESH CLONE REPRODUCIBILITY CHECK (v2)"

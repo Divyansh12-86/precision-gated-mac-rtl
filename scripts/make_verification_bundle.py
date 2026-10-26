@@ -1,11 +1,12 @@
 """
 scripts/make_verification_bundle.py — Comprehensive Reproducibility & Verification Bundle Packager
 
-Creates verification_bundle_<hash7>.zip conforming to Section 6 of ROUND2_GUIDE_AGENT.md:
+Creates verification_bundle_<hash7>.zip conforming to ROUND2_GUIDE_AGENT.md and ROUND5_GUIDE_AGENT.md:
   - BUNDLE_MANIFEST.json with full commit provenance, tool versions, command exit codes, and per-file SHA256
   - Full reports, docs, sources, reproduction scripts, git history snapshots, and evidence logs
   - Verified size limit <= 15 MB
-  - Accompanying SHA256 checksum file
+  - Accompanying SHA256 checksum file outside the zip (.sha256 sidecar)
+  - Self-verification via --verify mode
 """
 
 import os
@@ -19,11 +20,13 @@ import zipfile
 import hashlib
 import platform
 import subprocess
+import tempfile
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 from scripts.source_digest import get_source_digest
 REPORTS_DIR = os.path.join(BASE_DIR, "reports")
+EVIDENCE_DIR = os.path.join(BASE_DIR, "evidence")
 PYTHON_EXE = sys.executable
 
 def sha256_file(filepath):
@@ -43,17 +46,26 @@ def run_logged_command(cmd, name, evidence_dir):
     utc_end = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime(t_end))
     duration = t_end - t_start
 
+    log_content = (
+        f"Command: {' '.join(cmd)}\n"
+        f"Start UTC: {utc_start}\n"
+        f"End UTC: {utc_end}\n"
+        f"Duration: {duration:.2f}s\n"
+        f"Exit Code: {proc.returncode}\n"
+        + "="*70 + "\nSTDOUT:\n" + "="*70 + "\n"
+        + proc.stdout
+        + "\n" + "="*70 + "\nSTDERR:\n" + "="*70 + "\n"
+        + proc.stderr
+    )
+
     log_path = os.path.join(evidence_dir, f"{name}.txt")
     with open(log_path, "w", encoding="utf-8") as f:
-        f.write(f"Command: {' '.join(cmd)}\n")
-        f.write(f"Start UTC: {utc_start}\n")
-        f.write(f"End UTC: {utc_end}\n")
-        f.write(f"Duration: {duration:.2f}s\n")
-        f.write(f"Exit Code: {proc.returncode}\n")
-        f.write("="*70 + "\nSTDOUT:\n" + "="*70 + "\n")
-        f.write(proc.stdout)
-        f.write("\n" + "="*70 + "\nSTDERR:\n" + "="*70 + "\n")
-        f.write(proc.stderr)
+        f.write(log_content)
+
+    # Also keep evidence/ directory in repo
+    os.makedirs(EVIDENCE_DIR, exist_ok=True)
+    with open(os.path.join(EVIDENCE_DIR, f"{name}.txt"), "w", encoding="utf-8") as f:
+        f.write(log_content)
 
     status_str = "PASS" if proc.returncode == 0 else f"FAIL (exit {proc.returncode})"
     print(f"  --> {status_str} in {duration:.2f}s (saved to evidence/{name}.txt)")
@@ -220,8 +232,12 @@ def generate_independent_checks(evidence_dir):
     out_lines.append(f"INDEPENDENT CHECKS SUMMARY: {ok_count} OK, {fail_count} MISMATCH ({allowed_legacy_count} allowed legacy, {unallowed_fail_count} unapproved) out of {ok_count + fail_count} sets")
     out_lines.append("==================================================================")
 
+    out_text = "\n".join(out_lines) + "\n"
     with open(os.path.join(evidence_dir, "independent_checks.txt"), "w", encoding="utf-8") as f:
-        f.write("\n".join(out_lines) + "\n")
+        f.write(out_text)
+    os.makedirs(EVIDENCE_DIR, exist_ok=True)
+    with open(os.path.join(EVIDENCE_DIR, "independent_checks.txt"), "w", encoding="utf-8") as f:
+        f.write(out_text)
     print(f"  --> Saved {ok_count} vector set independent checks to evidence/independent_checks.txt")
 
     if unallowed_fail_count > 0:
@@ -240,7 +256,198 @@ def generate_independent_checks(evidence_dir):
         "duration_sec": round(duration, 2)
     }
 
+def verify_bundle(zip_path):
+    print("==================================================================")
+    print(f"VERIFYING VERIFICATION BUNDLE: {os.path.basename(zip_path)}")
+    print("==================================================================")
+
+    if not os.path.exists(zip_path):
+        print(f"BUNDLE VERIFY: FAIL (File not found: {zip_path})")
+        return False
+
+    tmp_dir = tempfile.mkdtemp(prefix="bundle_verify_")
+    try:
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            zf.extractall(tmp_dir)
+
+        # Locate BUNDLE_MANIFEST.json
+        manifest_path = None
+        bundle_root = None
+        for root, dirs, files in os.walk(tmp_dir):
+            if "BUNDLE_MANIFEST.json" in files:
+                manifest_path = os.path.join(root, "BUNDLE_MANIFEST.json")
+                bundle_root = root
+                break
+
+        if not manifest_path or not os.path.exists(manifest_path):
+            print("BUNDLE VERIFY: FAIL (BUNDLE_MANIFEST.json not found in archive)")
+            return False
+
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            manifest = json.load(f)
+
+        errors = []
+
+        # 1. Check dirty == false
+        if manifest.get("dirty") is True:
+            errors.append("Manifest dirty is True (must be False)")
+
+        # 2. Check code_commit and report_commit
+        code_commit = manifest.get("code_commit")
+        report_commit = manifest.get("report_commit")
+        if not code_commit or not report_commit:
+            errors.append("Missing code_commit or report_commit in manifest")
+        else:
+            chk_anc = subprocess.run(["git", "merge-base", "--is-ancestor", code_commit, report_commit], cwd=BASE_DIR, capture_output=True)
+            if chk_anc.returncode != 0:
+                errors.append(f"code_commit '{code_commit}' is not an ancestor of report_commit '{report_commit}'")
+
+            chk_p = subprocess.run(["git", "rev-parse", f"{report_commit}~1"], cwd=BASE_DIR, capture_output=True, text=True)
+            if chk_p.returncode == 0:
+                parent_hash = chk_p.stdout.strip()
+                if parent_hash != code_commit:
+                    errors.append(f"code_commit '{code_commit}' is not the parent of report_commit '{report_commit}' (parent is {parent_hash})")
+
+        # 3. Check evidence commits and source_digest in all reports/*.json
+        manifest_digest = manifest.get("source_digest")
+        evidence_jsons = [
+            "regress_summary.json",
+            "regress_summary_nightly.json",
+            "mutation.json",
+            "synth.json",
+            "activity.json",
+            "noise_sweep.json",
+            "results.json"
+        ]
+        for ej in evidence_jsons:
+            pj = os.path.join(bundle_root, "reports", ej)
+            if not os.path.exists(pj):
+                errors.append(f"Missing evidence artifact: reports/{ej}")
+                continue
+            with open(pj, "r", encoding="utf-8") as f:
+                d = json.load(f)
+            c = d.get("commit")
+            if not c:
+                errors.append(f"Missing commit in reports/{ej}")
+            else:
+                chk = subprocess.run(["git", "merge-base", "--is-ancestor", c, report_commit], cwd=BASE_DIR, capture_output=True)
+                if chk.returncode != 0:
+                    errors.append(f"Evidence commit '{c}' in reports/{ej} is not an ancestor of report_commit")
+            sd = d.get("source_digest")
+            if not sd or sd != manifest_digest:
+                errors.append(f"Source digest mismatch in reports/{ej}: got '{sd}', expected '{manifest_digest}'")
+
+        # Check fresh_clone evidence
+        fc_p = os.path.join(bundle_root, "evidence", "fresh_clone.txt")
+        if not os.path.exists(fc_p):
+            fc_p = os.path.join(bundle_root, "reports", "fresh_clone.log")
+        if not os.path.exists(fc_p):
+            errors.append("Missing fresh_clone evidence/log in bundle")
+        else:
+            with open(fc_p, "r", encoding="utf-8") as f:
+                fc_text = f.read()
+            m_c = re.search(r"^HEAD commit:\s*([a-f0-9]+)", fc_text, re.MULTILINE)
+            m_d = re.search(r"^SOURCE_DIGEST:\s*([a-f0-9]+)", fc_text, re.MULTILINE)
+            if not m_c:
+                errors.append("fresh_clone evidence missing 'HEAD commit:' line")
+            else:
+                fc_c = m_c.group(1)
+                chk = subprocess.run(["git", "merge-base", "--is-ancestor", fc_c, report_commit], cwd=BASE_DIR, capture_output=True)
+                if chk.returncode != 0 and fc_c != report_commit:
+                    errors.append(f"fresh_clone commit '{fc_c}' is not an ancestor of report_commit")
+            if not m_d:
+                errors.append("fresh_clone evidence missing 'SOURCE_DIGEST:' line")
+            else:
+                fc_d = m_d.group(1)
+                if fc_d != manifest_digest:
+                    errors.append(f"fresh_clone SOURCE_DIGEST mismatch: got '{fc_d}', expected '{manifest_digest}'")
+
+        # 4. Re-hash every member against the manifest
+        files_dict = manifest.get("files", {})
+        actual_files_sha = {}
+        missing_files = []
+        mismatch_files = []
+
+        for rel_p, exp_sha in sorted(files_dict.items()):
+            full_p = os.path.join(bundle_root, rel_p)
+            if not os.path.exists(full_p) or os.path.isdir(full_p):
+                missing_files.append(rel_p)
+            else:
+                act_sha = sha256_file(full_p)
+                actual_files_sha[rel_p] = act_sha
+                if act_sha != exp_sha:
+                    mismatch_files.append((rel_p, exp_sha, act_sha))
+
+        if missing_files:
+            errors.append(f"Missing {len(missing_files)} file(s): {missing_files[:5]}")
+        if mismatch_files:
+            errors.append(f"SHA256 mismatch in {len(mismatch_files)} file(s): {[m[0] for m in mismatch_files]}")
+
+        # Check for extra files in bundle
+        extra_files = []
+        for root, dirs, files in os.walk(bundle_root):
+            for fn in files:
+                fp = os.path.join(root, fn)
+                rel_in = os.path.relpath(fp, bundle_root)
+                if rel_in != "BUNDLE_MANIFEST.json" and rel_in not in files_dict:
+                    extra_files.append(rel_in)
+        if extra_files:
+            errors.append(f"Extra unexpected file(s) in bundle: {extra_files[:5]}")
+
+        # 5. Recompute bundle_content_sha256 by the documented algorithm
+        list_str = "\n".join(f"{actual_files_sha[k]}  {k}" for k in sorted(actual_files_sha.keys()))
+        recomputed_content_sha = hashlib.sha256(list_str.encode("utf-8")).hexdigest()
+        exp_content_sha = manifest.get("bundle_content_sha256")
+        if recomputed_content_sha != exp_content_sha:
+            errors.append(f"bundle_content_sha256 mismatch: computed {recomputed_content_sha}, manifest has {exp_content_sha}")
+
+        # 6. Check that no file in reports/ or src/ contains bundle_sha256 with a hash value
+        bad_hashes = []
+        for check_sub in ["reports", "src"]:
+            check_path = os.path.join(bundle_root, check_sub)
+            if os.path.exists(check_path):
+                for root, dirs, files in os.walk(check_path):
+                    for fn in files:
+                        p_file = os.path.join(root, fn)
+                        try:
+                            with open(p_file, "r", encoding="utf-8", errors="ignore") as f:
+                                t = f.read()
+                            if re.search(r"bundle_sha256\s*[:=]\s*[a-f0-9]{32,}", t, re.IGNORECASE):
+                                bad_hashes.append(os.path.relpath(p_file, bundle_root))
+                        except Exception:
+                            pass
+        if bad_hashes:
+            errors.append(f"Forbidden bundle_sha256 hash values found in files: {bad_hashes}")
+
+        if errors:
+            print("BUNDLE VERIFY: FAIL")
+            for err in errors:
+                print(f"  - {err}")
+            return False
+
+        n_files = len(files_dict)
+        print(f"BUNDLE VERIFY: PASS ({n_files}/{n_files} files match, content hash OK)")
+        return True
+
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
 def main():
+    if "--verify" in sys.argv:
+        idx = sys.argv.index("--verify")
+        target_zip = None
+        if idx + 1 < len(sys.argv) and not sys.argv[idx + 1].startswith("--"):
+            target_zip = sys.argv[idx + 1]
+        else:
+            bundles = sorted(glob.glob(os.path.join(BASE_DIR, "verification_bundle_*.zip")))
+            if bundles:
+                target_zip = bundles[-1]
+        if not target_zip:
+            print("ERROR: No zip file specified or found for --verify.")
+            sys.exit(1)
+        ok = verify_bundle(target_zip)
+        sys.exit(0 if ok else 1)
+
     run_checks = "--run-checks" in sys.argv
     is_nightly = "--nightly" in sys.argv
     do_fresh = "--fresh-clone" in sys.argv
@@ -260,7 +467,6 @@ def main():
     elif git_info["dirty"]:
         print("WARNING: Working tree is DIRTY! 'dirty': true will be recorded in manifest.")
 
-    # Rule S3 / Phase 2: Refuse to package if any evidence fails provenance
     print("\n--- Verifying evidence provenance and commit existence ---")
     cur_digest = get_source_digest()
     evidence_jsons = [
@@ -312,6 +518,7 @@ def main():
 
     evidence_dir = os.path.join(b_root, "evidence")
     os.makedirs(evidence_dir, exist_ok=True)
+    os.makedirs(EVIDENCE_DIR, exist_ok=True)
 
     # Restore any previously saved evidence
     for fn, data in saved_evidence.items():
@@ -337,7 +544,6 @@ def main():
         if do_fresh:
             commands_log.append(run_logged_command(["bash", "scripts/fresh_clone_check.sh"], "fresh_clone", evidence_dir))
     else:
-        # Populate commands_log from existing evidence files if available
         for fn in sorted(os.listdir(evidence_dir)):
             if fn.endswith(".txt") and fn not in ["env.txt", "independent_checks.txt"]:
                 cmd_name = fn[:-4]
@@ -360,11 +566,17 @@ def main():
 
     # 2. Host and environment info
     tool_vers = get_tool_versions()
+    env_content = (
+        f"OS: {platform.system()} {platform.release()} ({platform.machine()})\n"
+        f"CPU count: {os.cpu_count()}\n"
+    )
+    for k, v in tool_vers.items():
+        env_content += f"{k}: {v}\n"
+
     with open(os.path.join(evidence_dir, "env.txt"), "w", encoding="utf-8") as f:
-        f.write(f"OS: {platform.system()} {platform.release()} ({platform.machine()})\n")
-        f.write(f"CPU count: {os.cpu_count()}\n")
-        for k, v in tool_vers.items():
-            f.write(f"{k}: {v}\n")
+        f.write(env_content)
+    with open(os.path.join(EVIDENCE_DIR, "env.txt"), "w", encoding="utf-8") as f:
+        f.write(env_content)
 
     # 2b. Independent Numerical Checks (evidence/independent_checks.txt)
     print("\n--- Generating independent numerical checks ---")
@@ -460,6 +672,13 @@ def main():
                     os.makedirs(s_dst, exist_ok=True)
                     shutil.copy2(full_p, os.path.join(s_dst, fn))
 
+    # 7b. Dynamically regenerate reports/BENCHMARKS.json and reports/REVIEW_SUMMARY.md before packaging
+    print("\n--- Generating BENCHMARKS.json and REVIEW_SUMMARY.md prior to bundle manifest ---")
+    gen_res = subprocess.run([PYTHON_EXE, "scripts/generate_benchmarks_and_summary.py"], cwd=BASE_DIR, capture_output=True, text=True)
+    if gen_res.returncode != 0:
+        print(f"ERROR: Failed to generate benchmarks and review summary:\n{gen_res.stderr}")
+        sys.exit(1)
+
     # 8. Full copy of reports/
     rep_dst = os.path.join(b_root, "reports")
     shutil.copytree(REPORTS_DIR, rep_dst, ignore=shutil.ignore_patterns("*.tmp", "*~"))
@@ -519,7 +738,7 @@ def main():
     zip_size_mb = zip_size / (1024 * 1024)
     zip_sha = sha256_file(zip_path)
 
-    # Write .sha256 file
+    # Write .sha256 file outside the zip
     sha_path = os.path.join(BASE_DIR, f"{bundle_dir_name}.zip.sha256")
     with open(sha_path, "w", encoding="utf-8") as f:
         f.write(f"{zip_sha}  {os.path.basename(zip_path)}\n")
@@ -537,7 +756,14 @@ def main():
         print(f"ERROR: Bundle size ({zip_size_mb:.2f} MB) exceeds 15 MB limit!")
         sys.exit(1)
 
-    print("SUCCESS: Verification bundle packaged and verified <= 15 MB.")
+    # 11. Run self-verification on the created zip archive
+    print("\n--- Running self-verification on generated bundle ---")
+    ok_verify = verify_bundle(zip_path)
+    if not ok_verify:
+        print("ERROR: Self-verification failed on generated bundle!")
+        sys.exit(1)
+
+    print("SUCCESS: Verification bundle packaged, verified <= 15 MB, and passed self-verification.")
     sys.exit(0)
 
 if __name__ == "__main__":
