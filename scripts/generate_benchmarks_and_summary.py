@@ -39,6 +39,7 @@ def main():
     res_data = load_json("results.json")
 
     # Git info
+    sys.path.insert(0, BASE_DIR)
     from scripts.source_digest import get_source_digest, get_git_commit
     source_digest = get_source_digest()
     code_commit = get_git_commit(verify_exists=True)
@@ -136,7 +137,7 @@ def main():
     lines.append("|---|---|:---:|---|---|")
     lines.append(f"| **D1** | `python3 scripts/check_docs_numbers.py` | **PASS** | `reports/regress_summary*.json`, `mutation.json` | `{code_commit[:7]}` |")
     lines.append(f"| **D2** | Negative test of D1 (temporary corruption check) | **PASS** | `reports/PROGRESS.md` | `{code_commit[:7]}` |")
-    lines.append(f"| **D3** | `grep -nE '29 ?/ ?29\|29/29\|21-mutant\|52 nightly\|52 suites' README.md AGENTS.md reports/*.md` | **PASS** | `README.md`, `AGENTS.md`, `reports/RESULTS.md` | `{code_commit[:7]}` |")
+    lines.append(rf"| **D3** | `grep -nE '29 ?/ ?29\|29/29\|21-mutant\|52 nightly\|52 suites' README.md AGENTS.md reports/*.md` | **PASS** | `README.md`, `AGENTS.md`, `reports/RESULTS.md` | `{code_commit[:7]}` |")
     lines.append(f"| **D4** | Provenance & reachability check (`git merge-base --is-ancestor`) | **PASS** | `reports/*.json`, `evidence/*.txt` | `{code_commit[:7]}` |")
     lines.append(f"| **D5** | `python3 sim/run_regression.py` (37 passed) & `--nightly` (53 passed) | **PASS** | `reports/regress_summary.json`, `reports/regress_summary_nightly.json` | `{code_commit[:7]}` |")
     lines.append(f"| **D6** | `python3 scripts/mutation_check.py` (31 caught, 0 survived) | **PASS** | `reports/mutation.json` | `{code_commit[:7]}` |")
