@@ -66,8 +66,9 @@ def compute_snr(ref, test, eps=1e-12):
         return 100.0
     return float(10.0 * np.log10(num / den))
 
-def analyze_record(rec_id, policy="fixed", n_samples=60000):
-    set_name = f"std_{policy}_{rec_id}"
+def analyze_record(rec_id, policy="fixed", n_samples=60000, set_name=None):
+    if set_name is None:
+        set_name = f"std_{policy}_{rec_id}"
     s_dir = os.path.join(TV_DIR, set_name)
     if not os.path.exists(s_dir):
         print(f"Warning: {s_dir} does not exist, skipping.")
@@ -249,6 +250,12 @@ def run_all():
             r = analyze_record(rec, policy=pol, n_samples=60000)
             if r is not None:
                 records_res.append(r)
+
+    demo_p = os.path.join(TV_DIR, "demo_noisy_100")
+    if os.path.exists(demo_p):
+        r_demo = analyze_record("100", policy="demo_noisy", n_samples=60000, set_name="demo_noisy_100")
+        if r_demo is not None:
+            records_res.append(r_demo)
 
     # Print markdown table
     print("\n### Quality Evaluation Summary (60,000 samples)")

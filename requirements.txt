@@ -1,4 +1,7 @@
 wfdb>=4.3.0
 numpy>=1.24.0
 scipy>=1.10.0
+
+# Optional dependencies for live viewer (scripts/ecg_live_viewer.py) and plotting
 matplotlib>=3.7.0
+pyserial>=3.5

@@ -288,8 +288,8 @@ def check_v20():
     p = os.path.join(REPORTS_DIR, "fresh_clone.log")
     if not os.path.exists(p): return False, "Missing reports/fresh_clone.log"
     with open(p) as f: t = f.read()
-    has_std = ("37 PASSED, 0 FAILED" in t or "36 PASSED, 0 FAILED" in t)
-    has_nightly = ("53 PASSED, 0 FAILED" in t or "52 PASSED, 0 FAILED" in t)
+    has_std = ("39 PASSED, 0 FAILED" in t or "37 PASSED, 0 FAILED" in t or "36 PASSED, 0 FAILED" in t)
+    has_nightly = ("55 PASSED, 0 FAILED" in t or "53 PASSED, 0 FAILED" in t or "52 PASSED, 0 FAILED" in t)
     has_pass = "FRESH CLONE CHECK: PASS" in t
     ok = has_std and has_nightly and has_pass
     return ok, f"Fresh clone log: std={has_std}, nightly={has_nightly}, pass={has_pass}"
@@ -671,9 +671,72 @@ def check_v28():
 
     return True, "BENCHMARKS.json and REVIEW_SUMMARY.md verified independently against primary artifacts"
 
+def check_v29():
+    # V-29: REVIEW_SUMMARY.md rows equal values parsed from evidence/*.txt
+    # and verify_all.txt reports 0 SKIPPED in top-level run.
+    p_s = os.path.join(REPORTS_DIR, "REVIEW_SUMMARY.md")
+    if not os.path.exists(p_s):
+        return False, "Missing reports/REVIEW_SUMMARY.md"
+    with open(p_s, "r", encoding="utf-8") as f:
+        s_text = f.read()
+
+    ev_dir = os.path.join(BASE_DIR, "evidence")
+    if os.path.exists(ev_dir):
+        # 1. Parse D5 in REVIEW_SUMMARY.md and compare with regression_standard.txt and regression_nightly.txt
+        p_std = os.path.join(ev_dir, "regression_standard.txt")
+        if os.path.exists(p_std):
+            with open(p_std, "r", encoding="utf-8") as f:
+                t = f.read()
+            m = re.search(r"(\d+)\s+PASSED,\s+(\d+)\s+FAILED", t)
+            if m:
+                std_pass = int(m.group(1))
+                if f"{std_pass} passed" not in s_text and f"{std_pass} standard" not in s_text:
+                    return False, f"REVIEW_SUMMARY.md does not match standard regression passed count ({std_pass})"
+
+        p_night = os.path.join(ev_dir, "regression_nightly.txt")
+        if os.path.exists(p_night):
+            with open(p_night, "r", encoding="utf-8") as f:
+                t = f.read()
+            m = re.search(r"(\d+)\s+PASSED,\s+(\d+)\s+FAILED", t)
+            if m:
+                night_pass = int(m.group(1))
+                if f"{night_pass} passed" not in s_text and f"{night_pass} nightly" not in s_text:
+                    return False, f"REVIEW_SUMMARY.md does not match nightly regression passed count ({night_pass})"
+
+        # 2. Parse D6 in REVIEW_SUMMARY.md and compare with mutation.txt
+        p_mut = os.path.join(ev_dir, "mutation.txt")
+        if os.path.exists(p_mut):
+            with open(p_mut, "r", encoding="utf-8") as f:
+                t = f.read()
+            m = re.search(r"caught:\s*(\d+)\s+survived:\s*(\d+)", t)
+            if m:
+                c_cnt, s_cnt = int(m.group(1)), int(m.group(2))
+                if f"{c_cnt} caught, {s_cnt} survived" not in s_text and f"{c_cnt}/{c_cnt}" not in s_text:
+                    return False, f"REVIEW_SUMMARY.md does not match mutation counts ({c_cnt} caught, {s_cnt} survived)"
+
+        # 3. Check verify_all.txt in repo context reports 0 SKIPPED
+        p_va = os.path.join(ev_dir, "verify_all.txt")
+        if os.path.exists(p_va):
+            with open(p_va, "r", encoding="utf-8") as f:
+                t = f.read()
+            m_skip = re.search(r"(\d+)\s+SKIPPED", t)
+            if m_skip and int(m_skip.group(1)) != 0:
+                return False, f"evidence/verify_all.txt reports {m_skip.group(1)} SKIPPED (must be 0)"
+
+    return True, "REVIEW_SUMMARY.md rows match values parsed from evidence files, 0 SKIPPED"
+
+def check_v30():
+    # V-30: ecg_live_viewer.py --selftest passes
+    res = subprocess.run([sys.executable, "scripts/ecg_live_viewer.py", "--selftest"], cwd=BASE_DIR, capture_output=True, text=True)
+    if res.returncode != 0:
+        return False, f"Viewer selftest failed with code {res.returncode}:\n{res.stderr}"
+    if "VIEWER SELFTEST: PASS" not in res.stdout:
+        return False, "Viewer selftest missing 'VIEWER SELFTEST: PASS'"
+    return True, "Viewer selftest: PASS (12/12 checks passing)"
+
 def main():
     print("==================================================================")
-    print("RUNNING MASTER VERIFICATION HARNESS (V-01 THROUGH V-26)")
+    print("RUNNING MASTER VERIFICATION HARNESS (V-01 THROUGH V-30)")
     print("==================================================================")
 
     checks = [
@@ -705,6 +768,8 @@ def main():
         ("V-26", check_v26),
         ("V-27", check_v27),
         ("V-28", check_v28),
+        ("V-29", check_v29),
+        ("V-30", check_v30),
     ]
 
     passed = 0

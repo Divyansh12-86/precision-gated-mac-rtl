@@ -292,21 +292,91 @@ def verify_bundle(zip_path):
         if manifest.get("dirty") is True:
             errors.append("Manifest dirty is True (must be False)")
 
-        # 2. Check code_commit and report_commit
+        # 2. Check code_commit and report_commit with offline parents graph support
         code_commit = manifest.get("code_commit")
         report_commit = manifest.get("report_commit")
+
+        parents_file = os.path.join(bundle_root, "git", "parents.txt")
+        parents_map = {}
+        if os.path.exists(parents_file):
+            with open(parents_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    parts = line.strip().split()
+                    if parts:
+                        commit_k = parts[0]
+                        parents_map[commit_k] = parts[1:]
+
+        def resolve_commit_hash(h):
+            if not h: return ""
+            if h in parents_map: return h
+            for k in parents_map:
+                if k.startswith(h): return k
+            return h
+
+        def is_ancestor_graph(anc, desc):
+            anc_full = resolve_commit_hash(anc)
+            desc_full = resolve_commit_hash(desc)
+            if not anc_full or not desc_full:
+                return False
+            if anc_full == desc_full:
+                return True
+            visited = set()
+            queue = [desc_full]
+            while queue:
+                curr = queue.pop(0)
+                if curr in visited:
+                    continue
+                visited.add(curr)
+                for p in parents_map.get(curr, []):
+                    if p == anc_full:
+                        return True
+                    if p not in visited:
+                        queue.append(p)
+            return False
+
+        def check_ancestor(anc, desc):
+            graph_ok = None
+            if parents_map:
+                graph_ok = is_ancestor_graph(anc, desc)
+
+            git_ok = None
+            if os.path.exists(os.path.join(BASE_DIR, ".git")):
+                r = subprocess.run(["git", "merge-base", "--is-ancestor", anc, desc], cwd=BASE_DIR, capture_output=True)
+                if r.returncode == 0:
+                    git_ok = True
+                elif r.returncode == 1:
+                    git_ok = False
+
+            if git_ok is not None and graph_ok is not None:
+                if git_ok != graph_ok:
+                    return False, f"Git ({git_ok}) and offline parents graph ({graph_ok}) disagree for {anc} -> {desc}"
+                return git_ok, ""
+            elif graph_ok is not None:
+                return graph_ok, ""
+            elif git_ok is not None:
+                return git_ok, ""
+            else:
+                return False, "Neither git nor git/parents.txt available"
+
         if not code_commit or not report_commit:
             errors.append("Missing code_commit or report_commit in manifest")
         else:
-            chk_anc = subprocess.run(["git", "merge-base", "--is-ancestor", code_commit, report_commit], cwd=BASE_DIR, capture_output=True)
-            if chk_anc.returncode != 0:
-                errors.append(f"code_commit '{code_commit}' is not an ancestor of report_commit '{report_commit}'")
+            anc_ok, anc_msg = check_ancestor(code_commit, report_commit)
+            if not anc_ok:
+                errors.append(f"code_commit '{code_commit}' is not an ancestor of report_commit '{report_commit}': {anc_msg}")
 
-            chk_p = subprocess.run(["git", "rev-parse", f"{report_commit}~1"], cwd=BASE_DIR, capture_output=True, text=True)
-            if chk_p.returncode == 0:
-                parent_hash = chk_p.stdout.strip()
-                if parent_hash != code_commit:
-                    errors.append(f"code_commit '{code_commit}' is not the parent of report_commit '{report_commit}' (parent is {parent_hash})")
+            if parents_map:
+                rep_full = resolve_commit_hash(report_commit)
+                code_full = resolve_commit_hash(code_commit)
+                p_list = parents_map.get(rep_full, [])
+                if code_full not in p_list:
+                    errors.append(f"code_commit '{code_commit}' is not the parent of report_commit '{report_commit}' in git/parents.txt (parents: {p_list})")
+            elif os.path.exists(os.path.join(BASE_DIR, ".git")):
+                chk_p = subprocess.run(["git", "rev-parse", f"{report_commit}~1"], cwd=BASE_DIR, capture_output=True, text=True)
+                if chk_p.returncode == 0:
+                    parent_hash = chk_p.stdout.strip()
+                    if not parent_hash.startswith(code_commit):
+                        errors.append(f"code_commit '{code_commit}' is not the parent of report_commit '{report_commit}' (parent is {parent_hash})")
 
         # 3. Check evidence commits and source_digest in all reports/*.json
         manifest_digest = manifest.get("source_digest")
@@ -330,9 +400,9 @@ def verify_bundle(zip_path):
             if not c:
                 errors.append(f"Missing commit in reports/{ej}")
             else:
-                chk = subprocess.run(["git", "merge-base", "--is-ancestor", c, report_commit], cwd=BASE_DIR, capture_output=True)
-                if chk.returncode != 0:
-                    errors.append(f"Evidence commit '{c}' in reports/{ej} is not an ancestor of report_commit")
+                c_ok, c_msg = check_ancestor(c, report_commit)
+                if not c_ok:
+                    errors.append(f"Evidence commit '{c}' in reports/{ej} is not an ancestor of report_commit: {c_msg}")
             sd = d.get("source_digest")
             if not sd or sd != manifest_digest:
                 errors.append(f"Source digest mismatch in reports/{ej}: got '{sd}', expected '{manifest_digest}'")
@@ -352,15 +422,50 @@ def verify_bundle(zip_path):
                 errors.append("fresh_clone evidence missing 'HEAD commit:' line")
             else:
                 fc_c = m_c.group(1)
-                chk = subprocess.run(["git", "merge-base", "--is-ancestor", fc_c, report_commit], cwd=BASE_DIR, capture_output=True)
-                if chk.returncode != 0 and fc_c != report_commit:
-                    errors.append(f"fresh_clone commit '{fc_c}' is not an ancestor of report_commit")
+                fc_ok, fc_msg = check_ancestor(fc_c, report_commit)
+                if not fc_ok and fc_c != report_commit:
+                    errors.append(f"fresh_clone commit '{fc_c}' is not an ancestor of report_commit: {fc_msg}")
             if not m_d:
                 errors.append("fresh_clone evidence missing 'SOURCE_DIGEST:' line")
             else:
                 fc_d = m_d.group(1)
                 if fc_d != manifest_digest:
                     errors.append(f"fresh_clone SOURCE_DIGEST mismatch: got '{fc_d}', expected '{manifest_digest}'")
+
+        # 3b. Verify all 14 required evidence files and manifest command logs
+        req_ev_files = [
+            "regression_standard.txt",
+            "regression_nightly.txt",
+            "mutation.txt",
+            "synth.txt",
+            "activity.txt",
+            "noise.txt",
+            "vivado_compat.txt",
+            "verify_all.txt",
+            "uart_selftest.txt",
+            "fresh_clone.txt",
+            "independent_checks.txt",
+            "viewer_selftest.txt",
+            "viewer_snapshot.txt",
+            "filter_response.txt"
+        ]
+        for ef in req_ev_files:
+            p_ef = os.path.join(bundle_root, "evidence", ef)
+            if not os.path.exists(p_ef):
+                errors.append(f"Missing required evidence file in bundle: evidence/{ef}")
+            else:
+                with open(p_ef, "r", encoding="utf-8") as f:
+                    txt_ev = f.read()
+                m_exit = re.search(r"^Exit Code:\s*(\d+)", txt_ev, re.MULTILINE)
+                if m_exit and int(m_exit.group(1)) != 0:
+                    errors.append(f"Evidence file evidence/{ef} recorded non-zero exit code: {m_exit.group(1)}")
+
+        cmds_in_manifest = manifest.get("commands", [])
+        if len(cmds_in_manifest) < 14:
+            errors.append(f"BUNDLE_MANIFEST commands list has only {len(cmds_in_manifest)} entries (must be >= 14)")
+        for cmd_entry in cmds_in_manifest:
+            if cmd_entry.get("exit_code") != 0:
+                errors.append(f"Command '{cmd_entry.get('name')}' in manifest failed with exit code {cmd_entry.get('exit_code')}")
 
         # 4. Re-hash every member against the manifest
         files_dict = manifest.get("files", {})
@@ -538,7 +643,10 @@ def main():
         commands_log.append(run_logged_command([PYTHON_EXE, "sim/activity_report.py"], "activity", evidence_dir))
         commands_log.append(run_logged_command([PYTHON_EXE, "sim/noise_sweep.py"], "noise", evidence_dir))
         commands_log.append(run_logged_command([PYTHON_EXE, "scripts/check_vivado_compat.py"], "vivado_compat", evidence_dir))
-        commands_log.append(run_logged_command([PYTHON_EXE, "scripts/uart_capture.py", "--selftest"], "uart_capture_selftest", evidence_dir))
+        commands_log.append(run_logged_command([PYTHON_EXE, "scripts/uart_capture.py", "--selftest"], "uart_selftest", evidence_dir))
+        commands_log.append(run_logged_command([PYTHON_EXE, "scripts/ecg_live_viewer.py", "--selftest"], "viewer_selftest", evidence_dir))
+        commands_log.append(run_logged_command([PYTHON_EXE, "scripts/run_viewer_snapshots.py"], "viewer_snapshot", evidence_dir))
+        commands_log.append(run_logged_command([PYTHON_EXE, "scripts/filter_response.py"], "filter_response", evidence_dir))
         commands_log.append(run_logged_command([PYTHON_EXE, "scripts/check_docs_numbers.py"], "check_docs_numbers", evidence_dir))
         commands_log.append(run_logged_command([PYTHON_EXE, "scripts/verify_all.py"], "verify_all", evidence_dir))
         if do_fresh:
@@ -612,6 +720,7 @@ def main():
     _save_cmd(["git", "log", "-n", "20", "--stat"], os.path.join(git_dir, "log.txt"))
     _save_cmd(["git", "status"], os.path.join(git_dir, "status.txt"))
     _save_cmd(["git", "tag", "-l"], os.path.join(git_dir, "tags.txt"))
+    _save_cmd(["git", "log", "--format=%H %P", "--all"], os.path.join(git_dir, "parents.txt"))
 
     # tracked_files_sha256.txt
     tracked_res = subprocess.run(["git", "ls-files"], cwd=BASE_DIR, capture_output=True, text=True)
@@ -673,6 +782,35 @@ def main():
                     shutil.copy2(full_p, os.path.join(s_dst, fn))
 
     # 7b. Dynamically regenerate reports/BENCHMARKS.json and reports/REVIEW_SUMMARY.md before packaging
+    print("\n--- Verifying required evidence files before generating review summary ---")
+    req_ev_files = [
+        "regression_standard.txt",
+        "regression_nightly.txt",
+        "mutation.txt",
+        "synth.txt",
+        "activity.txt",
+        "noise.txt",
+        "vivado_compat.txt",
+        "verify_all.txt",
+        "uart_selftest.txt",
+        "fresh_clone.txt",
+        "independent_checks.txt",
+        "viewer_selftest.txt",
+        "viewer_snapshot.txt",
+        "filter_response.txt"
+    ]
+    missing_for_summary = [ef for ef in req_ev_files if not os.path.exists(os.path.join(evidence_dir, ef))]
+    if missing_for_summary:
+        print(f"ERROR: Cannot generate review summary; missing required evidence files in bundle: {missing_for_summary}")
+        sys.exit(1)
+
+    # Sync evidence_dir into repo EVIDENCE_DIR before running generator
+    for ef in req_ev_files:
+        src_ef = os.path.join(evidence_dir, ef)
+        dst_ef = os.path.join(EVIDENCE_DIR, ef)
+        if os.path.exists(src_ef):
+            shutil.copy2(src_ef, dst_ef)
+
     print("\n--- Generating BENCHMARKS.json and REVIEW_SUMMARY.md prior to bundle manifest ---")
     gen_res = subprocess.run([PYTHON_EXE, "scripts/generate_benchmarks_and_summary.py"], cwd=BASE_DIR, capture_output=True, text=True)
     if gen_res.returncode != 0:

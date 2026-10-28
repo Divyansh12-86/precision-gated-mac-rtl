@@ -169,6 +169,8 @@ def main():
         runner.run_cmd([bin_det_11, f"+VEC_DIR=data/test_vectors/std_fixed_{rec}"], f"tb_detector std_fixed_{rec}", log_det, append=True)
     for rec in ["100", "101", "103", "105"]:
         runner.run_cmd([bin_det_15, f"+VEC_DIR=data/test_vectors/std_minmax_{rec}"], f"tb_detector std_minmax_{rec}", log_det, append=True)
+    if os.path.exists(os.path.join(BASE_DIR, "data", "test_vectors", "demo_noisy_100")):
+        runner.run_cmd([bin_det_11, "+VEC_DIR=data/test_vectors/demo_noisy_100"], "tb_detector demo_noisy_100", log_det, append=True)
 
     # 5. Top-Level Tests
     top_srcs = [
@@ -186,6 +188,8 @@ def main():
         runner.run_cmd([bin_top_11, f"+VEC_DIR=data/test_vectors/std_fixed_{rec}"], f"tb_top std_fixed_{rec}", log_top, append=True)
     for rec in ["100", "101", "103", "105"]:
         runner.run_cmd([bin_top_15, f"+VEC_DIR=data/test_vectors/std_minmax_{rec}"], f"tb_top std_minmax_{rec}", log_top, append=True)
+    if os.path.exists(os.path.join(BASE_DIR, "data", "test_vectors", "demo_noisy_100")):
+        runner.run_cmd([bin_top_11, "+VEC_DIR=data/test_vectors/demo_noisy_100"], "tb_top demo_noisy_100", log_top, append=True)
 
     # 6. Real-Rate Test
     bin_top_rr = runner.compile("top_rr", "tb/tb_top_realrate.v", top_srcs + ["rtl/sample_tick_gen.v"])

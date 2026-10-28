@@ -419,7 +419,19 @@ def main():
     md.append(r"1. **Switching Activity as Power Proxy:** The toggle counts reported are architectural switching activity measurements ($\alpha$), not physical silicon milliwatt figures. On FPGA devices, dynamic power savings scale with switching activity, but overall device power includes significant static/quiescent power.")
     md.append(f"2. **Noise Degradation at Low SNR:** Under synthetic noise at <= 6 dB SNR (in-domain ADU noise), the detector positive predictivity collapses to ~{hn['low_snr_ppv_min']}–{hn['low_snr_ppv_max']}% and full-precision gate duty increases to ~{hn['low_snr_duty_mean']}%, causing switching savings to shrink to {hn['low_snr_dp_min']:.1f}–{hn['low_snr_dp_max']:.1f}% datapath and {hn['low_snr_wc_min']:.1f}–{hn['low_snr_wc_max']:.1f}% whole-core (compared to {hn['snr_24_dp_min']:.1f}–{hn['snr_24_dp_max']:.1f}% datapath and {hn['snr_24_wc_min']:.1f}–{hn['snr_24_wc_max']:.1f}% whole-core at 24 dB). The legacy `noise_stress` set (post-scaling noise, not comparable to clean data) yielded 17.57% datapath and 8.56% whole-core savings.")
     md.append(f"3. **Synthetic Noise Model:** Noise injected in characterization sweeps is a synthetic combination of 0.3 Hz baseline wander, 50 Hz powerline hum, and pseudo-random Gaussian EMG noise (fixed seed=42+SNR), rather than in-vivo recorded electrode artifact databases.")
-    md.append(f"4. **Bandpass Filtering Scope:** The FIR filter operates in the 5–15 Hz band, optimized for QRS detection and R-peak extraction; it is an algorithmic pre-processing filter rather than an unrestricted diagnostic filter.")
+    fr_path = os.path.join(REPORTS_DIR, "filter_response.json")
+    filter_summary = "51-tap Kaiser-window FIR; implemented response is low-pass: DC gain 1.03, −3 dB at 16.6 Hz, −22 dB at 30 Hz; design intent was a 5–15 Hz band-pass (not achieved with 51 taps and β = 14)."
+    if os.path.exists(fr_path):
+        with open(fr_path, "r", encoding="utf-8") as f:
+            try:
+                fr_data = json.load(f)
+                dc = fr_data.get("dc_gain", 1.03)
+                f3 = fr_data.get("f_3db_hz", 16.6)
+                filter_summary = f"51-tap Kaiser-window FIR; implemented response is low-pass: DC gain {dc:.2f}, −3 dB at {f3:.1f} Hz, −22 dB at 30 Hz; design intent was a 5–15 Hz band-pass (not achieved with 51 taps and β = 14)."
+            except Exception:
+                pass
+
+    md.append(f"4. **Filter Response Scope:** {filter_summary} It is an algorithmic pre-processing filter rather than an unrestricted diagnostic filter.")
     md.append(r"5. **Approximation SNR Interpretation:** SNR figures reported evaluate approximation fidelity relative to 16-bit full precision ($y_{gated}$ vs $y_{full}$); they characterize truncation error rather than noise cancellation ratio.")
     md.append(f"6. **Dataset Breadth:** Primary evaluations are derived from 4 MIT-BIH Arrhythmia Database recordings (100, 101, 103, 105) replayed at 360 Hz, not direct in-vivo patient electrode acquisition. Extended records (ext_*): NOT RUN (no network).")
     md.append(f"7. **Timing and Power Characterization:** Post-implementation timing and vectorless power reports from Vivado are NOT RUN due to absence of Vivado in the build environment; complete out-of-context synthesis scripts are provided in `scripts/synth_vivado_ooc.tcl`.")

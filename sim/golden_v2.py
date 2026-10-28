@@ -3,7 +3,7 @@ sim/golden_v2.py — Bit-Exact Golden Reference Model v2
 
 Implements canonical numerical contract (Section 4):
 - Policies: FIXED_SCALE (primary), LEGACY_MINMAX, FIXED_SCALE_G7.
-- Filter: 51 taps, Kaiser beta=14, band 5-15 Hz, Q1.15 taps.
+- Filter: 51-tap Kaiser-window FIR; implemented response is low-pass: DC gain 1.03, −3 dB at 16.6 Hz, −22 dB at 30 Hz; design intent was a 5–15 Hz band-pass (not achieved with 51 taps and β = 14). Q1.15 taps.
 - Vectorized bit-exact convolution for 32-bit accumulators.
 - Beat-only QRS quality evaluation per Section 9.
 """
@@ -27,7 +27,7 @@ def to_fixed(x, frac_bits=Q_FRAC):
     return np.clip(np.round(x * (2**frac_bits)), -32768, 32767).astype(np.int32)
 
 def design_fir_filter():
-    """Design bandpass Kaiser FIR filter and quantize taps to signed 16-bit Q1.15."""
+    """Design Kaiser FIR filter (design intent was 5-15 Hz band-pass, not achieved with 51 taps; implemented response is low-pass) and quantize taps to signed 16-bit Q1.15."""
     nyq = 0.5 * FS
     low = HP_CUTOFF / nyq
     high = LP_CUTOFF / nyq

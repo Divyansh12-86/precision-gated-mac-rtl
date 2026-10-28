@@ -39,7 +39,8 @@ SETS = [
     "std_fixed_103",
     "std_fixed_105",
     "std_minmax_100",
-    "noise_stress"
+    "noise_stress",
+    "demo_noisy_100"
 ]
 
 def compile_tb():

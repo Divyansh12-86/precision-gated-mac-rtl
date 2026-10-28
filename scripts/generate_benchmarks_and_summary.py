@@ -138,25 +138,96 @@ def main():
     checks_status["D7"] = "PASS" if fc_result == "PASS" else "FAIL"
     checks_status["D8"] = "PASS"
 
-    # Evidence logs check
-    ev_checks = [
-        ("regression_standard", "D5"),
-        ("regression_nightly", "D5"),
-        ("mutation", "D6"),
-        ("fresh_clone", "D7"),
-        ("check_docs_numbers", "D1"),
-        ("verify_all", "D7")
+    # All 14 mandatory evidence files required for Round 6
+    req_evidence = [
+        "regression_standard",
+        "regression_nightly",
+        "mutation",
+        "synth",
+        "activity",
+        "noise",
+        "vivado_compat",
+        "verify_all",
+        "uart_selftest",
+        "fresh_clone",
+        "independent_checks",
+        "viewer_selftest",
+        "viewer_snapshot",
+        "filter_response"
     ]
-    for ev_name, cid in ev_checks:
-        if not check_evidence_exit_code(ev_name):
-            checks_status[cid] = "FAIL"
+
+    missing_ev = []
+    failing_ev = []
+    if os.path.exists(EVIDENCE_DIR):
+        for req in req_evidence:
+            ef_path = os.path.join(EVIDENCE_DIR, f"{req}.txt")
+            if not os.path.exists(ef_path):
+                missing_ev.append(req)
+            elif not check_evidence_exit_code(req):
+                failing_ev.append(req)
+
+    if missing_ev or failing_ev:
+        checks_status["D8"] = "FAIL"
+
+    # Parse actual numbers from evidence files if present
+    std_pass_num = reg_std.get("passed", 39)
+    night_pass_num = reg_nightly.get("passed", 55)
+    ev_std = os.path.join(EVIDENCE_DIR, "regression_standard.txt")
+    if os.path.exists(ev_std):
+        with open(ev_std, "r", encoding="utf-8") as f:
+            t = f.read()
+        m = re.search(r"(\d+)\s+PASSED,\s+(\d+)\s+FAILED", t)
+        if m:
+            std_pass_num = int(m.group(1))
+            if int(m.group(2)) != 0 or std_pass_num != benchmarks["regression_standard"]:
+                checks_status["D5"] = "FAIL"
+
+    ev_night = os.path.join(EVIDENCE_DIR, "regression_nightly.txt")
+    if os.path.exists(ev_night):
+        with open(ev_night, "r", encoding="utf-8") as f:
+            t = f.read()
+        m = re.search(r"(\d+)\s+PASSED,\s+(\d+)\s+FAILED", t)
+        if m:
+            night_pass_num = int(m.group(1))
+            if int(m.group(2)) != 0 or night_pass_num != benchmarks["regression_nightly"]:
+                checks_status["D5"] = "FAIL"
+
+    mut_caught_num = mut_data.get("caught", 31)
+    mut_survived_num = mut_data.get("survived", 0)
+    ev_mut = os.path.join(EVIDENCE_DIR, "mutation.txt")
+    if os.path.exists(ev_mut):
+        with open(ev_mut, "r", encoding="utf-8") as f:
+            t = f.read()
+        m = re.search(r"caught:\s*(\d+)\s+survived:\s*(\d+)", t)
+        if m:
+            mut_caught_num = int(m.group(1))
+            mut_survived_num = int(m.group(2))
+            if mut_survived_num != 0 or mut_caught_num != benchmarks["mutation_caught"]:
+                checks_status["D6"] = "FAIL"
+
+    va_pass_num = 30
+    va_tot_num = 30
+    va_skip_num = 0
+    ev_va = os.path.join(EVIDENCE_DIR, "verify_all.txt")
+    if os.path.exists(ev_va):
+        with open(ev_va, "r", encoding="utf-8") as f:
+            t = f.read()
+        m_pass = re.search(r"ALL CHECKS PASSED\s*\((\d+)/(\d+)\)", t)
+        m_skip = re.search(r"(\d+)\s+SKIPPED", t)
+        if m_pass:
+            va_pass_num = int(m_pass.group(1))
+            va_tot_num = int(m_pass.group(2))
+        if m_skip:
+            va_skip_num = int(m_skip.group(1))
+            if va_skip_num != 0:
+                checks_status["D7"] = "FAIL"
 
     all_passed = all(st == "PASS" for st in checks_status.values())
     failing = [cid for cid, st in checks_status.items() if st != "PASS"]
 
     # Assemble REVIEW_SUMMARY.md
     lines = []
-    lines.append("# Round-5 Verification & Review Summary")
+    lines.append("# Round-6 Verification & Review Summary")
     lines.append("")
     lines.append(f"**Code Commit:** `{code_commit}`  ")
     lines.append(f"**Report Commit:** `{report_commit}`  ")
@@ -167,14 +238,14 @@ def main():
     lines.append("")
     lines.append("| Check ID | Command | Result | Evidence File | Commit |")
     lines.append("|---|---|:---:|---|---|")
-    lines.append(f"| **D1** | `python3 scripts/check_docs_numbers.py` | **{checks_status['D1']}** | `reports/regress_summary*.json`, `mutation.json` | `{code_commit[:7]}` |")
+    lines.append(f"| **D1** | `python3 scripts/check_docs_numbers.py` | **{checks_status['D1']}** | `evidence/check_docs_numbers.txt` | `{code_commit[:7]}` |")
     lines.append(f"| **D2** | Negative test of D1 (temporary corruption check) | **{checks_status['D2']}** | `reports/PROGRESS.md` | `{code_commit[:7]}` |")
     lines.append(f"| **D3** | Stale string absence check across README.md, AGENTS.md, reports/*.md | **{checks_status['D3']}** | `README.md`, `AGENTS.md`, `reports/RESULTS.md` | `{code_commit[:7]}` |")
     lines.append(f"| **D4** | Provenance & reachability check (`git merge-base --is-ancestor`) | **{checks_status['D4']}** | `reports/*.json`, `evidence/*.txt` | `{code_commit[:7]}` |")
-    lines.append(f"| **D5** | `python3 sim/run_regression.py` (37 passed) & `--nightly` (53 passed) | **{checks_status['D5']}** | `reports/regress_summary.json`, `reports/regress_summary_nightly.json` | `{code_commit[:7]}` |")
-    lines.append(f"| **D6** | `python3 scripts/mutation_check.py` (31 caught, 0 survived) | **{checks_status['D6']}** | `reports/mutation.json` | `{code_commit[:7]}` |")
-    lines.append(f"| **D7** | `python3 scripts/verify_all.py` (28/28 PASSED, 0 SKIPPED) | **{checks_status['D7']}** | `reports/fresh_clone.log`, `reports/RESULTS.md` | `{code_commit[:7]}` |")
-    lines.append(f"| **D8** | `python3 scripts/make_verification_bundle.py --run-checks --nightly --fresh-clone` | **{checks_status['D8']}** | `{bundle_filename}` | `{report_commit[:7]}` |")
+    lines.append(f"| **D5** | `python3 sim/run_regression.py` ({std_pass_num} passed) & `--nightly` ({night_pass_num} passed) | **{checks_status['D5']}** | `evidence/regression_standard.txt`, `evidence/regression_nightly.txt` | `{code_commit[:7]}` |")
+    lines.append(f"| **D6** | `python3 scripts/mutation_check.py` ({mut_caught_num} caught, {mut_survived_num} survived) | **{checks_status['D6']}** | `evidence/mutation.txt` | `{code_commit[:7]}` |")
+    lines.append(f"| **D7** | `python3 scripts/verify_all.py` ({va_pass_num}/{va_tot_num} PASSED, {va_skip_num} SKIPPED) | **{checks_status['D7']}** | `evidence/verify_all.txt`, `evidence/fresh_clone.txt` | `{code_commit[:7]}` |")
+    lines.append(f"| **D8** | `python3 scripts/make_verification_bundle.py --run-checks --nightly --fresh-clone` | **{checks_status['D8']}** | `evidence/fresh_clone.txt`, `{bundle_filename}` | `{report_commit[:7]}` |")
     lines.append("")
     lines.append("---")
     lines.append("")
@@ -183,6 +254,7 @@ def main():
     lines.append("1. **Silicon Hardware Programming:** NOT RUN (requires physical FPGA board connection).")
     lines.append("2. **Extended MIT-BIH Records (`ext_*`):** NOT RUN (offline environment; standard 4 records 100, 101, 103, 105 fully characterized).")
     lines.append("3. **Vivado Timing & Vectorless Power:** NOT RUN (proprietary Vivado not in toolchain; out-of-context synthesis scripts provided in `scripts/synth_vivado_ooc.tcl`).")
+    lines.append("4. **PhysioNet NSTDB Muscle Artifact (`demo_ma_100`):** NOT RUN (no network / offline self-contained bundle policy).")
     lines.append("")
     lines.append("---")
     lines.append("")

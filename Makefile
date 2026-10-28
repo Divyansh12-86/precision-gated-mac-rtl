@@ -2,7 +2,7 @@ PYTHON ?= $(shell test -x .venv/bin/python3 && echo .venv/bin/python3 || echo py
 VERILATOR = verilator
 YOSYS = yosys
 
-.PHONY: all data vectors full-vectors sim quality activity synth noise mutation report nightly clean bundle
+.PHONY: all data vectors full-vectors sim quality activity synth noise mutation report nightly clean bundle demo-rom viewer-test
 
 all: data vectors sim quality activity synth noise report
 
@@ -14,6 +14,12 @@ vectors:
 
 full-vectors:
 	$(PYTHON) sim/gen_vectors.py --full
+
+demo-rom:
+	$(PYTHON) scripts/gen_demo_noisy.py
+
+viewer-test:
+	$(PYTHON) scripts/ecg_live_viewer.py --selftest
 
 sim:
 	$(PYTHON) sim/run_regression.py

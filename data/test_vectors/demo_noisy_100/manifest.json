@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "set_name": "demo_noisy_100",
+    "record_id": "100",
+    "policy": "fixed",
+    "n_samples": 60000,
+    "snr_db": 12,
+    "noise_type": "composite_emg_bw_pl",
+    "seed": 54,
+    "sensitivity_pct": 100.0,
+    "positive_predictivity_pct": 98.58,
+    "gate_duty_full_pct": 15.12
+  },
+  "n_samples": 60000,
+  "files": {
+    "tv_inputs.hex": "c4e0bbb3df2f54685b7ce0e3dbbeba3de23c9298d4a4ffcd8870abe2dd718121",
+    "tv_gate_flags.hex": "44f64b14e19aa9b5d85a33ce66a949a03eb8ca594c1ba879a8e5ae8e3574d99b",
+    "tv_outputs_full.hex": "0028e69fae689cbf0bcee12c41e883c851c0930b6e261c9e030e4bdbd972c2a5",
+    "tv_outputs_gated.hex": "c4c6e702c222fe6b5788705a3bc9af4e5a9263c0d876ac4a8718c021cf1e94f1",
+    "tv_outputs_allapprox.hex": "35686fce180b6d4262cb605950cd6fc7081e18a9cbc8e00c8a5dbe828c814e85",
+    "tv_peaks.hex": "a42a04cb1795931e3368f28056f4f2c858aed1ba2f36d70ab309b1e88beafeee",
+    "tv_mwi.hex": "244424ff438feca450eee248b9801eca9cee8f9058093b0192787a0d871a66e5",
+    "coeffs.mem": "8f7b3833183f56343b955306889c34d0f908b148b8893fa9b9456a798cb67639"
+  }
+}

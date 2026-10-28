@@ -3,7 +3,7 @@ sim/golden_model.py — Bit-Exact Golden Model & Power Characterization for
 Precision-Gated Approximate-MAC FIR Filter for ECG Noise Removal
 
 Key Capabilities:
-1. Bit-exact Q1.15 fixed-point FIR filtering (Kaiser window beta=14, order 50, 5-15 Hz).
+1. Bit-exact Q1.15 fixed-point FIR filtering (51-tap Kaiser-window FIR; implemented response is low-pass: DC gain 1.03, −3 dB at 16.6 Hz, −22 dB at 30 Hz; design intent was a 5–15 Hz band-pass, not achieved with 51 taps and β = 14).
 2. Autonomous causal QRS detection (via HardwareQRSDetector) and gold-standard MIT-BIH annotation gating.
 3. Multiplier-level physical power model:
    - Multiplier partial product activity (16x16 = 256 bits vs 8x16 = 128 bits -> 50% multiplier reduction).
@@ -88,7 +88,7 @@ def hamming_distance(a, b):
 # =============================================================================
 def design_fir_filter():
     """
-    Design 5-15 Hz bandpass FIR filter using Kaiser window (beta=14).
+    Design Kaiser FIR filter (design intent was 5–15 Hz band-pass, not achieved with 51 taps; implemented response is low-pass).
     Quantizes coefficients to Q1.15 format.
     """
     nyq = 0.5 * FS
@@ -407,7 +407,7 @@ def plot_presentation_diagnostics(raw_signal, y_full_f, y_gated_f, gate_flags, p
     ax2.plot(t, full_sub, color=color_full, linewidth=1.8, label='Full Precision 16-bit FIR ($y_{full}$)')
     ax2.plot(t, gated_sub, color=color_gated, linewidth=1.2, linestyle='--',
              label='Precision-Gated FIR ($y_{gated}$: 16b QRS / 8b Baseline)')
-    ax2.set_title("B. Denoised ECG Morphology Preservation (5–15 Hz Bandpass, Kaiser $\\beta=14$)",
+    ax2.set_title("B. Denoised ECG Morphology Preservation (Low-pass smoothing, Kaiser $\\beta=14$; design intent 5–15 Hz band-pass not achieved)",
                   fontsize=12, fontweight='bold', pad=8)
     ax2.set_ylabel("Normalized Amp", fontsize=10)
     ax2.grid(True, linestyle=':', alpha=0.6)
