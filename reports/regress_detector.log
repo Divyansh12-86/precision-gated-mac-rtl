@@ -178,6 +178,24 @@ tb_detector summary for data/test_vectors/std_minmax_105:
 TB_RESULT: PASS name=tb_detector samples=60000 mismatches=0
 - tb/tb_detector.v:192: Verilog $finish
 
+=== tb_detector demo_noisy_100 (exit: 0) ===
+==================================================================
+tb_detector starting on vectors: data/test_vectors/demo_noisy_100
+==================================================================
+Loaded 60000 samples. Starting simulation...
+First QRS peak confirmed at sample 77 (time 0.21 s)
+==================================================================
+tb_detector summary for data/test_vectors/demo_noisy_100:
+  Samples tested: 60000
+  First peak index: 77
+  Gate mismatches: 0
+  Peak mismatches: 0
+  MWI mismatches:  0
+  Total mismatches: 0
+==================================================================
+TB_RESULT: PASS name=tb_detector samples=60000 mismatches=0
+- tb/tb_detector.v:192: Verilog $finish
+
 === tb_detector full_fixed_100 (exit: 0) ===
 ==================================================================
 tb_detector starting on vectors: data/test_vectors/full_fixed_100

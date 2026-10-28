@@ -1,10 +1,10 @@
 {
-  "commit": "a9b0fcd486f97a2f26a8af2fc65b3c9eada76119",
+  "commit": "a282469bf955d71ff8b7ffb8b8801353824af50c",
   "dirty": false,
   "failed": 0,
   "mode": "standard",
-  "passed": 37,
-  "source_digest": "a6de0c9454d1dbe00fcc457bf1ea9c8ec14bdb3c1f1d93090d567a39e9422230",
+  "passed": 39,
+  "source_digest": "5e2a89f7e5426b5a41419fcbc8385bce4cebddc13ccb29d3b0cefda40712a0da",
   "tests": [
     {
       "name": "Unit test: mult_split across PIPE 1, 2, 3",
@@ -75,6 +75,10 @@
       "status": "PASS"
     },
     {
+      "name": "tb_detector demo_noisy_100",
+      "status": "PASS"
+    },
+    {
       "name": "tb_top smoke",
       "status": "PASS"
     },
@@ -116,6 +120,10 @@
     },
     {
       "name": "tb_top std_minmax_105",
+      "status": "PASS"
+    },
+    {
+      "name": "tb_top demo_noisy_100",
       "status": "PASS"
     },
     {

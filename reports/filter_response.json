@@ -1,0 +1,63 @@
+{
+  "commit": "a282469bf955d71ff8b7ffb8b8801353824af50c",
+  "dc_gain": 1.0293,
+  "f_3db_hz": 16.57,
+  "f_6db_hz": 20.04,
+  "fs_hz": 360.0,
+  "gains_at_frequencies": {
+    "0": {
+      "freq_hz": 0,
+      "gain_db_rel_dc": 0.0,
+      "gain_linear": 1.0293
+    },
+    "1": {
+      "freq_hz": 1,
+      "gain_db_rel_dc": 0.01,
+      "gain_linear": 1.03
+    },
+    "10": {
+      "freq_hz": 10,
+      "gain_db_rel_dc": -0.25,
+      "gain_linear": 0.9996
+    },
+    "100": {
+      "freq_hz": 100,
+      "gain_db_rel_dc": -82.64,
+      "gain_linear": 0.0001
+    },
+    "15": {
+      "freq_hz": 15,
+      "gain_db_rel_dc": -2.03,
+      "gain_linear": 0.8153
+    },
+    "17": {
+      "freq_hz": 17,
+      "gain_db_rel_dc": -3.33,
+      "gain_linear": 0.7014
+    },
+    "20": {
+      "freq_hz": 20,
+      "gain_db_rel_dc": -5.99,
+      "gain_linear": 0.5164
+    },
+    "30": {
+      "freq_hz": 30,
+      "gain_db_rel_dc": -22.56,
+      "gain_linear": 0.0767
+    },
+    "5": {
+      "freq_hz": 5,
+      "gain_db_rel_dc": 0.08,
+      "gain_linear": 1.0393
+    },
+    "50": {
+      "freq_hz": 50,
+      "gain_db_rel_dc": -99.9,
+      "gain_linear": 0.0
+    }
+  },
+  "n_fft": 8192,
+  "source_digest": "5e2a89f7e5426b5a41419fcbc8385bce4cebddc13ccb29d3b0cefda40712a0da",
+  "summary": "51-tap Kaiser-window FIR; implemented response is low-pass: DC gain 1.03, \u22123 dB at 16.6 Hz, \u221222 dB at 30 Hz; design intent was a 5\u201315 Hz band-pass (not achieved with 51 taps and \u03b2 = 14).",
+  "taps_count": 51
+}

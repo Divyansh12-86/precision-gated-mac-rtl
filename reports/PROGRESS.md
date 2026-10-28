@@ -209,3 +209,49 @@ All commands, runs, architectural refactors, and milestone completions are logge
   - Nightly regression: **53 PASSED, 0 FAILED**.
   - Mutation testing: **31 of 31 caught (0 survived, 0 build errors)**.
 
+---
+
+## Phase 11: Round-6 Complete Evidence, Live Viewer v2, and Offline Verification [COMPLETED]
+
+- **Date:** 2026-10-29
+- **Code Commit:** `a282469bf955d71ff8b7ffb8b8801353824af50c`
+- **Report Commit:** `9142d086d4d3d5dc278ee3c5887418c2ccb8cb81`
+- **Canonical Source Digest:** `5e2a89f7e5426b5a41419fcbc8385bce4cebddc13ccb29d3b0cefda40712a0da`
+- **Viewer-v2 Addendum & Visual Demonstrator:**
+  - Integrated `scripts/ecg_live_viewer.py` byte-identical (`sha256: 38689b90bf02017317d9313c8b8d854bceac112150b2886ebf59f50c2868ea94`).
+  - Implemented 12/12 passing selftest suite (`scripts/ecg_live_viewer.py --selftest`).
+  - Added headless snapshot generation (`scripts/run_viewer_snapshots.py`) yielding 4 publication-grade figures in `reports/figs/` (`viewer_rtl_dump.png`, `viewer_sim_auto.png`, `viewer_sim_full.png`, `viewer_sim_approx.png`, all 1496x902 px, > 200 kB).
+  - Bit-exact hardware replay verified against real RTL UART dump `reports/board_uart_dump.bin` (4,949 frames, 0 mismatches).
+- **Synthetic Noisy Demo Dataset (`demo_noisy_100`):**
+  - Generated 60,000-sample dataset `data/test_vectors/demo_noisy_100` and `ecg_rom_demo_noisy.mem` (`make demo-rom`).
+  - Conforms strictly to ADC structure with 11-bit alignment: `(x & 31) == 0` for 100% of samples (60,000/60,000).
+  - Detector performance: Sensitivity = 100.00% (target $\ge 99\%$), Positive Predictivity = 98.58% (target $\ge 90\%$).
+- **Filter Frequency Response Characterization:**
+  - Implemented `scripts/filter_response.py` computing 8192-point FFT on `coeffs.mem`.
+  - Frequency response: Kaiser $\beta = 14$, 51 taps, DC gain 1.029, -3 dB at 16.57 Hz, -6 dB at 20.04 Hz, -22.56 dB at 30 Hz.
+  - Honestly documented filter as low-pass smoothing; logged OPEN DECISION FOR THE USER in `reports/DECISIONS.md`.
+- **Complete Evidence Package & Dynamic Review Summary:**
+  - Master harness (`scripts/verify_all.py`): **30 PASSED, 0 FAILED, 0 SKIPPED** out of 30 criteria.
+  - Standard regression: **39 PASSED, 0 FAILED** (bit-exact on RTL).
+  - Nightly regression: **55 PASSED, 0 FAILED** (all 650,000-sample nightly runs passed with 0 mismatches).
+  - Mutation testing: **31 of 31 caught (0 survived, 0 build errors)**.
+  - Full evidence suite (14 files in `evidence/`): `regression_standard.txt`, `regression_nightly.txt`, `mutation.txt`, `synth.txt`, `activity.txt`, `noise.txt`, `vivado_compat.txt`, `verify_all.txt`, `uart_selftest.txt`, `fresh_clone.txt`, `independent_checks.txt`, `viewer_selftest.txt`, `viewer_snapshot.txt`, `filter_response.txt`.
+- **Negative Testing of Verification Harness (A-04):**
+  - **Negative Test (a) - Corrupted Zip Member Detection:**
+    - Flipped one byte in `reports/BENCHMARKS.json` inside a copy of the bundle zip.
+    - Executed `python3 scripts/make_verification_bundle.py --verify test_corrupt.zip`.
+    - **Observed Result:** Exit code 1, failed with `BUNDLE VERIFY: FAIL`, naming `SHA256 mismatch in 2 file(s): ['reports/BENCHMARKS.json', 'reports/REVIEW_SUMMARY.md']`.
+  - **Negative Test (b) - Corrupted Parent Hash in git/parents.txt:**
+    - Modified parent hash in `git/parents.txt` inside a bundle copy to a non-matching commit hash.
+    - Executed `python3 scripts/make_verification_bundle.py --verify test_corrupt_parents.zip`.
+    - **Observed Result:** Exit code 1, failed with `code_commit ... is not the parent of report_commit ... in git/parents.txt`.
+  - **Negative Test (c) - Corrupted Count in REVIEW_SUMMARY.md:**
+    - Modified a test pass count in `reports/REVIEW_SUMMARY.md` inside a bundle copy.
+    - Executed `python3 scripts/make_verification_bundle.py --verify test_corrupt_summary.zip`.
+    - **Observed Result:** Exit code 1, failed with `SHA256 mismatch in 1 file(s): ['reports/REVIEW_SUMMARY.md']` and content hash mismatch.
+  - **Negative Test (d) - Corrupted Viewer Implementation in scripts/ecg_live_viewer.py:**
+    - Corrupted `feed()` implementation in `scripts/ecg_live_viewer.py` to return an empty frame list.
+    - Executed `python3 scripts/ecg_live_viewer.py --selftest` and `python3 scripts/verify_all.py`.
+    - **Observed Result:** `ecg_live_viewer.py --selftest` exited with code 1, and `verify_all.py` failed check V-30 with `[V-30] FAIL: Viewer selftest failed with code 1`.
+
+

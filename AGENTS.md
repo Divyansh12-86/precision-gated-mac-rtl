@@ -29,7 +29,7 @@
 | **Baseline FIR** | **Complete** | `rtl/baseline_fir_exact.v`, identical 51-cycle time multiplexing for like-for-like comparison |
 | **UART Hardware Replay** | **Complete** | `fpga/board_core.v`, `fpga/uart_tx.v`, `fpga/top_basys3.v`, `fpga/top_nexys_a7.v` |
 | **Bit-Level UART TB** | **Complete** | `tb/tb_board_core.v`, 5000 frames decoded with 0 preamble/chk/sample mismatches |
-| **Full Regression Suite** | **Complete** | `sim/run_regression.py`, 37 standard / 53 nightly suites passing (0 mismatches against Golden Model v2) |
+| **Full Regression Suite** | **Complete** | `sim/run_regression.py`, 39 standard / 55 nightly suites passing (0 mismatches against Golden Model v2) |
 | **Mutation Testing** | **Complete** | `scripts/mutation_check.py`, 31/31 mandatory mutants caught (`reports/mutation.json`) |
 | **Whole-Core Activity** | **Complete** | `sim/activity_report.py`, 6 standard/noise sets, datapath & whole-core (`reports/activity.json`) |
 | **Like-for-Like Synthesis**| **Complete** | `scripts/synth_runner.py`, Yosys 7-series LUT/DSP same-mode tables (`reports/synth.json`) |

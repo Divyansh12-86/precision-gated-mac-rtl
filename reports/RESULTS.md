@@ -1,8 +1,8 @@
 # Characterization & Verification Report: Precision-Gated Approximate-MAC ECG Filter
 
-**Source Commit:** `a9b0fcd486f97a2f26a8af2fc65b3c9eada76119` (code tree clean: yes)  
+**Source Commit:** `a282469bf955d71ff8b7ffb8b8801353824af50c` (code tree clean: no)  
 **Environment:** Linux x86_64, Python 3.12, Verilator 5.020, Yosys 0.33  
-**Regression Status:** 37 tests executed, 0 failed across all suites  
+**Regression Status:** 39 tests executed, 0 failed across all suites  
 **Mutation Harness:** 31/31 mandatory mutants caught, 0 survived  
 
 ---
@@ -38,6 +38,7 @@ Evaluated across **60,000 samples (~2.78 minutes)** per record on MIT-BIH Arrhyt
 | **101** | minmax | 100.00% | 94.74% | 85.02% | 42.59 dB | 0.742% | **0.0923%** | 1.2924% |
 | **103** | minmax | 100.00% | 99.49% | 85.86% | 45.02 dB | 0.561% | **0.0000%** | 0.9143% |
 | **105** | minmax | 100.00% | 99.57% | 83.37% | 44.58 dB | 0.590% | **0.4484%** | 1.4638% |
+| **100** | demo_noisy | 100.00% | 98.58% | 84.88% | 26.79 dB | 4.576% | **0.4860%** | 5.5574% |
 
 ---
 
@@ -47,6 +48,7 @@ Measurements gathered on Verilator by tracking bit transitions cycle-by-cycle ac
 
 | Vector Set | Baseline Datapath | Gated Datapath | Datapath Saving (%) | Low-Operand Saving (%) | Whole-Core Saving (%) |
 |---|---|---|---|---|---|
+| `demo_noisy_100` | 53,064,229 | 42,480,634 | **19.94%** | 84.90% | 11.67% |
 | `noise_stress` *(Legacy set: post-scaling noise, not comparable)* | 6,776,354 | 5,585,993 | **17.57%** | 42.34% | 8.56% |
 | `std_fixed_100` | 49,382,516 | 38,640,139 | **21.75%** | 84.77% | 14.29% |
 | `std_fixed_101` | 49,905,209 | 39,247,854 | **21.36%** | 84.78% | 13.71% |
@@ -134,7 +136,7 @@ Evaluated across records 100, 103, 105 under composite synthetic noise (0.3 Hz b
 1. **Switching Activity as Power Proxy:** The toggle counts reported are architectural switching activity measurements ($\alpha$), not physical silicon milliwatt figures. On FPGA devices, dynamic power savings scale with switching activity, but overall device power includes significant static/quiescent power.
 2. **Noise Degradation at Low SNR:** Under synthetic noise at <= 6 dB SNR (in-domain ADU noise), the detector positive predictivity collapses to ~28–38% and full-precision gate duty increases to ~58%, causing switching savings to shrink to 8.3–9.7% datapath and 3.0–4.0% whole-core (compared to 20.1–21.3% datapath and 12.4–13.4% whole-core at 24 dB). The legacy `noise_stress` set (post-scaling noise, not comparable to clean data) yielded 17.57% datapath and 8.56% whole-core savings.
 3. **Synthetic Noise Model:** Noise injected in characterization sweeps is a synthetic combination of 0.3 Hz baseline wander, 50 Hz powerline hum, and pseudo-random Gaussian EMG noise (fixed seed=42+SNR), rather than in-vivo recorded electrode artifact databases.
-4. **Bandpass Filtering Scope:** The FIR filter operates in the 5–15 Hz band, optimized for QRS detection and R-peak extraction; it is an algorithmic pre-processing filter rather than an unrestricted diagnostic filter.
+4. **Filter Response Scope:** 51-tap Kaiser-window FIR; implemented response is low-pass: DC gain 1.03, −3 dB at 16.6 Hz, −22 dB at 30 Hz; design intent was a 5–15 Hz band-pass (not achieved with 51 taps and β = 14). It is an algorithmic pre-processing filter rather than an unrestricted diagnostic filter.
 5. **Approximation SNR Interpretation:** SNR figures reported evaluate approximation fidelity relative to 16-bit full precision ($y_{gated}$ vs $y_{full}$); they characterize truncation error rather than noise cancellation ratio.
 6. **Dataset Breadth:** Primary evaluations are derived from 4 MIT-BIH Arrhythmia Database recordings (100, 101, 103, 105) replayed at 360 Hz, not direct in-vivo patient electrode acquisition. Extended records (ext_*): NOT RUN (no network).
 7. **Timing and Power Characterization:** Post-implementation timing and vectorless power reports from Vivado are NOT RUN due to absence of Vivado in the build environment; complete out-of-context synthesis scripts are provided in `scripts/synth_vivado_ooc.tcl`.

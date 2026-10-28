@@ -54,7 +54,7 @@ precision-gated-mac-ecg/
 ├── sim/                # Python golden models and simulation runners
 │   ├── golden_v2.py        # Bit-exact integer golden model v2
 │   ├── qrs_detector_v2.py  # Integer hardware-equivalent Pan-Tompkins detector
-│   ├── run_regression.py   # Complete regression runner (37 standard / 53 nightly suites)
+│   ├── run_regression.py   # Complete regression runner (39 standard / 55 nightly suites)
 │   ├── activity_report.py  # Whole-core & datapath toggle characterization
 │   └── noise_sweep.py      # Noise sweep across SNRs {24, 18, 12, 6, 0} dB
 ├── tb/                 # Verilog testbenches (Verilator compatible)
@@ -128,11 +128,19 @@ All verification summaries and hardware tables land in `reports/` (see `reports/
    ```
    The script verifies sync preamble (`0xA5`), validates XOR checksums, plots the real-time filtered output, and confirms bit-exact matches against the reference.
 
+### 5.1 Interactive Live Demo & Viewer
+An interactive real-time visualizer is provided in `scripts/ecg_live_viewer.py` for live board or simulated execution:
+```bash
+python3 scripts/ecg_live_viewer.py --port /dev/ttyUSB0 --rom ecg_rom.mem   # Live board stream
+python3 scripts/ecg_live_viewer.py --simulate --duration 12               # Offline simulation
+```
+The viewer renders input, filtered output, and truncation error traces. On `board_uart_dump.bin`, it validates 4,949 frames with 0 mismatches, demonstrating 85.2% toggle savings and 14.6% active duty cycle.
+
 ---
 
 ## 6. Technical Limitations & Disclosures
 
 1. **Switching Activity Proxy:** Reported power savings are based on gate-level and datapath bit transitions ($\alpha$). While dynamic power on CMOS/FPGA is proportional to $\alpha \cdot C \cdot V^2 \cdot f$, total device power includes static quiescent current.
-2. **Bandpass Filtering Scope:** The FIR filter operates in the 5–15 Hz band (QRS energy enhancement). It is intended for robust heart-rate and R-peak extraction rather than diagnostic ECG monitoring (0.05–150 Hz).
+2. **Filter Response & Smoothing Scope:** 51-tap Kaiser-window FIR; implemented response is low-pass: DC gain 1.03, −3 dB at 16.6 Hz, −22 dB at 30 Hz; design intent was a 5–15 Hz band-pass (not achieved with 51 taps and β = 14). Baseline wander and DC offset are preserved while high-frequency EMG noise and mains interference are eliminated. It is intended for robust heart-rate and R-peak extraction rather than unrestricted diagnostic ECG monitoring (0.05–150 Hz).
 3. **Approximation Metric:** SNR values evaluate numerical truncation noise relative to 16-bit full precision ($y_{gated}$ vs $y_{full}$), rather than physiological denoising ratio.
 4. **Replay Validation:** Hardware demonstration replays digitized MIT-BIH recordings from on-chip block RAM at 360 Hz.

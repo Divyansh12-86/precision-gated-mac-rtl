@@ -196,6 +196,24 @@ tb_top summary for data/test_vectors/std_minmax_105:
 TB_RESULT: PASS name=tb_top samples=60000 mismatches=0
 - tb/tb_top.v:234: Verilog $finish
 
+=== tb_top demo_noisy_100 (exit: 0) ===
+==================================================================
+tb_top starting on vectors: data/test_vectors/demo_noisy_100 (RAND_GAP=0)
+==================================================================
+Loaded 60000 samples. Starting simulation...
+Measured constant pipeline latency: 73 cycles
+==================================================================
+tb_top summary for data/test_vectors/demo_noisy_100:
+  Samples tested:    60000
+  Pipeline latency:  73 cycles
+  Latency errors:    0
+  Y_ACC mismatches:  0
+  Gate mismatches:   0
+  Total mismatches:  0
+==================================================================
+TB_RESULT: PASS name=tb_top samples=60000 mismatches=0
+- tb/tb_top.v:234: Verilog $finish
+
 === tb_top_realrate smoke (277.8M cycles) (exit: 0) ===
 ==================================================================
 tb_top_realrate starting on 1000 samples at 360 Hz (100 MHz clock)...

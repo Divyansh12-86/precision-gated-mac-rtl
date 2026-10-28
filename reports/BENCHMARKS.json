@@ -1,5 +1,6 @@
 {
   "activity_datapath_pct_per_set": {
+    "demo_noisy_100": 19.94,
     "legacy_noise_stress_not_comparable": 17.57,
     "std_fixed_100": 21.75,
     "std_fixed_101": 21.36,
@@ -7,8 +8,8 @@
     "std_fixed_105": 20.97,
     "std_minmax_100": 32.9
   },
-  "bundle_filename": "verification_bundle_39a1a41.zip",
-  "commit": "a9b0fcd486f97a2f26a8af2fc65b3c9eada76119",
+  "bundle_filename": "verification_bundle_d8e1697.zip",
+  "commit": "a282469bf955d71ff8b7ffb8b8801353824af50c",
   "fresh_clone_result": "PASS",
   "mutation_caught": 31,
   "mutation_survived": 0,
@@ -24,14 +25,15 @@
   ],
   "qrs_prd_ratio_max": 75.8,
   "qrs_prd_ratio_min": 3.3,
-  "regression_nightly": 53,
-  "regression_standard": 37,
-  "report_commit": "39a1a4101bb99fb2d8f7490371ef9dc5e3a5313d",
-  "source_digest": "a6de0c9454d1dbe00fcc457bf1ea9c8ec14bdb3c1f1d93090d567a39e9422230",
+  "regression_nightly": 55,
+  "regression_standard": 39,
+  "report_commit": "d8e16976f8953a2c7918df544e011da2f1fb794b",
+  "source_digest": "5e2a89f7e5426b5a41419fcbc8385bce4cebddc13ccb29d3b0cefda40712a0da",
   "synth_pg_top_ff": 417,
   "synth_pg_top_lut": 1394,
   "synth_qrs_lut": 624,
   "whole_core_pct_per_set": {
+    "demo_noisy_100": 11.67,
     "legacy_noise_stress_not_comparable": 8.56,
     "std_fixed_100": 14.29,
     "std_fixed_101": 13.71,

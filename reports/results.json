@@ -32,7 +32,59 @@
     "low_operand_reduction_pct": 84.77
   },
   "activity_multiset": {
-    "commit": "a9b0fcd486f97a2f26a8af2fc65b3c9eada76119",
+    "commit": "a282469bf955d71ff8b7ffb8b8801353824af50c",
+    "demo_noisy_100": {
+      "datapath": {
+        "baseline": {
+          "acc": 21827663,
+          "mult": 21447902,
+          "op_high": 5301167,
+          "op_low": 4487497,
+          "total": 53064229
+        },
+        "datapath_reduction_pct": 19.94,
+        "gated_approx": {
+          "acc": 17933577,
+          "mult": 17343142,
+          "op_high": 5301167,
+          "op_low": 0,
+          "total": 40577886
+        },
+        "gated_auto": {
+          "acc": 18531975,
+          "mult": 17969844,
+          "op_high": 5301167,
+          "op_low": 677648,
+          "total": 42480634
+        },
+        "gated_full": {
+          "acc": 21827663,
+          "mult": 21447902,
+          "op_high": 5301167,
+          "op_low": 4487497,
+          "total": 53064229
+        },
+        "low_operand_reduction_pct": 84.9
+      },
+      "set_name": "demo_noisy_100",
+      "whole_core": {
+        "baseline": {
+          "control": 6479996,
+          "core_total": 75452886,
+          "datapath": 53064229,
+          "delay_line": 15908661,
+          "detector": 0
+        },
+        "gated_auto": {
+          "control": 6479996,
+          "core_total": 66649945,
+          "datapath": 42480634,
+          "delay_line": 15908661,
+          "detector": 1780654
+        },
+        "whole_core_reduction_pct": 11.67
+      }
+    },
     "dirty": false,
     "noise_stress": {
       "datapath": {
@@ -86,7 +138,7 @@
         "whole_core_reduction_pct": 8.56
       }
     },
-    "source_digest": "a6de0c9454d1dbe00fcc457bf1ea9c8ec14bdb3c1f1d93090d567a39e9422230",
+    "source_digest": "5e2a89f7e5426b5a41419fcbc8385bce4cebddc13ccb29d3b0cefda40712a0da",
     "std_fixed_100": {
       "datapath": {
         "baseline": {
@@ -348,13 +400,13 @@
       }
     }
   },
-  "commit": "a9b0fcd486f97a2f26a8af2fc65b3c9eada76119",
+  "commit": "a282469bf955d71ff8b7ffb8b8801353824af50c",
   "dirty": false,
   "meta": {
-    "commit": "a9b0fcd486f97a2f26a8af2fc65b3c9eada76119",
-    "date": "2026-10-26T18:16:20.614777",
+    "commit": "a282469bf955d71ff8b7ffb8b8801353824af50c",
+    "date": "2026-10-29T01:55:54.245780",
     "dirty": false,
-    "source_digest": "a6de0c9454d1dbe00fcc457bf1ea9c8ec14bdb3c1f1d93090d567a39e9422230",
+    "source_digest": "5e2a89f7e5426b5a41419fcbc8385bce4cebddc13ccb29d3b0cefda40712a0da",
     "tools": {
       "simulator": "verilator 5.020",
       "vivado": null,
@@ -585,8 +637,36 @@
       },
       "se": 100.0,
       "sq_shift": 15
+    },
+    {
+      "approx_duty_pct": 84.88,
+      "duty_full_pct": 15.12,
+      "first_peak_idx": 76,
+      "global": {
+        "prd_allapprox_pct": 4.969,
+        "prd_pct": 4.576,
+        "snr_allapprox_db": 26.08,
+        "snr_db": 26.79
+      },
+      "id": "100",
+      "n": 60000,
+      "policy": "demo_noisy",
+      "ppv": 98.58,
+      "qrs_region": {
+        "gate_coverage_pct": 99.03,
+        "prd_allapprox_pct": 5.5574,
+        "prd_gated_pct": 0.486,
+        "rpeak_err_pct_max": 4.503,
+        "rpeak_err_pct_mean": 0.0218
+      },
+      "rtl": {
+        "detector_mismatches": 0,
+        "top_mismatches": 0
+      },
+      "se": 100.0,
+      "sq_shift": 15
     }
   ],
-  "source_digest": "a6de0c9454d1dbe00fcc457bf1ea9c8ec14bdb3c1f1d93090d567a39e9422230",
+  "source_digest": "5e2a89f7e5426b5a41419fcbc8385bce4cebddc13ccb29d3b0cefda40712a0da",
   "synth": {}
 }

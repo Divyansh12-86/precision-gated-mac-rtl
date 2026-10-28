@@ -45,3 +45,56 @@ All architectural decisions, parameter choices, and optimizations are logged her
 ## 7. Git Tag Semantics & Provenance (Round 2)
 - **Tag `finalize-r1-complete`:** Originally named `pre-finalize` during Round-1 development. Because the working tree history was amended and re-sequenced during Round-1 closure to maintain an exact parent-code to report-commit relationship, the original tag was renamed to `finalize-r1-complete` (`9ada39e`) to honestly reflect that it represents the post-refactor baseline rather than a pre-refactor state.
 - **Tag `round2-start`:** Created as an annotated tag at commit `90af974` marking the exact starting point of the Round-2 engineering campaign ("Make It Provable, Honest and Hardware-Safe"). All Round-2 commits descend from this baseline.
+
+---
+
+## 8. Live ECG Viewer Integration (Round 6)
+- **Component:** `scripts/ecg_live_viewer.py` integrated as supplied by reviewer.
+- **SHA256 Checksum:** `38689b90bf02017317d9313c8b8d854bceac112150b2886ebf59f50c2868ea94`
+- **Capabilities:**
+  - 3-panel display: Unfiltered ROM input, precision-gated filtered output, difference/error trace.
+  - Header displays live active percentage ("SYSTEM ACTIVE: xx.x%") with dual status indicators (RED = QRS Full, GREEN = Approx).
+  - Side panel shows bit-exact hardware status, stream statistics, and low-operand toggle reduction model.
+  - Verified bit-exact match against real RTL byte stream `reports/board_uart_dump.bin`: 4,949 frames decoded with 0 mismatches.
+  - Headless snapshot generation (`--snapshot`) producing publication-grade PNG figures (> 40 kB, 1496x902 px).
+- **Selftest:** Verified via `scripts/ecg_live_viewer.py --selftest` (12/12 passing).
+
+---
+
+## 9. Demo Dataset Synthesis (`demo_noisy_100`)
+- **Dataset:** `data/test_vectors/demo_noisy_100` and `ecg_rom_demo_noisy.mem` (60,000 samples).
+- **Policy:** MIT-BIH Record 100 under `FIXED_SCALE` policy (`x16 = (adu - 1024) << 5`).
+- **Noise Model & SNR Definition:**
+  - Target SNR: 12 dB relative to clean ECG signal power centered around 1024 ADU.
+  - Noise is synthesized in the integer ADU domain *before* `<< 5` scaling to preserve the hardware ADC structure:
+    $$p_{sig} = \text{mean}((adu - 1024)^2)$$
+    $$p_{target} = p_{sig} / 10^{12/10}$$
+    $$noise_{raw} = 0.4 \cdot \sin(2\pi \cdot 0.3 \cdot t) + 0.3 \cdot \sin(2\pi \cdot 50 \cdot t) + 0.3 \cdot \mathcal{N}(0, 1)$$
+    $$scale = \sqrt{p_{target} / (\text{mean}(noise_{raw}^2) + \epsilon)}$$
+    $$adu_{noisy} = \text{clip}(\text{round}(adu + noise_{raw} \cdot scale), 0, 2047)$$
+    $$x16_{noisy} = \text{clip}((adu_{noisy} - 1024) \ll 5, -32768, 32767)$$
+  - Seed: $42 + 12 = 54$ (identical formula and seed convention as `sim/noise_sweep.py`).
+  - Guarantees $(x16_{noisy} \& 31) == 0$ for 100% of samples (60,000/60,000).
+- **Quality Performance:**
+  - Sensitivity (Se): 100.00% (target $\ge 99\%$)
+  - Positive Predictivity (+P): 98.58% (target $\ge 90\%$)
+  - Full-Precision Gate Duty: 15.12%
+  - Datapath switching reduction: 19.95%
+  - Whole-core switching reduction: 11.67%
+
+---
+
+## 10. FIR Filter Response & OPEN DECISION FOR THE USER
+- **Filter Analysis (`scripts/filter_response.py`):**
+  - Order: 51 taps (Kaiser window $\beta = 14$, $f_s = 360$ Hz).
+  - Implemented response: Low-pass smoothing filter with DC gain 1.029, -3 dB at 16.57 Hz, -6 dB at 20.04 Hz, -22.56 dB at 30 Hz, < -80 dB above 40 Hz.
+  - Retains baseline wander (0.3 Hz) and DC offset; removes muscle tremor / EMG (> 20 Hz) and 50/60 Hz powerline hum.
+  - Design intent was a 5–15 Hz band-pass filter; this was not achieved with 51 taps and $\beta = 14$ because the transition band is wider than the 5 Hz low cutoff.
+- **OPEN DECISION FOR THE USER:**
+  - **Option A (Document as Low-Pass — DEFAULT / RECOMMENDED):** Keep `coeffs.mem` and RTL completely unchanged. Honestly document the filter as a low-pass smoothing / noise-suppression filter for ECG pre-processing. Zero risk to existing bit-exact verification, FPGA bitstreams, or patent claims.
+  - **Option B (Redesign as True Band-Pass):** Redesign filter coefficients to achieve true band-pass rejection (e.g. 0.5–40 Hz or 5–15 Hz). Achieving a sharp 5 Hz low-cutoff transition at $f_s = 360$ Hz requires $\ge 255$ taps.
+    - *Hardware Cost Estimate for Option B:*
+      - Delay line RAM grows from 64x16 to 256x16 or 512x16 (+12 to +36 FFs or BRAM).
+      - Pipeline latency increases from 73 cycles to $\ge 277$ cycles per sample tick.
+      - Yosys logic increase: approximately $+150$ to $+300$ LUTs for wider counter/ROM addressing logic.
+      - Full regression vectors, golden models, and ROMs must be regenerated.
