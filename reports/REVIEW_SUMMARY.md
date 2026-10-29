@@ -1,9 +1,9 @@
 # Round-6 Verification & Review Summary
 
 **Code Commit:** `a282469bf955d71ff8b7ffb8b8801353824af50c`  
-**Report Commit:** `d8e16976f8953a2c7918df544e011da2f1fb794b`  
+**Report Commit:** `23dab90ee81defd817db2130df9679026ca5c9f3`  
 **Source Digest:** `5e2a89f7e5426b5a41419fcbc8385bce4cebddc13ccb29d3b0cefda40712a0da`  
-**Bundle Name:** `verification_bundle_d8e1697.zip`  
+**Bundle Name:** `verification_bundle_23dab90.zip`  
 
 ## Verification Matrix (Criteria D1 – D8)
 
@@ -16,7 +16,7 @@
 | **D5** | `python3 sim/run_regression.py` (39 passed) & `--nightly` (55 passed) | **PASS** | `evidence/regression_standard.txt`, `evidence/regression_nightly.txt` | `a282469` |
 | **D6** | `python3 scripts/mutation_check.py` (31 caught, 0 survived) | **PASS** | `evidence/mutation.txt` | `a282469` |
 | **D7** | `python3 scripts/verify_all.py` (30/30 PASSED, 0 SKIPPED) | **PASS** | `evidence/verify_all.txt`, `evidence/fresh_clone.txt` | `a282469` |
-| **D8** | `python3 scripts/make_verification_bundle.py --run-checks --nightly --fresh-clone` | **PASS** | `evidence/fresh_clone.txt`, `verification_bundle_d8e1697.zip` | `d8e1697` |
+| **D8** | `python3 scripts/make_verification_bundle.py --run-checks --nightly --fresh-clone` | **PASS** | `evidence/fresh_clone.txt`, `verification_bundle_23dab90.zip` | `23dab90` |
 
 ---
 
